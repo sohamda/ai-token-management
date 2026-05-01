@@ -571,6 +571,123 @@ GOTO 1</pre>
     </div>
   </section>`,
 
+  // 18b — Scaling overview: 7-layer system in Copilot terms
+  `<section class="slide">
+    <div class="eyebrow">Scaling — When you have 40 skills, not 4</div>
+    <h2>The 7-layer context system, mapped to Copilot</h2>
+    <p class="muted">From a production repo running this pattern across ~40 skills. Each layer is independently portable into a Copilot workspace.</p>
+    <table>
+      <thead><tr><th>#</th><th>Layer</th><th>Where it lives in your Copilot repo</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>Context budget planning</b></td><td>Comments at top of <span class="kbd">AGENTS.md</span> / each prompt file: model, fixed cost, per-turn budget</td></tr>
+        <tr><td>2</td><td><b>Progressive disclosure</b></td><td><span class="kbd">AGENTS.md</span> → <span class="kbd">.github/skills/{name}/SKILL.md</span> → <span class="kbd">references/</span></td></tr>
+        <tr><td>3</td><td><b>Context shredding</b></td><td>Three skill variants: <span class="kbd">SKILL.md</span> / <span class="kbd">SKILL.digest.md</span> / <span class="kbd">SKILL.minimal.md</span></td></tr>
+        <tr><td>4</td><td><b>Context-awareness tags</b></td><td><span class="kbd">&lt;context_awareness&gt;</span> block inside each long prompt file or agent definition</td></tr>
+        <tr><td>5</td><td><b>Subagent extraction</b></td><td>Separate prompt files (<span class="kbd">/cost-estimate</span>, <span class="kbd">/test-runner</span>) invoked from a parent</td></tr>
+        <tr><td>6</td><td><b>Glob targeting</b></td><td><span class="kbd">applyTo:</span> in <span class="kbd">.github/instructions/*.md</span> — never <span class="kbd">**</span> unless universal</td></tr>
+        <tr><td>7</td><td><b>Observability</b></td><td>Latency as a proxy + npm lint scripts over <span class="kbd">.github/</span></td></tr>
+      </tbody>
+    </table>
+  </section>`,
+
+  // 18c — Budget + progressive disclosure + shredding
+  `<section class="slide">
+    <div class="eyebrow">Layers 1 – 3 — Architecture inside <span class="kbd">.github/</span></div>
+    <h2>Budget the prompt, structure the skills, compress at runtime</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>1. Budget (design time)</h3>
+        <pre><code># GPT-5 (128K context)
+- Workspace info:    ~500
+- copilot-instr.md:  ~400
+- 5 *.instructions:  ~3,000
+- Open editor file:  ~1,500
+- #file mentions:    ~4,000
+- Output headroom:  -16,000
+─────────────────────────────
+Per-turn budget:   ~103,000</code></pre>
+        <p class="muted">Hard limits at authoring time: prompt file ≤ 250 ln, ≤ 30 tools per chat, instructions ≤ 150 ln each.</p>
+      </div>
+      <div class="card">
+        <h3>2. Progressive disclosure</h3>
+        <pre><code>AGENTS.md                          # always loaded
+.github/copilot-instructions.md    # always loaded
+.github/instructions/*.md          # glob-matched
+.github/skills/{name}/SKILL.md     # on-demand
+.github/skills/{name}/references/  # deep content</code></pre>
+        <p class="muted"><span class="kbd">AGENTS.md</span> is a table of contents that points Copilot toward the right skill — never a comprehensive guide.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>3. Context shredding — three sizes per skill</h3>
+      <table>
+        <thead><tr><th>Tier</th><th>File</th><th>Size</th><th>When Copilot loads it</th></tr></thead>
+        <tbody>
+          <tr><td>Full</td><td><span class="kbd">SKILL.md</span></td><td>400–800 tokens</td><td>Fresh chat, &lt; 60% context</td></tr>
+          <tr><td>Digest</td><td><span class="kbd">SKILL.digest.md</span></td><td>150–320 tokens</td><td>60–80%</td></tr>
+          <tr><td>Minimal</td><td><span class="kbd">SKILL.minimal.md</span></td><td>40–100 tokens</td><td>&gt; 80% — decisions only</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:8px">A small Node script (<span class="kbd">generate-skill-digests.mjs</span>) builds the digest + minimal variants from <span class="kbd">SKILL.md</span>. Run it in CI; check the diffs.</p>
+    </div>
+  </section>`,
+
+  // 18d — Awareness tags, subagents, observability
+  `<section class="slide">
+    <div class="eyebrow">Layers 4 – 7 — Operating it in Copilot</div>
+    <h2>Self-aware prompts, isolated chats, measurable bloat</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>4. Context-awareness tag in a prompt file</h3>
+        <pre><code>---
+description: 'Build feature from plan'
+mode: agent
+---
+&lt;context_awareness&gt;
+Big prompt (~250 ln). At &gt;60% context,
+load SKILL.digest.md instead of SKILL.md.
+At &gt;80% stop re-reading prior turns;
+ask user to checkpoint.
+&lt;/context_awareness&gt;</code></pre>
+        <p class="muted">Long prompts get an explicit <b>compaction phase</b>: summarize what's been done, switch to minimal skills, then continue.</p>
+      </div>
+      <div class="card">
+        <h3>5. Subagent extraction = a fresh Copilot chat</h3>
+        <pre><code>Parent chat (planning):  5K tokens
+  → opens NEW chat with /cost-estimate
+    runs in fresh 128K window
+    returns 2K JSON result
+Parent continues:        +2K instead of +40K</code></pre>
+        <p class="muted">Trigger when: &gt; 5 tool calls for one subtask, domain shift, or chat &gt; 60% full. Send the subagent a <b>focused brief</b>, not the whole conversation.</p>
+      </div>
+      <div class="card">
+        <h3>6. Glob targeting in <span class="kbd">.github/instructions/</span></h3>
+        <pre><code># BAD — every Copilot turn pays for this
+---
+applyTo: "**"
+---
+
+# GOOD
+applyTo: "src/**/*.ts"
+applyTo: "**/*.bicep"</code></pre>
+        <p class="muted">10 broad files × ~600 tokens = 6,000 tokens of fixed overhead before you even type a question.</p>
+      </div>
+      <div class="card">
+        <h3>7. Observability — latency tells you the truth</h3>
+        <table>
+          <thead><tr><th>Copilot reply latency</th><th>≈ Input tokens</th></tr></thead>
+          <tbody>
+            <tr><td>&lt; 5s</td><td>&lt; 20K</td></tr>
+            <tr><td>5–10s</td><td>20–60K</td></tr>
+            <tr><td>10–20s</td><td>60–120K</td></tr>
+            <tr><td>&gt; 20s</td><td>Near limit — start a new chat</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">Quarterly npm scripts catch regression: <span class="kbd">lint:skill-size</span>, <span class="kbd">lint:glob-audit</span>.</p>
+      </div>
+    </div>
+  </section>`,
+
   // 19 — quick wins
   `<section class="slide">
     <div class="eyebrow">Take-home</div>

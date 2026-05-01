@@ -13,7 +13,8 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │   └── token-presentation-copilot.html  ← GitHub Copilot–focused
 ├── docs/
 │   ├── title-and-abstract.md            ← session title options + abstract
-│   └── session-outline.md               ← long-form notes the deck was built from
+│   ├── session-outline.md               ← long-form notes the deck was built from
+│   └── context-engineering-at-scale.md  ← case-study deep-dive: 7-layer system
 ├── demos/
 │   ├── 00-setup.md
 │   ├── 01-context-engineering.md        ← @workspace vs #file
@@ -25,7 +26,11 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │   ├── 07-repo-hygiene.md               ← .aiignore, content exclusions
 │   ├── 08-ralph-loop.md                 ← agent loop on TODO.md
 │   ├── 09-auto-compact.md
-│   └── 10-agent-handover.md             ← /plan → /build → /review
+│   ├── 10-agent-handover.md             ← /plan → /build → /review
+│   ├── 11-context-budget.md             ← Scaling L1: budget at design time
+│   ├── 12-progressive-disclosure.md     ← Scaling L2: 3-level hierarchy
+│   ├── 13-context-shredding.md          ← Scaling L3+L4: tier selection
+│   └── 14-observability.md              ← Scaling L7: latency proxy + lints
 ├── src/                                  ← intentionally messy demo code
 │   ├── api/
 │   ├── email/
@@ -48,9 +53,14 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 ## How to use
 
 1. Open `presentations/token-presentation.html` (or the Copilot variant) in a browser.
-2. Walk the audience through the slides; switch to the demos at lever H.
+2. Walk the audience through the slides; switch to the demos at lever H, then return for the "Scaling: 7-layer system" group at the end.
 3. For each demo, follow the script in `demos/`.
 4. Reset between demos with `git stash && git checkout -- .` so re-runs are clean.
+
+## Credits
+
+- Workflow patterns inspired by Geoffrey Huntley's *Ralph Wiggum agentic coding pattern*, Anthropic's *Claude Code best practices* (incl. `/compact`), and Cognition's *Don't build multi-agents*.
+- The 7-layer scaling architecture (`docs/context-engineering-at-scale.md`) is adapted from a real production landing-zone repo running ~40 specialized skills.
 
 ## License
 

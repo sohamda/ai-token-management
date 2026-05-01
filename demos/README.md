@@ -15,9 +15,13 @@ Each demo is small (2–6 minutes), has a clear "before / after," and ties to a 
 | 08 | [Ralph Wiggum loop](./08-ralph-loop.md)       | H1 — Ralph loop        | 5 min |
 | 09 | [Auto-compact](./09-auto-compact.md)          | H2 — Auto-compact      | 3 min |
 | 10 | [Planner → Implementer → Reviewer](./10-agent-handover.md) | H3 — Agent handover    | 6 min |
+| 11 | [Context budget planning](./11-context-budget.md) | Scaling L1            | 4 min |
+| 12 | [Progressive disclosure](./12-progressive-disclosure.md) | Scaling L2     | 4 min |
+| 13 | [Context shredding](./13-context-shredding.md) | Scaling L3 + L4         | 5 min |
+| 14 | [Observability & lint](./14-observability.md) | Scaling L7              | 3 min |
 
-**Total demo time:** ~36 min if you run them all. For a 60-minute session,
-pick 4–5 highlights (suggested: 01, 04, 05, 08, 10).
+**Total demo time:** ~52 min if you run them all. For a 60-minute session,
+pick 5–6 highlights (suggested: 01, 04, 05, 08, 10, **13**).
 
 ## Reset between demos
 
