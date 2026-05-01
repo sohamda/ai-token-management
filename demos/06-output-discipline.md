@@ -1,0 +1,43 @@
+# Demo 06 — Output discipline (whole file vs diff)
+
+**Slide reference:** Lever F
+**Time:** ~2 minutes
+**Punchline:** Same fix, 50× fewer output tokens.
+
+## Step 1 — the verbose ask
+
+In a fresh chat:
+
+> In `#file:src/email/templateEngine.js`, the `welcome` template is missing an exclamation mark. Show me the **updated file**.
+
+The model returns the entire file (~30 lines). With a 600-line file it would be 600 lines.
+
+## Step 2 — the disciplined ask
+
+> In `#file:src/email/templateEngine.js`, the `welcome` template is missing an exclamation mark. Reply with a **unified diff only**, no commentary.
+
+You get ~5 lines of diff.
+
+## Step 3 — the system-prompt fix
+
+Open `.github/copilot-instructions.md`. Show the lines:
+
+```
+- Be concise. No preamble.
+- Prefer diffs over full files.
+```
+
+Now any chat in this repo defaults to the disciplined behavior — without re-typing it.
+
+## Talking points
+
+- Output tokens are typically **3–5× more expensive** than input tokens.
+- Verbose "let me explain what I'm about to do" prefaces are pure tax.
+- Diff-mode tools (`apply_patch`, `edit`) are the cheapest editing pattern.
+- Structured output / JSON mode for machine consumers — no prose padding.
+
+## Reset
+
+```powershell
+git checkout -- src/
+```

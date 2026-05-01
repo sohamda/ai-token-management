@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reducing Token Usage in AI-Assisted Development</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root{
+  color-scheme:light;
+  --cp-bg:#f7f4ef; --cp-bg-elevated:#fcfbf8; --cp-surface:#ffffff; --cp-surface-soft:#f5f5f5;
+  --cp-border:#dedede; --cp-border-strong:#919191;
+  --cp-text:#242424; --cp-text-muted:#5c5c5c; --cp-text-soft:#6f6f6f;
+  --cp-accent:#b11f4b; --cp-accent-hover:#9a1a41; --cp-accent-soft:rgba(177,31,75,0.08);
+  --cp-accent-fg:#ffffff;
+  --cp-success:#16a34a; --cp-danger:#dc2626; --cp-warning:#f59e0b; --cp-link:#0078d4;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.12);
+  --cp-overlay:rgba(255,255,255,0.8); --cp-panel:rgba(255,255,255,0.86);
+  --cp-panel-strong:rgba(255,255,255,0.96); --cp-sheen:rgba(255,255,255,0.55);
+  --cp-highlight:rgba(177,31,75,0.12);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --cp-bg:#3d3b3a; --cp-bg-elevated:#343231; --cp-surface:#292929; --cp-surface-soft:#2e2e2e;
+  --cp-border:#474747; --cp-border-strong:#5f5f5f;
+  --cp-text:#dedede; --cp-text-muted:#919191; --cp-text-soft:#b0b0b0;
+  --cp-accent:#fd8ea1; --cp-accent-hover:#fb7b91; --cp-accent-soft:rgba(253,142,161,0.14);
+  --cp-accent-fg:#1a1a1a;
+  --cp-success:#4ade80; --cp-danger:#f87171; --cp-warning:#fbbf24; --cp-link:#4da6ff;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.32);
+  --cp-overlay:rgba(41,41,41,0.88); --cp-panel:rgba(41,41,41,0.72);
+  --cp-panel-strong:rgba(41,41,41,0.96); --cp-sheen:rgba(255,255,255,0.04);
+  --cp-highlight:rgba(253,142,161,0.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--cp-bg);color:var(--cp-text);
+  font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif;}
+code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
+
+.deck{height:100vh;display:flex;flex-direction:column}
+.stage{flex:1;overflow:hidden;position:relative}
+.slide{position:absolute;inset:0;padding:48px 72px 96px;overflow:auto;
+  display:none;flex-direction:column;animation:fade .25s ease}
+.slide.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.eyebrow{color:var(--cp-accent);text-transform:uppercase;letter-spacing:.12em;
+  font-size:12px;font-weight:700;margin-bottom:12px}
+h1{font-size:44px;margin:0 0 12px;line-height:1.1}
+h2{font-size:34px;margin:0 0 18px;line-height:1.15}
+h3{font-size:20px;margin:18px 0 8px}
+p{font-size:17px;line-height:1.55;color:var(--cp-text);margin:0 0 12px}
+.lead{font-size:20px;color:var(--cp-text-muted);max-width:900px}
+ul{margin:0 0 12px 0;padding-left:22px}
+li{margin:6px 0;line-height:1.5}
+small,.muted{color:var(--cp-text-muted)}
+
+.grid{display:grid;gap:18px}
+.cols-2{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:1fr 1fr 1fr}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+
+.card{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:16px;padding:20px;box-shadow:0 0 2px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14)}
+.card h3{margin-top:0;color:var(--cp-accent)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;
+  background:var(--cp-accent-soft);color:var(--cp-accent);font-size:12px;font-weight:600;
+  margin-right:6px}
+
+.kbd{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
+  border-radius:6px;padding:1px 6px;font-size:13px}
+
+pre{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
+  border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;margin:0}
+
+.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;
+  background:var(--cp-bg-elevated);border-top:1px solid var(--cp-border)}
+.bar .nav{display:flex;gap:8px}
+button{font-family:inherit;font-size:14px;background:var(--cp-surface);
+  color:var(--cp-text);border:1px solid var(--cp-border);border-radius:10px;
+  padding:8px 14px;cursor:pointer;transition:all .15s}
+button:hover{border-color:var(--cp-border-strong)}
+button.primary{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
+button.primary:hover{background:var(--cp-accent-hover);border-color:var(--cp-accent-hover)}
+.counter{font-variant-numeric:tabular-nums;color:var(--cp-text-muted);font-size:13px}
+
+.title-slide{align-items:center;justify-content:center;text-align:center}
+.title-slide h1{font-size:64px;line-height:1.05;margin-bottom:18px}
+.title-slide .lead{font-size:22px}
+
+.metric{font-size:42px;font-weight:700;color:var(--cp-accent);line-height:1}
+.metric small{display:block;font-size:13px;color:var(--cp-text-muted);
+  font-weight:500;margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--cp-border)}
+th{color:var(--cp-text-muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:var(--cp-surface-soft)}
+
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.flow .step{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600}
+.flow .arrow{color:var(--cp-accent);font-weight:700}
+
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.pill{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
+  border-radius:999px;padding:6px 12px;font-size:13px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.good{border-left:4px solid var(--cp-success)}
+.bad{border-left:4px solid var(--cp-danger)}
+.warn{border-left:4px solid var(--cp-warning)}
+
+.footer{position:absolute;bottom:14px;right:24px;font-size:12px;color:var(--cp-text-muted)}
+
+/* progress dots */
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cp-border)}
+.dot.active{background:var(--cp-accent)}
+
+/* loop diagram */
+.loop{display:flex;align-items:center;justify-content:center;gap:14px;margin:18px 0;flex-wrap:wrap}
+.loop .node{background:var(--cp-surface);border:2px solid var(--cp-accent);
+  border-radius:14px;padding:14px 18px;font-weight:600;text-align:center;min-width:130px}
+.loop .arr{color:var(--cp-accent);font-size:24px;font-weight:700}
+
+.hand{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:8px;align-items:center;margin:14px 0}
+.hand .ag{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:12px;padding:14px;text-align:center}
+.hand .ag.lead{border-color:var(--cp-accent)}
+.hand .ar{text-align:center;color:var(--cp-accent);font-size:22px;font-weight:700}
+
+.theme-toggle{position:absolute;top:14px;right:18px;z-index:10}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:8px}
+.calc .controls label{display:block;font-size:13px;color:var(--cp-text-muted);margin:10px 0 4px;font-weight:600}
+.calc .controls input,.calc .controls select{width:100%;padding:9px 12px;border-radius:10px;
+  border:1px solid var(--cp-border);background:var(--cp-surface);color:var(--cp-text);font-family:inherit;font-size:14px}
+.calc .controls input:focus,.calc .controls select:focus{outline:none;border-color:var(--cp-accent)}
+.calc .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calc .results{display:flex;flex-direction:column;gap:10px}
+.calc .res-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:10px 14px;background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:10px}
+.calc .res-row .lbl{font-size:13px;color:var(--cp-text-muted)}
+.calc .res-row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--cp-text)}
+.calc .res-row.total{background:var(--cp-accent-soft);border-color:var(--cp-accent)}
+.calc .res-row.total .val{color:var(--cp-accent);font-size:24px}
+.calc .savings{padding:12px 14px;background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-left:4px solid var(--cp-success);border-radius:10px;font-size:14px;line-height:1.5}
+.calc .savings b{color:var(--cp-success)}
+.toggle-row{display:flex;gap:8px;margin-top:6px}
+.toggle-row button{flex:1;padding:8px}
+.toggle-row button.on{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
+  <div class="stage" id="stage"></div>
+  <div class="bar">
+    <div class="dots" id="dots"></div>
+    <div class="counter"><span id="cur">1</span> / <span id="total">1</span></div>
+    <div class="nav">
+      <button id="prev">← Prev</button>
+      <button class="primary" id="next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const slides = [
+  // 1 — title
+  `<section class="slide title-slide">
+    <div class="eyebrow">Technical Session</div>
+    <h1>Reducing Token Usage in<br/>AI-Assisted Development</h1>
+    <p class="lead">Context engineering, the Ralph Wiggum loop, auto-compact, agent handover, and the standards that turn an expensive habit into a disciplined practice.</p>
+    <div class="footer">Use ← → or Space to navigate · Press <span class="kbd">F</span> for fullscreen</div>
+  </section>`,
+
+  // 2 — why tokens matter
+  `<section class="slide">
+    <div class="eyebrow">Set the stage</div>
+    <h2>Why tokens matter</h2>
+    <div class="grid cols-4" style="margin-top:14px">
+      <div class="card"><div class="metric">$$$<small>Cost</small></div><p style="margin-top:14px">A 50-dev team can burn $10–50k/mo on agentic tools. Most of it is avoidable.</p></div>
+      <div class="card"><div class="metric">⏱<small>Latency</small></div><p style="margin-top:14px">Larger contexts = slower TTFT and slower tool loops. Devs feel the lag.</p></div>
+      <div class="card"><div class="metric">📉<small>Context rot</small></div><p style="margin-top:14px">Recall and reasoning <b>degrade</b> as context fills — even within the advertised window.</p></div>
+      <div class="card"><div class="metric">🚦<small>Rate limits</small></div><p style="margin-top:14px">TPM caps stall CI, agents, and pair-programming when sessions get fat.</p></div>
+    </div>
+    <p class="lead" style="margin-top:24px">Mental shift: <b>prompt engineering → context engineering</b>. Tokens are a finite <i>attention budget</i>, not free real estate.</p>
+  </section>`,
+
+  // 3 — anatomy
+  `<section class="slide">
+    <div class="eyebrow">Know your enemy</div>
+    <h2>Anatomy of a request</h2>
+    <table>
+      <thead><tr><th>Bucket</th><th>Typical share</th><th>Why it bloats</th></tr></thead>
+      <tbody>
+        <tr><td>System prompt / instructions</td><td>5–15%</td><td>Copy-pasted boilerplate, never trimmed</td></tr>
+        <tr><td>Tool / function schemas</td><td>10–40%</td><td>Re-sent <b>every turn</b>; unused MCP servers</td></tr>
+        <tr><td>Retrieved files & code chunks</td><td>20–60%</td><td>Whole-file dumps instead of ranged reads</td></tr>
+        <tr><td>Conversation history</td><td>10–30%</td><td>Grows linearly without compaction</td></tr>
+        <tr><td>Model output</td><td>5–20%</td><td>Verbose explanations, "let me think out loud"</td></tr>
+      </tbody>
+    </table>
+    <p class="lead" style="margin-top:18px">⚠️ Profile before optimizing. Most teams are surprised which bucket dominates theirs.</p>
+  </section>`,
+
+  // 4 — calculator
+  `<section class="slide">
+    <div class="eyebrow">Live calculator</div>
+    <h2>What does this actually cost?</h2>
+    <div class="calc">
+      <div class="controls">
+        <label>Model</label>
+        <select id="cModel">
+          <option value="haiku">Claude Haiku 4.5  ($1 / $5 per Mtok)</option>
+          <option value="sonnet" selected>Claude Sonnet 4.5  ($3 / $15)</option>
+          <option value="opus">Claude Opus 4.5  ($5 / $25)</option>
+          <option value="gpt5">GPT-5 (est)  ($1.25 / $10)</option>
+          <option value="gpt5mini">GPT-5 mini (est)  ($0.25 / $2)</option>
+          <option value="gpt41">GPT-4.1  ($2 / $8)</option>
+          <option value="gemini25">Gemini 2.5 Pro  ($1.25 / $10)</option>
+        </select>
+        <div class="row">
+          <div><label>Input tokens / request</label><input id="cIn" type="number" value="20000" min="0"/></div>
+          <div><label>Output tokens / request</label><input id="cOut" type="number" value="800" min="0"/></div>
+        </div>
+        <div class="row">
+          <div><label>Requests / day / dev</label><input id="cReq" type="number" value="120" min="0"/></div>
+          <div><label>Developers</label><input id="cDev" type="number" value="50" min="1"/></div>
+        </div>
+        <label>Prompt cache hit rate</label>
+        <div class="toggle-row">
+          <button data-cache="0">0%</button>
+          <button data-cache="0.5">50%</button>
+          <button data-cache="0.8" class="on">80%</button>
+          <button data-cache="0.95">95%</button>
+        </div>
+      </div>
+      <div class="results">
+        <div class="res-row"><span class="lbl">Per request</span><span class="val" id="rReq">—</span></div>
+        <div class="res-row"><span class="lbl">Per dev / day</span><span class="val" id="rDev">—</span></div>
+        <div class="res-row"><span class="lbl">Per dev / month (22d)</span><span class="val" id="rMon">—</span></div>
+        <div class="res-row total"><span class="lbl">Team / month</span><span class="val" id="rTeam">—</span></div>
+        <div class="savings" id="rSav">Toggle the cache rate or change the model to see savings.</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px">Pricing approximate (May 2026). Cache hits billed at 10% of base input. Adjust to your actual usage.</p>
+  </section>`,
+
+  // 5 — The 8 levers map
+  `<section class="slide">
+    <div class="eyebrow">Roadmap</div>
+    <h2>Eight levers we'll cover</h2>
+    <div class="grid cols-4">
+      <div class="card"><span class="tag">A</span><h3>Context engineering</h3><p>JIT retrieval, ranged reads, summarization.</p></div>
+      <div class="card"><span class="tag">B</span><h3>Prompt caching</h3><p>Hits cost ~10% of base. Order matters.</p></div>
+      <div class="card"><span class="tag">C</span><h3>Tool / plugin design</h3><p>Fewer sharper tools, server-side filters.</p></div>
+      <div class="card"><span class="tag">D</span><h3>Skills & standards</h3><p>AGENTS.md, rules, lazy-loaded skills.</p></div>
+      <div class="card"><span class="tag">E</span><h3>Model routing</h3><p>Right-size per task; Batch API.</p></div>
+      <div class="card"><span class="tag">F</span><h3>Output discipline</h3><p>Diffs, structured output, "be concise".</p></div>
+      <div class="card"><span class="tag">G</span><h3>Repo hygiene</h3><p>.aiignore, smaller modules, indexes.</p></div>
+      <div class="card"><span class="tag">H</span><h3>Workflow patterns</h3><p>Ralph loop, auto-compact, agent handover.</p></div>
+    </div>
+  </section>`,
+
+  // 5 — Lever A
+  `<section class="slide">
+    <div class="eyebrow">Lever A · biggest single win</div>
+    <h2>Context engineering</h2>
+    <div class="grid cols-2">
+      <div class="card good">
+        <h3>✅ Do</h3>
+        <ul>
+          <li><b>Just-in-time retrieval.</b> Let the agent grep/glob/view only what it needs.</li>
+          <li><b>Ranged reads.</b> <span class="kbd">view_range</span> or AST slices over whole files.</li>
+          <li><b>Hierarchical summarization.</b> Roll old turns into a <span class="kbd">plan.md</span> scratchpad.</li>
+          <li><b>Sub-agents</b> with isolated context — only their summary returns to the parent.</li>
+          <li><b>Truncate tool output.</b> pipe to <span class="kbd">head</span>, suppress pagers.</li>
+          <li><b>Structured over prose</b> — JSON & tables compress more per token.</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>❌ Don't</h3>
+        <ul>
+          <li>"Paste the whole repo into the prompt."</li>
+          <li>Read 2,000-line files when 40 lines answer the question.</li>
+          <li>Keep raw stack traces with 200 node_modules frames.</li>
+          <li>Let unused MCP servers ride along — every tool schema re-sends each turn.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 6 — Lever B prompt caching
+  `<section class="slide">
+    <div class="eyebrow">Lever B</div>
+    <h2>Prompt caching — basically free wins</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>How it works</h3>
+        <ul>
+          <li>Anthropic, OpenAI, and Gemini all cache prefix tokens.</li>
+          <li>Cache <b>hits ≈ 10%</b> of base input cost.</li>
+          <li>Anthropic TTL: 5 min default, 1 hr paid. OpenAI: automatic.</li>
+          <li>GitHub Copilot pipes through these — stable instructions in <span class="kbd">copilot-instructions.md</span> get cached server-side.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The order rule</h3>
+        <p>Static → semi-static → dynamic.</p>
+        <pre>[ tools ]            ← rarely changes
+[ system prompt ]    ← rarely changes
+[ skills / rules ]   ← stable per repo
+[ retrieved files ]  ← changes per task
+[ conversation ]     ← changes every turn</pre>
+        <p class="muted" style="margin-top:10px">⚠️ A timestamp at the top of your system prompt busts the cache on every call.</p>
+      </div>
+    </div>
+  </section>`,
+
+  // 7 — Lever C tools
+  `<section class="slide">
+    <div class="eyebrow">Lever C</div>
+    <h2>Tool & plugin design</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Trim the toolbelt</h3>
+        <ul>
+          <li><b>Fewer, sharper tools.</b> Each schema is re-paid every turn.</li>
+          <li><b>Concise param descriptions</b> — minimum to prevent misuse.</li>
+          <li><b>Disable unused MCP servers</b> per session (works in Copilot, Claude Code, Cursor).</li>
+          <li>In Copilot: scope chat with <span class="kbd">#file</span>, <span class="kbd">#selection</span>, <span class="kbd">#codebase</span> instead of dumping context.</li>
+          <li>Consolidate overlapping tools / participants.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Make tool output cheap</h3>
+        <ul>
+          <li>Server-side <span class="kbd">select</span> / field filters — return only what's needed.</li>
+          <li>Default <span class="kbd">limit</span>, pagination on by default.</li>
+          <li>Strip ANSI, headers, metadata the model won't use.</li>
+          <li>Return IDs + summaries; let the agent fetch detail on demand.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 8 — Lever D skills / standards
+  `<section class="slide">
+    <div class="eyebrow">Lever D</div>
+    <h2>Skills, rules & standards files</h2>
+    <p class="lead">Codify conventions <b>once</b>, in a file the agent loads on demand — not in every prompt.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>Where they live</h3>
+        <div class="pill-row">
+          <span class="pill">AGENTS.md</span><span class="pill">CLAUDE.md</span>
+          <span class="pill">.cursor/rules</span>
+          <span class="pill">.github/copilot-instructions.md</span>
+          <span class="pill">.github/instructions/*.instructions.md</span>
+          <span class="pill">.github/prompts/*.prompt.md</span>
+          <span class="pill">Anthropic Skills</span><span class="pill">Custom GPTs</span>
+        </div>
+        <p class="muted">Skills, prompt files, and scoped instructions are <b>lazy-loaded</b> — only triggered when relevant or when the agent reads them, so they don't tax every turn. Copilot's <span class="kbd">applyTo</span> frontmatter scopes instructions to file globs.</p>
+      </div>
+      <div class="card">
+        <h3>What to encode</h3>
+        <ul>
+          <li>Build / test / lint commands</li>
+          <li>File layout & naming conventions</li>
+          <li>"Don't read these dirs" (node_modules, dist, generated)</li>
+          <li>Preferred libraries & patterns</li>
+          <li>Output style: concise, no apologies, no re-explaining</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 9 — Lever E model routing
+  `<section class="slide">
+    <div class="eyebrow">Lever E</div>
+    <h2>Right-size the model</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>Haiku / Mini / Flash</h3>
+        <p>Boilerplate, classification, simple edits, formatting, doc lookups.</p>
+      </div>
+      <div class="card" style="border-color:var(--cp-accent)">
+        <h3>Sonnet / GPT-class</h3>
+        <p>Default coding work, refactors, debugging.</p>
+      </div>
+      <div class="card">
+        <h3>Opus / frontier</h3>
+        <p>Hard reasoning, architecture, gnarly debugging only.</p>
+      </div>
+    </div>
+    <div class="grid cols-2" style="margin-top:18px">
+      <div class="card"><h3>Batch API</h3><p><b>50% off</b> for non-interactive workloads — codemods, doc generation, bulk refactors, evals.</p></div>
+      <div class="card"><h3>Generation hygiene</h3><p>Lower <span class="kbd">max_tokens</span>, use stop sequences, stream with early stop. Most coding answers don't need 8k headroom.</p></div>
+      <div class="card" style="grid-column:1/-1"><h3>Copilot model picker = your routing knob</h3><p>Copilot bills <b>premium requests</b> with per-model multipliers (e.g. GPT-4.1 ≈ free, GPT-5 ≈ 1×, Claude Sonnet ≈ 1×, Claude Opus ≈ 10×). Pick the cheapest model that handles the task; reach for premium ones only when stuck.</p></div>
+    </div>
+  </section>`,
+
+  // 10 — Lever F output discipline
+  `<section class="slide">
+    <div class="eyebrow">Lever F</div>
+    <h2>Output discipline</h2>
+    <div class="split">
+      <div class="card">
+        <h3>System-prompt rules that pay</h3>
+        <ul>
+          <li>"Be concise. No preamble. No re-explaining the request."</li>
+          <li>"Return diffs, not whole files."</li>
+          <li>"Use structured output when the consumer is code."</li>
+          <li>"Stop as soon as the answer is complete."</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Mechanics</h3>
+        <ul>
+          <li><b>Diff-only edits</b> via <span class="kbd">apply_patch</span>/<span class="kbd">edit</span> — exchange tokens for line-anchored deltas.</li>
+          <li><b>JSON / tool-call mode</b> for machine consumers — no prose padding.</li>
+          <li><b>Hidden reasoning blocks</b> instead of leaking chain-of-thought into outputs.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 11 — Lever G repo hygiene
+  `<section class="slide">
+    <div class="eyebrow">Lever G</div>
+    <h2>Repo & codebase hygiene</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Make retrieval cheap</h3>
+        <ul>
+          <li><span class="kbd">.aiignore</span> / <span class="kbd">.cursorignore</span> — exclude lockfiles, fixtures, generated code, vendored deps.</li>
+          <li>Smaller, well-named modules — agents retrieve by symbol; god-files force whole-file reads.</li>
+          <li>Symbol indexes / repo-maps (LSP, ctags) so the agent jumps instead of scans.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Make context cheap</h3>
+        <ul>
+          <li>Up-to-date READMEs and module-level docstrings — a 200-token summary beats re-reading 5,000 tokens of source.</li>
+          <li>Delete dead code. It still gets retrieved.</li>
+          <li>Generated code in a clearly-marked folder, ignored by retrieval.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 12 — Lever H — Workflow patterns intro
+  `<section class="slide">
+    <div class="eyebrow">Lever H · workflow patterns</div>
+    <h2>Three patterns for directed AI workloads</h2>
+    <p class="lead">When the work is non-trivial, structure beats raw model power. These three patterns are how teams actually ship with agents — and they each cut tokens dramatically.</p>
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="card"><span class="tag">1</span><h3>The Ralph Wiggum loop</h3><p>"Me fail English? That's unpossible." The dumb-but-relentless loop.</p></div>
+      <div class="card"><span class="tag">2</span><h3>Auto-compact</h3><p>Bound the conversation; never let a session fill the window.</p></div>
+      <div class="card"><span class="tag">3</span><h3>Agent handover</h3><p>Specialized agents passing baton via structured artifacts.</p></div>
+    </div>
+  </section>`,
+
+  // 13 — Ralph Wiggum loop
+  `<section class="slide">
+    <div class="eyebrow">Pattern 1</div>
+    <h2>The Ralph Wiggum loop</h2>
+    <p class="lead">Coined by Geoffrey Huntley. The idea: <b>one cheap, simple, looping prompt</b> beats one elaborate clever prompt. Trade brain for repetition.</p>
+    <div class="loop">
+      <div class="node">📋<br/>Read backlog</div><div class="arr">→</div>
+      <div class="node">🎯<br/>Pick one item</div><div class="arr">→</div>
+      <div class="node">🛠<br/>Do the work</div><div class="arr">→</div>
+      <div class="node">✅<br/>Verify (tests/lint)</div><div class="arr">→</div>
+      <div class="node">📝<br/>Update backlog</div><div class="arr">↺</div>
+    </div>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card good">
+        <h3>Why it saves tokens</h3>
+        <ul>
+          <li>Each iteration is a <b>fresh, small context</b> — backlog + one task.</li>
+          <li>State lives <b>on disk</b> (markdown backlog, plan.md), not in conversation history.</li>
+          <li>Cheap model can drive it; you only escalate on failure.</li>
+          <li>Restartable, resumable, auditable.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The loop prompt (essence)</h3>
+        <pre>1. Read TODO.md
+2. Pick the first unchecked item
+3. Implement it
+4. Run tests; if green, check the box
+5. If red, write down what failed and stop
+6. Commit
+GOTO 1</pre>
+      </div>
+    </div>
+  </section>`,
+
+  // 14 — Auto-compact
+  `<section class="slide">
+    <div class="eyebrow">Pattern 2</div>
+    <h2>Auto-compact</h2>
+    <p class="lead">Don't let a single conversation grow past ~50% of the context window. Compact <b>before</b> you hit the wall — quality is already degrading by then.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>How it works</h3>
+        <ul>
+          <li>At a threshold (e.g. 50–70% window full), the agent summarizes the conversation so far.</li>
+          <li>Summary preserves: goal, decisions, file paths touched, open questions, next step.</li>
+          <li>Raw history is dropped; the summary becomes turn 0 of a fresh session.</li>
+          <li>Claude Code <span class="kbd">/compact</span>, Cursor auto-summarize, Aider <span class="kbd">/clear</span>, Copilot Chat <span class="kbd">/clear</span> + new session all do this.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Token math</h3>
+        <p>A 150k-token chat compacted into a 4k-token summary keeps ~95% of the useful signal at <b>~3% of the cost</b> per subsequent turn.</p>
+        <p>Pair it with prompt caching: the compacted summary itself becomes a cacheable prefix.</p>
+        <p class="muted">Rule: <b>one task per session.</b> When the task changes, compact or restart.</p>
+      </div>
+    </div>
+  </section>`,
+
+  // 15 — Agent handover
+  `<section class="slide">
+    <div class="eyebrow">Pattern 3</div>
+    <h2>Agent handover — organizing specialized agents</h2>
+    <p class="lead">Instead of one mega-agent that knows everything, run a <b>relay</b> of specialists that hand off via structured artifacts.</p>
+    <div class="hand">
+      <div class="ag lead"><b>Planner</b><br/><small>Opus · reads goal, writes plan.md</small></div>
+      <div class="ar">→</div>
+      <div class="ag"><b>Implementer</b><br/><small>Sonnet · executes plan.md tasks</small></div>
+      <div class="ar">→</div>
+      <div class="ag"><b>Reviewer</b><br/><small>Haiku · checks diff vs plan</small></div>
+    </div>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>Why it saves tokens</h3>
+        <ul>
+          <li>Each agent has <b>only the context it needs</b> — planner doesn't see code, implementer doesn't re-derive the plan.</li>
+          <li>Cheap models do cheap work; expensive models only see the hard parts.</li>
+          <li>The handoff <b>artifact</b> (plan.md, diff, review.md) is the only thing crossing the boundary.</li>
+          <li>Failures are localized — re-run one stage, not the whole conversation.</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Handover hygiene</h3>
+        <ul>
+          <li>Standardize the artifact format (sections, schema).</li>
+          <li>Each agent gets a <b>fresh context window</b> — no chat history bleed.</li>
+          <li>Include a "definition of done" the next agent can verify.</li>
+          <li>Log the artifact so a human can replay or audit.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 16 — Patterns combined
+  `<section class="slide">
+    <div class="eyebrow">Putting it together</div>
+    <h2>Combining the three workflow patterns</h2>
+    <p class="lead">They compose — that's the point.</p>
+    <div class="flow">
+      <div class="step">Planner agent</div><div class="arrow">→</div>
+      <div class="step">writes TODO.md</div><div class="arrow">→</div>
+      <div class="step">Ralph loop on Implementer</div><div class="arrow">→</div>
+      <div class="step">auto-compact at 60%</div><div class="arrow">→</div>
+      <div class="step">handover to Reviewer</div><div class="arrow">→</div>
+      <div class="step">PR</div>
+    </div>
+    <div class="grid cols-3" style="margin-top:14px">
+      <div class="card"><h3>Planner</h3><p>Opus · 1 expensive call · produces TODO.md + acceptance criteria.</p></div>
+      <div class="card"><h3>Implementer (Ralph)</h3><p>Sonnet/Haiku · N cheap loops · each loop has small context.</p></div>
+      <div class="card"><h3>Reviewer</h3><p>Sonnet · sees diff + acceptance criteria only · returns pass/fail + notes.</p></div>
+    </div>
+    <p class="muted" style="margin-top:14px">Net effect: one frontier-model call instead of dozens; the rest is cheap, bounded, and auditable.</p>
+  </section>`,
+
+  // 17 — Anti-patterns
+  `<section class="slide">
+    <div class="eyebrow">Call these out in PR review</div>
+    <h2>Anti-patterns to stamp out</h2>
+    <div class="grid cols-2">
+      <div class="card bad">
+        <h3>❌ Context anti-patterns</h3>
+        <ul>
+          <li>"Paste the whole repo into the prompt."</li>
+          <li>One chat that's been running for days.</li>
+          <li>Pasting stack traces with 200 node_modules frames.</li>
+          <li>Adding every shiny MCP server "just in case."</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>❌ Prompt anti-patterns</h3>
+        <ul>
+          <li>Timestamp at the top of the system prompt → cache miss every call.</li>
+          <li>"Explain everything you're doing as you go." → output-token tax.</li>
+          <li>One giant system prompt edited by everyone → constant cache invalidation.</li>
+          <li>Always-on Opus when Haiku would do.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 18 — Quick wins
+  `<section class="slide">
+    <div class="eyebrow">Take-home</div>
+    <h2>Quick-win checklist</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>This week</h3>
+        <ul>
+          <li>☐ Add/update <span class="kbd">AGENTS.md</span> (build, test, lint, conventions).</li>
+          <li>☐ Add <span class="kbd">.aiignore</span> for generated/vendored content.</li>
+          <li>☐ Move static instructions to top of system prompt for cache hits.</li>
+          <li>☐ Disable unused MCP servers / tools.</li>
+          <li>☐ Add "be concise, no preamble" to system prompt.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>This month</h3>
+        <ul>
+          <li>☐ Default to ranged file reads, not whole-file.</li>
+          <li>☐ Route trivial tasks to Haiku/Mini, not Opus.</li>
+          <li>☐ Use Batch API for offline jobs.</li>
+          <li>☐ Adopt one task per session + auto-compact.</li>
+          <li>☐ Pilot a planner→implementer→reviewer handover on one workstream.</li>
+          <li>☐ Track tokens per dev per week. Review monthly.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 19 — Session structure
+  `<section class="slide">
+    <div class="eyebrow">For the facilitator</div>
+    <h2>Suggested 60-minute session structure</h2>
+    <table>
+      <thead><tr><th>Min</th><th>Segment</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr><td>0–5</td><td>Why tokens matter (cost, latency, context rot)</td><td>Talk + 1 chart</td></tr>
+        <tr><td>5–15</td><td>Anatomy of a request + live token-usage demo</td><td>Live demo</td></tr>
+        <tr><td>15–35</td><td>Eight levers (A–H) with one example each</td><td>Walkthrough</td></tr>
+        <tr><td>35–45</td><td>Workflow patterns: Ralph loop, auto-compact, handover</td><td>Diagrams + demo</td></tr>
+        <tr><td>45–55</td><td>Hands-on: audit a real prompt + repo, apply 3 wins, measure delta</td><td>Pair exercise</td></tr>
+        <tr><td>55–60</td><td>Q&A + standards we will adopt</td><td>Discussion</td></tr>
+      </tbody>
+    </table>
+  </section>`,
+
+  // 20 — references
+  `<section class="slide">
+    <div class="eyebrow">Further reading</div>
+    <h2>References</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Foundational</h3>
+        <ul>
+          <li>Anthropic — <i>Effective context engineering for AI agents</i></li>
+          <li>Chroma Research — <i>Context Rot</i> benchmark</li>
+          <li>Anthropic docs — <i>Prompt caching</i>, <i>Skills</i></li>
+          <li>OpenAI docs — <i>Prompt caching</i>, <i>Batch API</i>, <i>Structured outputs</i></li>
+          <li>Google — <i>Gemini context caching</i></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Patterns & practice</h3>
+        <ul>
+          <li>Geoffrey Huntley — <i>The Ralph Wiggum agentic coding pattern</i></li>
+          <li>Anthropic — <i>Claude Code best practices</i> (incl. <span class="kbd">/compact</span>)</li>
+          <li>Cognition — <i>Don't build multi-agents</i> (sub-agent context isolation)</li>
+          <li>Cursor docs — <i>Rules for AI</i>, <i>Codebase indexing</i></li>
+          <li>GitHub — <i>Copilot custom instructions</i>, <span class="kbd">AGENTS.md</span> convention</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 21 — closing
+  `<section class="slide title-slide">
+    <div class="eyebrow">In one sentence</div>
+    <h1>Treat context as a budget,<br/>structure as the multiplier.</h1>
+    <p class="lead">Cheap loops, bounded sessions, specialized handovers — that's how directed AI workloads stay fast, cheap, and good.</p>
+    <p class="muted" style="margin-top:30px">Questions?</p>
+  </section>`
+];
+
+const stage = document.getElementById('stage');
+const dots  = document.getElementById('dots');
+const cur   = document.getElementById('cur');
+const tot   = document.getElementById('total');
+
+stage.innerHTML = slides.join('');
+const slideEls = [...stage.querySelectorAll('.slide')];
+tot.textContent = slideEls.length;
+
+slideEls.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot'; d.dataset.i = i;
+  d.addEventListener('click', () => go(i));
+  dots.appendChild(d);
+});
+
+// calculator constants/functions declared BEFORE go() runs
+const PRICES = {
+  haiku:    { in: 1.0,  out: 5.0  },
+  sonnet:   { in: 3.0,  out: 15.0 },
+  opus:     { in: 5.0,  out: 25.0 },
+  gpt5:     { in: 1.25, out: 10.0 },
+  gpt5mini: { in: 0.25, out: 2.0  },
+  gpt41:    { in: 2.0,  out: 8.0  },
+  gemini25: { in: 1.25, out: 10.0 }
+};
+let cacheRate = 0.8;
+function fmt(n){
+  if (n >= 1000) return '$' + n.toLocaleString(undefined,{maximumFractionDigits:0});
+  if (n >= 10)   return '$' + n.toFixed(2);
+  if (n >= 0.01) return '$' + n.toFixed(3);
+  return '$' + n.toFixed(5);
+}
+function recalc(){
+  const sel = document.getElementById('cModel');
+  if (!sel) return;
+  const m = PRICES[sel.value];
+  const tIn  = +document.getElementById('cIn').value || 0;
+  const tOut = +document.getElementById('cOut').value || 0;
+  const req  = +document.getElementById('cReq').value || 0;
+  const dev  = +document.getElementById('cDev').value || 0;
+
+  const cachedIn = tIn * cacheRate;
+  const freshIn  = tIn - cachedIn;
+  const inCost   = (freshIn * m.in + cachedIn * m.in * 0.10) / 1e6;
+  const outCost  = (tOut * m.out) / 1e6;
+  const perReq   = inCost + outCost;
+  const perDev   = perReq * req;
+  const perMonth = perDev * 22;
+  const team     = perMonth * dev;
+
+  document.getElementById('rReq').textContent  = fmt(perReq);
+  document.getElementById('rDev').textContent  = fmt(perDev);
+  document.getElementById('rMon').textContent  = fmt(perMonth);
+  document.getElementById('rTeam').textContent = fmt(team);
+
+  const noCacheReq = (tIn * m.in + tOut * m.out) / 1e6;
+  const noCacheTeam = noCacheReq * req * 22 * dev;
+  const saved = noCacheTeam - team;
+  const pct = noCacheTeam ? Math.round((saved / noCacheTeam) * 100) : 0;
+  document.getElementById('rSav').innerHTML =
+    `At <b>${Math.round(cacheRate*100)}%</b> cache hit rate you save <b>${fmt(saved)}/mo</b> (<b>${pct}%</b>) vs no caching. ` +
+    `Switching to a smaller model is usually the next biggest lever.`;
+}
+
+let idx = 0;
+function go(i){
+  idx = Math.max(0, Math.min(slideEls.length - 1, i));
+  slideEls.forEach((el,j) => el.classList.toggle('active', j === idx));
+  [...dots.children].forEach((d,j) => d.classList.toggle('active', j === idx));
+  cur.textContent = idx + 1;
+  recalc();
+}
+go(0);
+
+document.getElementById('prev').onclick = () => go(idx - 1);
+document.getElementById('next').onclick = () => go(idx + 1);
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(idx + 1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slideEls.length - 1);
+  else if (e.key.toLowerCase() === 'f') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+
+document.getElementById('themeToggle').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+};
+
+document.addEventListener('input',  e => { if (['cModel','cIn','cOut','cReq','cDev'].includes(e.target.id)) recalc(); });
+document.addEventListener('change', e => { if (['cModel','cIn','cOut','cReq','cDev'].includes(e.target.id)) recalc(); });
+document.addEventListener('click', e => {
+  if (e.target.dataset && e.target.dataset.cache !== undefined) {
+    cacheRate = parseFloat(e.target.dataset.cache);
+    document.querySelectorAll('.toggle-row button').forEach(b => b.classList.remove('on'));
+    e.target.classList.add('on');
+    recalc();
+  }
+});
+</script>
+</body>
+</html>
