@@ -1,0 +1,5 @@
+flowchart LR
+    U[Feature request] --> P[Planner<br/>expensive model · 1 call]
+    P -->|plan.md| I[Implementer<br/>cheap model · agent mode<br/>Ralph loop on plan.md]
+    I -->|diff| R[Reviewer<br/>expensive model · 1 call<br/>sees plan.md + diff only]
+    R --> V{{VERDICT: APPROVE / REQUEST CHANGES}}
