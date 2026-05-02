@@ -56,3 +56,10 @@ Now every request busts the cache. **Don't do this.**
 ## Reset
 
 Nothing to reset.
+
+## References
+
+- [Anthropic — Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — cache_control, TTLs, 90% input cost reduction
+- [OpenAI — Prompt caching](https://platform.openai.com/docs/guides/prompt-caching) — automatic prefix caching, 50% discount on cached tokens
+- [Google — Gemini context caching](https://ai.google.dev/gemini-api/docs/caching) — explicit cache creation for Gemini models
+- [Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — prompt structure and caching strategy

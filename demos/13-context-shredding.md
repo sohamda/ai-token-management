@@ -73,3 +73,10 @@ Run it in CI to keep variants in sync.
 ## Reset
 
 Delete the `.digest.md` / `.minimal.md` files you created live.
+
+## References
+
+- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/claude-code-best-practices) — context-aware agents and compaction strategies
+- [Anthropic — Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — why smaller, stable prefixes cache better
+- [Chroma Research — Context rot](https://research.trychroma.com/evaluating-chunking) — how recall degrades as context fills
+- [GitHub — Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — scoped instruction loading

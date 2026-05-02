@@ -76,3 +76,10 @@ it needs to.
 ## Reset
 
 No changes — this is a discussion + slide demo.
+
+## References
+
+- [GitHub — Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — `copilot-instructions.md` (L1), `*.instructions.md` with `applyTo` (L2), `AGENTS.md`
+- [GitHub — Using prompt files](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — on-demand prompt files as L2 content
+- [Anthropic — Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices) — hierarchical instruction files (`CLAUDE.md` → subdirectory overrides)
+- [agentsmd/agents.md](https://github.com/agentsmd/agents.md) — the cross-tool `AGENTS.md` convention

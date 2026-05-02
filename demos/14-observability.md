@@ -84,3 +84,10 @@ git checkout -- .github/instructions/   # restore
 ## Reset
 
 Nothing to reset — the scripts are committed.
+
+## References
+
+- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — premium-request dashboard and org-level metrics
+- [GitHub — Copilot Metrics API](https://docs.github.com/en/rest/copilot/copilot-metrics) — REST API for programmatic usage tracking
+- [GitHub — Premium requests](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — model multipliers and plan allowances
+- [VS Code — Developer Tools](https://code.visualstudio.com/docs/devadvanced/devtools) — using `Ctrl+Shift+I` to inspect network requests

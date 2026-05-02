@@ -60,3 +60,10 @@ the comment without reading the rest of the file.
 git checkout -- .
 git clean -fd
 ```
+
+## References
+
+- [GitHub — Content exclusions for Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot) — org/repo-level content exclusions
+- [GitHub — Indexing repositories for Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/managing-github-copilot-features-in-your-organization/indexing-repositories-for-copilot-chat) — how the indexer follows `.gitignore`
+- [Git — `.gitignore` documentation](https://git-scm.com/docs/gitignore) — pattern syntax
+- [Cursor — `.cursorignore`](https://docs.cursor.com/context/ignore-files) — equivalent ignore file for Cursor

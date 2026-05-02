@@ -60,3 +60,10 @@ Open the slide and read the limits aloud. The numbers don't matter — the
 ## Reset
 
 Revert the `AGENTS.md` change.
+
+## References
+
+- [GitHub — Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — `AGENTS.md`, instruction files, and their scoping
+- [OpenAI — Model context windows](https://platform.openai.com/docs/models) — per-model context window sizes
+- [Anthropic — Models overview](https://docs.anthropic.com/en/docs/about-claude/models) — Claude context window sizes
+- [Anthropic — Effective context engineering](https://www.anthropic.com/engineering/claude-code-best-practices) — treating context as a finite attention budget

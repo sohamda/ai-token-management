@@ -59,3 +59,10 @@ git checkout -- .
 ```
 
 (Or back up to a known tag before the demo.)
+
+## References
+
+- [GitHub — Using prompt files in Copilot](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — `.github/prompts/*.prompt.md` and slash-command invocation
+- [GitHub — Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — `AGENTS.md` and instruction file conventions
+- [Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — task decomposition, tool-use loops, and orchestration patterns
+- [Simon Willison — The “dumb loop” pattern](https://simonwillison.net/2025/Mar/19/link-context-engineering/) — simple loops with on-disk state

@@ -64,3 +64,11 @@ Explain: this file is **only** loaded into context when matching files are refer
 git checkout -- .
 git clean -fd src/
 ```
+
+## References
+
+- [GitHub — Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — `copilot-instructions.md`, path-scoped `*.instructions.md`, `AGENTS.md`
+- [GitHub — Custom instructions in your IDE](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot-in-your-ide) — VS Code-specific behavior and `applyTo` globs
+- [GitHub — Custom instructions library](https://docs.github.com/en/copilot/tutorials/customization-library/custom-instructions) — curated examples
+- [Cursor — Rules for AI](https://docs.cursor.com/context/rules-for-ai) — equivalent in Cursor
+- [Anthropic — Claude Code best practices](https://docs.anthropic.com/en/docs/claude-code/overview) — `CLAUDE.md` convention

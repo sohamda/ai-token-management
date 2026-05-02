@@ -41,3 +41,10 @@ Now any chat in this repo defaults to the disciplined behavior — without re-ty
 ```powershell
 git checkout -- src/
 ```
+
+## References
+
+- [OpenAI — Structured outputs](https://platform.openai.com/docs/guides/structured-outputs) — JSON mode to eliminate prose padding
+- [Anthropic — Reducing output tokens](https://docs.anthropic.com/en/docs/build-with-claude/reduce-latency#reduce-output-tokens) — techniques to control output verbosity
+- [OpenAI — Pricing](https://openai.com/api/pricing/) — input vs output token cost differential (3–4×)
+- [Anthropic — Pricing](https://www.anthropic.com/pricing) — input vs output token cost differential (3–5×)

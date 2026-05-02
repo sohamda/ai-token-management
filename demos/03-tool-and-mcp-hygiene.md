@@ -49,3 +49,10 @@ const r = await fetch("https://api.example.com/orders/o_1001?fields=id,total,sta
 ## Reset
 
 Re-enable any MCP servers you disabled if you actually need them after the demo.
+
+## References
+
+- [GitHub — Using MCP servers in VS Code](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-in-vs-code/using-mcp-servers-in-vs-code) — configuring `.vscode/mcp.json`, enabling/disabling servers
+- [Model Context Protocol — Specification](https://modelcontextprotocol.io/) — the open standard for tool schemas
+- [Anthropic — Tool use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — how tool definitions consume tokens
+- [OpenAI — Function calling](https://platform.openai.com/docs/guides/function-calling) — token cost of tool schemas

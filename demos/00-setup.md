@@ -67,3 +67,9 @@ The personal URL `https://github.com/settings/copilot/usage` only works for
 
 The demos are numbered to mirror the slide order. Run them in sequence, or
 cherry-pick. Each demo has a clear "before" and "after" you can re-stage.
+
+## References
+
+- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — org and individual usage dashboards
+- [GitHub — Copilot Metrics API](https://docs.github.com/en/rest/copilot/copilot-metrics) — REST API for programmatic usage tracking
+- [VS Code — Developer Tools](https://code.visualstudio.com/docs/devadvanced/devtools) — `Ctrl+Shift+I` to open Network tab for request inspection

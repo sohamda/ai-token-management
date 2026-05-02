@@ -58,3 +58,11 @@ Rule: **start cheap, escalate only when stuck.**
 ```powershell
 git checkout -- src/
 ```
+
+## References
+
+- [GitHub — Premium requests and model multipliers](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — per-model multiplier table, plan allowances
+- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — how to track premium request consumption
+- [GitHub — Plans for GitHub Copilot](https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot) — monthly quota per plan
+- [GitHub — Copilot auto model selection](https://docs.github.com/en/copilot/concepts/auto-model-selection) — 10% multiplier discount when using auto selection
+- [OpenAI — Batch API](https://platform.openai.com/docs/guides/batch) — 50% discount for offline workloads (direct API)

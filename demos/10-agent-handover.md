@@ -97,3 +97,11 @@ Move-Item plan.example.md plan.md -Force
 git checkout -- .
 git clean -fd
 ```
+
+## References
+
+- [GitHub — Using prompt files](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — `.github/prompts/*.prompt.md` for `/plan`, `/build`, `/review`
+- [GitHub — Premium requests and model multipliers](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — per-model cost comparison
+- [Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — orchestrator/worker pattern, delegation, and sub-agent isolation
+- [Cognition — Don’t build multi-agents](https://cognition.ai) — why sub-agent context isolation beats shared conversation
+- [Anthropic — Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices) — plan-then-execute workflow

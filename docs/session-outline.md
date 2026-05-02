@@ -159,11 +159,34 @@ Have the audience work in pairs on their own repos (or this demo repo). Three ta
 
 ## 8. References & further reading
 
-- Anthropic — *Effective context engineering for AI agents* (engineering blog)
-- Anthropic docs — *Prompt caching*, *Skills*, *Claude Code best practices*
-- Chroma Research — *Context Rot* benchmark
-- OpenAI docs — *Prompt caching*, *Batch API*, *Structured outputs*
-- Google — *Gemini context caching*
-- Cursor docs — *Rules for AI*, *Codebase indexing*
-- GitHub — *Copilot custom instructions*, `AGENTS.md` convention
-- Cognition — *Don't build multi-agents* (sub-agent context isolation discussion)
+### Context engineering & agent patterns
+- [Anthropic — Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices) — context engineering, compaction, hierarchical instructions
+- [Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — orchestration patterns, task decomposition, tool-use loops
+- [Simon Willison — Context engineering](https://simonwillison.net/2025/Jun/27/context-engineering/) — concept overview and curated links
+- [Chroma Research — Evaluating chunking](https://research.trychroma.com/evaluating-chunking) — context rot and retrieval quality benchmarks
+
+### Prompt caching
+- [Anthropic — Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — 90% cost reduction, TTLs, cache_control
+- [OpenAI — Prompt caching](https://platform.openai.com/docs/guides/prompt-caching) — automatic prefix caching, 50% discount
+- [Google — Gemini context caching](https://ai.google.dev/gemini-api/docs/caching) — explicit cache creation
+
+### GitHub Copilot
+- [Copilot Chat cheat sheet](https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=vscode) — chat variables, slash commands, mentions
+- [Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot) — `copilot-instructions.md`, `*.instructions.md`, `AGENTS.md`
+- [Using prompt files](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — `.github/prompts/*.prompt.md`
+- [Premium requests & model multipliers](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — per-model cost, plan allowances
+- [Monitoring usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — dashboards and metrics
+- [Content exclusions](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot) — org/repo-level file exclusions
+- [Using MCP servers in VS Code](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-in-vs-code/using-mcp-servers-in-vs-code) — configuring `.vscode/mcp.json`
+- [agentsmd/agents.md](https://github.com/agentsmd/agents.md) — the cross-tool `AGENTS.md` convention
+
+### OpenAI & model providers
+- [OpenAI — Batch API](https://platform.openai.com/docs/guides/batch) — 50% discount for offline workloads
+- [OpenAI — Structured outputs](https://platform.openai.com/docs/guides/structured-outputs) — JSON mode for machine-consumed responses
+- [OpenAI — Models](https://platform.openai.com/docs/models) — context windows and pricing
+- [Anthropic — Models overview](https://docs.anthropic.com/en/docs/about-claude/models) — context windows, pricing, capabilities
+
+### Other tools
+- [Cursor — Rules for AI](https://docs.cursor.com/context/rules-for-ai) — `.cursorrules` convention
+- [Cursor — Ignore files](https://docs.cursor.com/context/ignore-files) — `.cursorignore`
+- [Model Context Protocol](https://modelcontextprotocol.io/) — the open standard for tool schemas

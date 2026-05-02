@@ -45,3 +45,10 @@ Watch:
 ```powershell
 git checkout -- src/
 ```
+
+## References
+
+- [Copilot Chat cheat sheet — chat variables](https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=vscode) — `#file`, `#selection`, `#problems`, `#changes` and other context variables
+- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/claude-code-best-practices) — why just-in-time retrieval beats up-front dumping
+- [GitHub Blog — How to use GitHub Copilot in your IDE](https://github.blog/developer-skills/github/how-to-use-github-copilot-in-your-ide-tips-tricks-and-best-practices/) — tips on scoping context
+- [Simon Willison — Context engineering](https://simonwillison.net/2025/Jun/27/context-engineering/) — concept overview

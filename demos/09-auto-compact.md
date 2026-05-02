@@ -49,3 +49,10 @@ references it benefits from prompt caching on top of the compaction.
 ## Reset
 
 Nothing to reset; this demo is non-destructive.
+
+## References
+
+- [Anthropic — Claude Code best practices: compaction](https://www.anthropic.com/engineering/claude-code-best-practices) — `/compact` command and auto-compaction
+- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/claude-code-best-practices) — hierarchical summarization and scratchpad patterns
+- [Cursor — Long context chat](https://docs.cursor.com/chat/overview) — Cursor’s auto-summarization behavior
+- [GitHub — Using prompt files](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — attaching `plan.md` via `#file`
