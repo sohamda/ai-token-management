@@ -39,31 +39,40 @@ Single file read > 5,000 tokens             > 15,000
 Cumulative file reads / session > 30,000    > 60,000
 ```
 
-## Step 3 — Add 3 tiny lint scripts
+## Step 3 — Run the context-bloat lint scripts
 
-Add to `package.json`:
+The repo ships three lint scripts in `tools/` and wires them up in `package.json`.
+Run them live:
 
-```json
-"scripts": {
-  "lint:instr-size":  "node tools/lint-instructions.js",
-  "lint:prompt-size": "node tools/lint-prompts.js",
-  "lint:glob-audit":  "node tools/lint-glob-audit.js"
-}
+```powershell
+npm run lint:context
 ```
 
-Talk through what each one does (don't actually implement them in the demo):
+This runs all three in sequence:
 
-- `lint:instr-size` — fail if any `.github/instructions/*.md` > 150 lines
-- `lint:prompt-size` — fail if any `.github/prompts/*.md` > 250 lines
-- `lint:glob-audit` — fail if any `applyTo:` is just `**` (or warn if
-  match count would exceed 5 files)
+| Script | What it checks | Threshold |
+|---|---|---|
+| `lint:instr-size` | `.github/instructions/*.md` line count | > 150 lines → FAIL |
+| `lint:prompt-size` | `.github/prompts/*.md` line count | > 250 lines → FAIL |
+| `lint:glob-audit` | `applyTo:` globs in instruction files | `**` → FAIL, broad extension → WARN |
+
+All three should pass on this repo. To show a **failure**, temporarily bloat
+an instruction file:
+
+```powershell
+# Add 200 blank lines to trip the lint
+1..200 | ForEach-Object { Add-Content .github\instructions\tests.instructions.md "" }
+npm run lint:instr-size   # now fails with ❌
+git checkout -- .github/instructions/   # restore
+```
 
 ## Talking points
 
 - "The worst tokens are the ones you're paying for and not noticing."
 - Run these in CI — context bloat accumulates silently across PRs the
   same way bundle size does.
-- Parse the VS Code Copilot Chat log’s `ccreq` lines to get per-turn
+- `npm run lint:context` is a single command to catch all context-size regressions.
+- Parse the VS Code Copilot Chat log's `ccreq` lines to get per-turn
   latency, model, and status:
   ```powershell
   Get-ChildItem "$env:APPDATA\Code\logs" -Recurse -Filter "GitHub Copilot Chat.log" |
@@ -74,4 +83,4 @@ Talk through what each one does (don't actually implement them in the demo):
 
 ## Reset
 
-Revert `package.json` if you actually edited it.
+Nothing to reset — the scripts are committed.

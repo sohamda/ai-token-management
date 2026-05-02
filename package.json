@@ -7,7 +7,11 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test src/**/*.test.js",
-    "lint": "echo \"(placeholder lint)\""
+    "lint": "echo \"(placeholder lint)\"",
+    "lint:instr-size": "node tools/lint-instructions.js",
+    "lint:prompt-size": "node tools/lint-prompts.js",
+    "lint:glob-audit": "node tools/lint-glob-audit.js",
+    "lint:context": "npm run lint:instr-size && npm run lint:prompt-size && npm run lint:glob-audit"
   },
   "keywords": ["demo", "ai", "copilot"],
   "license": "MIT"
