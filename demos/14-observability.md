@@ -63,8 +63,14 @@ Talk through what each one does (don't actually implement them in the demo):
 - "The worst tokens are the ones you're paying for and not noticing."
 - Run these in CI — context bloat accumulates silently across PRs the
   same way bundle size does.
-- The Camunda baseline platform repo also parses VS Code Copilot debug
-  logs (`ccreq` lines) to get per-turn latency, model, and status.
+- Parse the VS Code Copilot Chat log’s `ccreq` lines to get per-turn
+  latency, model, and status:
+  ```powershell
+  Get-ChildItem "$env:APPDATA\Code\logs" -Recurse -Filter "GitHub Copilot Chat.log" |
+    Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object {
+      Select-String "ccreq.*success" $_.FullName
+    }
+  ```
 
 ## Reset
 

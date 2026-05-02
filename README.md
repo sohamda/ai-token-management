@@ -17,7 +17,7 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │   └── context-engineering-at-scale.md  ← case-study deep-dive: 7-layer system
 ├── demos/
 │   ├── 00-setup.md
-│   ├── 01-context-engineering.md        ← @workspace vs #file
+│   ├── 01-context-engineering.md        ← broad retrieval vs #file
 │   ├── 02-prompt-caching.md
 │   ├── 03-tool-and-mcp-hygiene.md
 │   ├── 04-instructions-and-skills.md    ← copilot-instructions.md before/after

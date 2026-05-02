@@ -67,7 +67,7 @@
 
 ### E. Model & routing strategy
 
-- **Right-size the model.** Haiku/Mini/Flash for boilerplate, classification, simple edits; Sonnet for normal coding; Opus only for hard reasoning. A router that picks per task can cut spend 50–70%.
+- **Right-size the model.** In Copilot: GPT-4.1 (0× multiplier) for boilerplate and simple edits; GPT-5 / Claude Sonnet (1×) for normal coding; Claude Opus (10×) only for genuinely hard reasoning. In direct API usage: Haiku/Mini/Flash for cheap tasks, Sonnet for mid-tier, Opus for hard reasoning. A router that picks per task can cut spend 50–70%.
 - **Batch API.** 50% discount for non-interactive workloads (codemods, doc generation, large refactors).
 - **Streaming + early stop.** Stop generation as soon as the answer is complete; use stop sequences.
 - **Lower `max_tokens`.** Most coding answers don't need 8k tokens of headroom.
@@ -105,7 +105,7 @@
 - [ ] Move static instructions to the top of the system prompt for cache hits
 - [ ] Disable unused MCP servers / tools
 - [ ] Default to ranged file reads, not whole-file
-- [ ] Route trivial tasks to Haiku/Mini, not Opus/GPT-5
+- [ ] Route trivial tasks to GPT-4.1 (0×), not Opus/GPT-5
 - [ ] Use Batch API for offline jobs
 - [ ] Add a "be concise, no preamble" rule to the system prompt
 - [ ] Start a new session per task; `/compact` long ones
@@ -124,17 +124,40 @@
 
 ---
 
-## 6. Suggested session structure (60 min)
+## 6. Scaling patterns (advanced — demos 11–14)
 
-1. **0–5 min** – Why tokens matter (cost, latency, context rot)
-2. **5–15 min** – Anatomy of a request + live token-usage demo
-3. **15–35 min** – Walk through the 8 lever groups (A–H) with one concrete code/repo example each
-4. **35–50 min** – Hands-on: audit a real prompt + repo, apply 3 quick wins, measure delta
-5. **50–60 min** – Q&A + team standards we will adopt
+These build on the 8 levers above with a structured approach for teams scaling agent usage.
+
+| Layer | Pattern | Demo | Key idea |
+|---|---|---|---|
+| L1 | Context budget planning | 11 | Do the math *before* writing the agent. Fixed cost > 10K? Refactor. |
+| L2 | Progressive disclosure | 12 | `AGENTS.md` is a TOC, skills hold domain knowledge, references hold deep content. |
+| L3+L4 | Context shredding | 13 | Ship skills in 3 sizes (full / digest / minimal). Agent picks based on context fill. |
+| L7 | Observability & lint | 14 | Latency as a proxy for token cost. Lint for context bloat in CI. |
+
+*(Layers 5–6 — multi-agent coordination and cross-session memory — are emerging patterns not yet demoed here.)*
 
 ---
 
-## 7. References & further reading
+## 7. Suggested session structure (60 min)
+
+1. **0–5 min** – Why tokens matter (cost, latency, context rot)
+2. **5–15 min** – Anatomy of a request + live token-usage demo
+3. **15–35 min** – Walk through the 8 lever groups (A–H); pick 5–6 demos, not all 8 (see `demos/README.md` for suggested set: 01, 04, 05, 08, 10, **13**)
+4. **35–50 min** – Hands-on: audit a real prompt + repo, apply 3 quick wins, measure delta
+5. **50–60 min** – Q&A + team standards we will adopt
+
+### Hands-on facilitation guide (35–50 min)
+
+Have the audience work in pairs on their own repos (or this demo repo). Three tasks:
+
+1. **Measure baseline** — Open DevTools Network tab, ask a broad question, note request payload size.
+2. **Apply 3 quick wins** from the checklist (section 4): e.g., add `#file` references instead of broad questions, disable an unused MCP server, add a "be concise" instruction.
+3. **Measure delta** — Same question, compare payload size and latency. Share before/after with the group.
+
+---
+
+## 8. References & further reading
 
 - Anthropic — *Effective context engineering for AI agents* (engineering blog)
 - Anthropic docs — *Prompt caching*, *Skills*, *Claude Code best practices*

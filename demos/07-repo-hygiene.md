@@ -6,24 +6,25 @@
 
 ## Step 1 — show retrieval pollution
 
-In a fresh chat:
+In a fresh chat (Agent mode), ask a vague question:
 
-> @workspace where is the build output defined?
+> Where is the build output defined?
 
 Watch the retrieved chunks — the assistant often surfaces `dist/bundle.js`,
 which is generated noise no one should reason about.
 
 Open the **Output → GitHub Copilot Chat** panel and point at the chunks pulled.
 
-## Step 2 — add `.gitignore` / content exclusions
+## Step 2 — add `dist/` to `.gitignore`
 
-Edit `.gitignore` to exclude `dist/`:
+The repo’s `.gitignore` already excludes `node_modules/` and `*.log`, but `dist/`
+is missing. Add it:
 
-```
-dist/
-node_modules/
-.DS_Store
-*.log
+```diff
++dist/
+ node_modules/
+ .DS_Store
+ *.log
 ```
 
 Commit. (For Copilot's repo indexer, `.gitignore` is the primary signal. For

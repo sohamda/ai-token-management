@@ -65,7 +65,13 @@ Show the verdict.
 
 ## Step 4 — show the meter
 
-Open https://github.com/settings/copilot/usage. Point at the totals:
+Count the requests using **Output panel → "GitHub Copilot Chat"** `ccreq` lines.
+Each `success` line is one LLM call. Compare across the three chats.
+
+(Org dashboard: `https://github.com/organizations/<YOUR-ORG>/settings/copilot/usage`.
+Individual subscribers: `https://github.com/settings/copilot/usage`.)
+
+Expected totals:
 
 - Planner: 1 GPT-5 call (~1 premium request)
 - Implementer: ~3–6 Sonnet calls (~3–6 premium requests)

@@ -31,7 +31,7 @@ Now any chat in this repo defaults to the disciplined behavior — without re-ty
 
 ## Talking points
 
-- Output tokens are typically **3–5× more expensive** than input tokens.
+- In direct API usage, output tokens are **3–5× more expensive** than input tokens. In Copilot’s premium-request model you pay per request, but verbose output still hurts: it increases latency, fills the context for subsequent turns, and causes earlier context to be evicted sooner.
 - Verbose "let me explain what I'm about to do" prefaces are pure tax.
 - Diff-mode tools (`apply_patch`, `edit`) are the cheapest editing pattern.
 - Structured output / JSON mode for machine consumers — no prose padding.

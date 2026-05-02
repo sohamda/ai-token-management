@@ -11,7 +11,7 @@ Repeat until `TODO.md` has no unchecked items, or you fail twice in a row:
 1. Read `TODO.md`.
 2. Pick the **first** unchecked item (the first `- [ ]`).
 3. Implement only that item. Use `#file` references to scope context — do NOT
-   reach for `@workspace` unless absolutely necessary.
+   use broad retrieval or open unrelated files.
 4. Run `npm test`. If green, mark the item done by changing `- [ ]` to `- [x]`
    in `TODO.md` and commit with message `ralph: <item>`.
 5. If red, append a short failure note (≤2 lines) under the item and stop.

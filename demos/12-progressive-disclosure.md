@@ -42,7 +42,28 @@ it needs to.
 
 ## Step 3 — Show a real example
 
-Open `C:\Users\sohadasgupta\IdeaProjects\camunda-baseline-platform\.github\skills\context-shredding\` if available — note the structure: `SKILL.md` (full), `SKILL.digest.md`, `SKILL.minimal.md`, `references/compression-templates.md`.
+Point at the structure already in this repo:
+
+```text
+AGENTS.md                                       # L1 — always loaded
+.github/copilot-instructions.md                 # L1 — always loaded
+.github/instructions/tests.instructions.md      # L2 — only when src/**/*.js matched
+.github/prompts/ralph.prompt.md                 # L2 — only when /ralph invoked
+```
+
+Then show the demo-13 three-tier pattern (used in the next demo):
+
+```text
+.github/skills/context-shredding/
+  ├─ SKILL.md                # full — 400–800 tokens
+  ├─ SKILL.digest.md         # digest — 150–320 tokens
+  ├─ SKILL.minimal.md        # minimal — 40–100 tokens
+  └─ references/
+       └─ compression-templates.md   # L3 — only if asked
+```
+
+Each level points to the next. Copilot follows the breadcrumbs only when
+it needs to.
 
 ## Talking points
 

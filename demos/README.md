@@ -5,7 +5,7 @@ Each demo is small (2–6 minutes), has a clear "before / after," and ties to a 
 | #  | Demo                                          | Slide / lever          | Time |
 |----|-----------------------------------------------|------------------------|------|
 | 00 | [Setup](./00-setup.md)                        | (prep)                 | —    |
-| 01 | [`@workspace` vs `#file`](./01-context-engineering.md)        | A — Context engineering   | 3 min |
+| 01 | [Broad retrieval vs `#file`](./01-context-engineering.md)     | A — Context engineering   | 3 min |
 | 02 | [Prompt caching](./02-prompt-caching.md)      | B — Prompt caching     | 3 min |
 | 03 | [Tool & MCP hygiene](./03-tool-and-mcp-hygiene.md)       | C — Tools              | 3 min |
 | 04 | [Instructions before/after](./04-instructions-and-skills.md) | D — Skills & standards | 4 min |

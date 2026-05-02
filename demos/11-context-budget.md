@@ -52,8 +52,8 @@ Open the slide and read the limits aloud. The numbers don't matter — the
 ## Talking points
 
 - "If you can't write down the budget, you don't have one."
-- The Camunda baseline platform repo enforces these in `lint:agent-body-size`
-  and `lint:skill-size` npm scripts.
+- Consider adding CI lint scripts (like `lint:instr-size` and `lint:prompt-size`
+  in demo 14) to enforce these limits automatically.
 - Fixed cost compounds: 5K fixed × 20 turns = 100K spent on **the same**
   preamble. Halve the fixed cost, double the useful conversation.
 

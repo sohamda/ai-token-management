@@ -149,7 +149,7 @@ const slides = [
     <h2>Why Copilot users should care about tokens</h2>
     <div class="grid cols-4">
       <div class="card"><div class="metric">💳<small>Premium requests</small></div><p style="margin-top:14px">Business / Enterprise plans cap monthly premium requests. Heavy users hit limits by the third week.</p></div>
-      <div class="card"><div class="metric">⏱<small>Latency</small></div><p style="margin-top:14px">Bigger context = slower responses. <span class="kbd">@workspace</span> on a huge repo can take 15–30s.</p></div>
+      <div class="card"><div class="metric">⏱<small>Latency</small></div><p style="margin-top:14px">Bigger context = slower responses. Agent mode on a huge repo can take 15–30s.</p></div>
       <div class="card"><div class="metric">📉<small>Quality</small></div><p style="margin-top:14px">"Context rot" — model accuracy drops as the window fills, even within limits.</p></div>
       <div class="card"><div class="metric">🤖<small>Agent mode</small></div><p style="margin-top:14px">Agent loops <b>multiply</b> requests. Sloppy prompts can burn 30 requests on one task.</p></div>
     </div>
@@ -165,7 +165,7 @@ const slides = [
       <tbody>
         <tr><td><b>Inline completions</b> (ghost text)</td><td>Open file + nearby files (neighboring tabs)</td><td>Light · auto-managed</td></tr>
         <tr><td><b>Copilot Chat</b></td><td>Active file, selection, attached <span class="kbd">#file</span>/<span class="kbd">#selection</span>, history</td><td>Medium · you control it</td></tr>
-        <tr><td><b><span class="kbd">@workspace</span></b></td><td>Indexed repo chunks via retrieval</td><td>Heavy · scales with repo size</td></tr>
+        <tr><td><b>Agent mode (broad retrieval)</b></td><td>Indexed repo chunks via retrieval + tool calls</td><td>Heavy · scales with repo size</td></tr>
         <tr><td><b>Edits / Agent mode</b></td><td>Working set + tool calls + multi-turn loop</td><td>Heaviest · multiplies per iteration</td></tr>
         <tr><td><b>Coding agent (cloud)</b></td><td>Issue + repo + CI logs across many turns</td><td>Heavy · long-running</td></tr>
         <tr><td><b>Copilot CLI</b></td><td>Shell context + files you reference</td><td>Light–medium</td></tr>
@@ -228,7 +228,7 @@ const slides = [
       <div class="card"><span class="tag">C</span><h3>Prompt files</h3><p>Reusable .prompt.md templates</p></div>
       <div class="card"><span class="tag">D</span><h3>Spaces & AGENTS.md</h3><p>Curated context bundles</p></div>
       <div class="card"><span class="tag">E</span><h3>Model picker</h3><p>Right-size per task; protect premium budget</p></div>
-      <div class="card"><span class="tag">F</span><h3>MCP & participants</h3><p>Trim tools; @workspace vs targeted</p></div>
+      <div class="card"><span class="tag">F</span><h3>MCP & tool hygiene</h3><p>Trim tools; targeted context vs broad retrieval</p></div>
       <div class="card"><span class="tag">G</span><h3>Repo hygiene</h3><p>.gitignore for the indexer; symbol-friendly code</p></div>
       <div class="card"><span class="tag">H</span><h3>Workflow patterns</h3><p>Ralph loop, auto-compact, agent handover</p></div>
     </div>
@@ -238,7 +238,7 @@ const slides = [
   `<section class="slide">
     <div class="eyebrow">Lever A</div>
     <h2>Scoped context — the #1 Copilot win</h2>
-    <p class="lead">Most teams overuse <span class="kbd">@workspace</span>. It's powerful but expensive. Reach for sharper variables first.</p>
+    <p class="lead">Most teams overuse broad retrieval (Agent mode for simple questions). It's powerful but expensive. Reach for sharper variables first.</p>
     <div class="grid cols-2">
       <div class="card good">
         <h3>✅ Use targeted variables</h3>
@@ -255,7 +255,7 @@ const slides = [
       <div class="card bad">
         <h3>❌ Don't reflexively reach for</h3>
         <ul>
-          <li><span class="kbd">@workspace</span> + a one-line question — re-indexes & dumps a lot of context</li>
+          <li>Agent mode + a one-line question — retrieves & dumps a lot of context</li>
           <li><span class="kbd">#codebase</span> when one <span class="kbd">#file</span> would do</li>
           <li>Pasting whole stack traces — use <span class="kbd">#problems</span> or trim</li>
           <li>"Look at all the test files" — attach the one you mean</li>
@@ -324,7 +324,7 @@ Tests live next to the component.</pre>
         <ul>
           <li>Replaces "let me drag in 12 files every time."</li>
           <li>Shareable across the team.</li>
-          <li>Smaller, focused than <span class="kbd">@workspace</span>.</li>
+          <li>Smaller, focused than broad Agent-mode retrieval.</li>
         </ul>
       </div>
       <div class="card">
@@ -377,13 +377,13 @@ Tests live next to the component.</pre>
         </ul>
       </div>
       <div class="card">
-        <h3>Participants — pick the right one</h3>
+        <h3>Participants &amp; retrieval — pick the right scope</h3>
         <ul>
-          <li><span class="kbd">@workspace</span> — repo-wide retrieval. <b>Heavy.</b></li>
+          <li><b>Agent mode</b> — repo-wide retrieval + tools. <b>Heavy.</b></li>
           <li><span class="kbd">@vscode</span> — IDE help only. Cheap.</li>
           <li><span class="kbd">@terminal</span> — shell context. Cheap.</li>
           <li><span class="kbd">@github</span> — issues/PRs. Targeted.</li>
-          <li>No participant + targeted <span class="kbd">#file</span> — usually the cheapest path.</li>
+          <li>Ask mode + targeted <span class="kbd">#file</span> — usually the cheapest path.</li>
         </ul>
       </div>
     </div>
@@ -551,7 +551,7 @@ GOTO 1</pre>
       <div class="card bad">
         <h3>❌ Context</h3>
         <ul>
-          <li>Reaching for <span class="kbd">@workspace</span> for every question.</li>
+          <li>Using Agent mode for every question.</li>
           <li>One chat that's been running for a week.</li>
           <li>Pasting whole files instead of attaching with <span class="kbd">#file</span>.</li>
           <li>Connecting every MCP server "just in case."</li>
@@ -710,7 +710,7 @@ applyTo: "**/*.bicep"</code></pre>
           <li>☐ Add scoped <span class="kbd">*.instructions.md</span> with <span class="kbd">applyTo</span> globs per stack.</li>
           <li>☐ Adopt one-task-per-chat + manual compact via <span class="kbd">plan.md</span>.</li>
           <li>☐ Try the planner→implementer→reviewer relay on one workstream.</li>
-          <li>☐ Train the team on <span class="kbd">#file</span>, <span class="kbd">#selection</span>, <span class="kbd">#problems</span> — kill <span class="kbd">@workspace</span>-by-default.</li>
+          <li>☐ Train the team on <span class="kbd">#file</span>, <span class="kbd">#selection</span>, <span class="kbd">#problems</span> — kill Agent-mode-by-default.</li>
           <li>☐ Review premium-request usage monthly.</li>
         </ul>
       </div>

@@ -48,10 +48,10 @@ re-reading prior turns.
 </context_awareness>
 ```
 
-## Step 3 — Mention the generator
+## Step 3 — The digest generator
 
-The Camunda baseline platform repo includes `tools/scripts/generate-skill-digests.mjs`
-that produces digest + minimal automatically by:
+This repo includes `tools/scripts/generate-skill-digests.mjs`
+that produces digest + minimal variants automatically by:
 
 1. Extracting H2 sections from `SKILL.md`
 2. Prioritizing critical headings

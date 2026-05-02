@@ -16,7 +16,12 @@ Run it three times, in three fresh chats, with the model picker set to:
 2. **GPT-5** (1×)
 3. **Claude Opus 4** (10×)
 
-After each run, open https://github.com/settings/copilot/usage and point at the meter.
+After each run, show the cost difference:
+
+- **Output panel** — compare `ccreq` lines: same `success` result, but note the model name.
+- **DevTools Network tab** — compare request/response sizes across the three runs.
+- **Org usage dashboard** — `https://github.com/organizations/<YOUR-ORG>/settings/copilot/usage`
+  (or `https://github.com/settings/copilot/usage` for individual subscribers).
 
 Compare the diffs side-by-side. They are essentially identical.
 
