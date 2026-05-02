@@ -23,7 +23,7 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │   ├── 04-instructions-and-skills.md    ← copilot-instructions.md before/after
 │   ├── 05-model-routing.md              ← live calculator
 │   ├── 06-output-discipline.md          ← whole-file vs diff
-│   ├── 07-repo-hygiene.md               ← .aiignore, content exclusions
+│   ├── 07-repo-hygiene.md               ← .gitignore, content exclusions
 │   ├── 08-ralph-loop.md                 ← agent loop on TODO.md
 │   ├── 09-auto-compact.md
 │   ├── 10-agent-handover.md             ← /plan → /build → /review

@@ -27,6 +27,13 @@ is missing. Add it:
  *.log
 ```
 
+Since `dist/bundle.js` is already tracked, adding it to `.gitignore` alone won't
+remove it from the index. Untrack it:
+
+```powershell
+git rm --cached dist/bundle.js
+```
+
 Commit. (For Copilot's repo indexer, `.gitignore` is the primary signal. For
 secrets and other org-policy noise, use **content exclusions** in the repo or
 org Copilot settings.)

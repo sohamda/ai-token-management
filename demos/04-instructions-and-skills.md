@@ -9,8 +9,8 @@
 Temporarily rename the instructions out of the way:
 
 ```powershell
-Rename-Item .github\copilot-instructions.md .github\copilot-instructions.md.bak
-Rename-Item .github\instructions\tests.instructions.md .github\instructions\tests.instructions.md.bak
+Rename-Item .github\copilot-instructions.md copilot-instructions.md.bak
+Rename-Item .github\instructions\tests.instructions.md tests.instructions.md.bak
 ```
 
 Open a fresh Copilot Chat. Ask:
@@ -28,8 +28,8 @@ Watch the model:
 Restore the instructions:
 
 ```powershell
-Rename-Item .github\copilot-instructions.md.bak .github\copilot-instructions.md
-Rename-Item .github\instructions\tests.instructions.md.bak .github\instructions\tests.instructions.md
+Rename-Item .github\copilot-instructions.md.bak copilot-instructions.md
+Rename-Item .github\instructions\tests.instructions.md.bak tests.instructions.md
 ```
 
 Open a fresh chat. Ask the same question.

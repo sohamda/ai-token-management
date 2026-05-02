@@ -75,8 +75,7 @@ function generateDigest(sections, maxLines) {
     } else {
       // Keep tables and critical headings
       const isCritical = CRITICAL_HEADINGS.has(s.heading.toLowerCase());
-      if (s.heading) out.push(`${"#".repeat(s.level)} ${s.heading}`);
-
+      let sectionLines = [];
       let inCode = false;
       for (const line of s.lines) {
         if (line.startsWith("```")) {
@@ -88,9 +87,16 @@ function generateDigest(sections, maxLines) {
         const isTable = line.startsWith("|");
         const isBullet = /^\s*[-*\d]/.test(line);
         if (isTable || (isCritical && isBullet) || line.trim() === "") {
-          out.push(line);
+          sectionLines.push(line);
         }
       }
+
+      // Drop heading if the section body is empty after stripping
+      const hasContent = sectionLines.some((l) => l.trim() !== "");
+      if (!hasContent) continue;
+
+      if (s.heading) out.push(`${"#".repeat(s.level)} ${s.heading}`);
+      out.push(...sectionLines);
     }
     if (out.length > maxLines) break;
   }
