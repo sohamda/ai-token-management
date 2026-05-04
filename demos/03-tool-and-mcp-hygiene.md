@@ -19,8 +19,12 @@ With 5 servers connected, you might pay **5–10k tokens per turn just for tool 
 
 ## Step 2 — disable unused servers
 
-In `.vscode/mcp.json` (or via the UI), disable everything not needed for the
-session. For this demo, keep only the filesystem server (or none).
+Open VS Code Settings (`Ctrl+,`) and search **MCP**, or use the Command Palette →
+**MCP: List Servers**. Disable everything not needed for the session. For this demo,
+keep only the filesystem server (or none).
+
+> **Note:** This repo doesn't ship a `.vscode/mcp.json` — the demo uses whatever
+> MCP servers the presenter has enabled in their own VS Code profile.
 
 Re-ask a small question. Show the request payload shrank.
 
@@ -43,7 +47,7 @@ const r = await fetch("https://api.example.com/orders/o_1001?fields=id,total,sta
 ## Talking points
 
 - Disable MCP servers per session. Treat them like browser extensions: only the ones you actually use.
-- Audit `.vscode/mcp.json` in the repo — a generous default is a tax on every developer.
+- Audit `.vscode/mcp.json` if your repo ships one — a generous default is a tax on every developer.
 - Custom tools you build: default to compact responses with optional `?expand=...`.
 
 ## Reset

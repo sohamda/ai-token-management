@@ -70,7 +70,7 @@ git checkout -- .github/instructions/   # restore
 
 - "The worst tokens are the ones you're paying for and not noticing."
 - Run these in CI — context bloat accumulates silently across PRs the
-  same way bundle size does.
+  same way JAR size does.
 - `npm run lint:context` is a single command to catch all context-size regressions.
 - Parse the VS Code Copilot Chat log's `ccreq` lines to get per-turn
   latency, model, and status:

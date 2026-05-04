@@ -61,7 +61,7 @@
 - **Standards to encode:**
   - Build/test/lint commands
   - File layout & naming conventions
-  - "Don't read these directories" (node_modules, dist, .venv, generated code)
+  - "Don't read these directories" (node_modules, target, .venv, generated code)
   - Preferred libraries / patterns
   - Output style (concise, no apologies, no re-explaining)
 
@@ -81,7 +81,7 @@
 
 ### G. Repo & codebase hygiene (often overlooked)
 
-1. **`.aiignore` / `.cursorignore` / `.copilotignore`.** Exclude lockfiles, fixtures, generated code, large JSON, vendored deps.
+1. **`.aiignore` / `.cursorignore` / `.copilotignore`.** Exclude lockfiles, fixtures, generated code (`target/`), vendored deps.
 2. **Smaller, well-named modules.** Agents retrieve by symbol; long god-files force whole-file reads.
 3. **Up-to-date READMEs and module-level docstrings.** A 200-token summary beats the agent re-reading 5,000 tokens of source.
 4. **Indexes / symbol maps.** Prebuilt code intelligence (LSP, ctags, repo-map) lets the agent jump rather than scan.
@@ -101,7 +101,7 @@
 ## 4. Quick-win checklist (for the audience to take home)
 
 - [ ] Add/update `AGENTS.md` (or equivalent) with build, test, lint, conventions
-- [ ] Add `.aiignore` for generated/vendored content
+- [ ] Add `.aiignore` for generated/vendored content (`target/`, etc.)
 - [ ] Move static instructions to the top of the system prompt for cache hits
 - [ ] Disable unused MCP servers / tools
 - [ ] Default to ranged file reads, not whole-file

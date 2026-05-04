@@ -15,8 +15,8 @@ in `.github/prompts/`.
 
 ## Step 1 — Anti-pattern: dump everything in copilot-instructions.md
 
-Open `.github/copilot-instructions.md`. Imagine pasting the full Node
-testing guide, full ESLint config rationale, full deployment runbook here.
+Open `.github/copilot-instructions.md`. Imagine pasting the full Java
+testing guide, full Checkstyle config rationale, full deployment runbook here.
 Talk through what happens:
 
 - Loaded on **every** turn → ambient cost balloons
@@ -30,11 +30,11 @@ demo — describe and show the slide):
 
 ```text
 AGENTS.md                                  # L1 — TOC, ~200 lines, always loaded
-.github/instructions/tests.instructions.md # L2 — applyTo: src/**/*.js
-.github/skills/eslint-rationale/SKILL.md   # L2 — on-demand
-.github/skills/eslint-rationale/references/
+.github/instructions/tests.instructions.md # L2 — applyTo: src/**/*.java
+.github/skills/checkstyle-rationale/SKILL.md   # L2 — on-demand
+.github/skills/checkstyle-rationale/references/
   ├─ rule-by-rule.md                       # L3 — only if asked "why this rule?"
-  └─ migration-from-airbnb.md              # L3 — only during a migration
+  └─ migration-from-google-style.md         # L3 — only during a migration
 ```
 
 Each level points to the next. Copilot follows the breadcrumbs only when
@@ -47,7 +47,7 @@ Point at the structure already in this repo:
 ```text
 AGENTS.md                                       # L1 — always loaded
 .github/copilot-instructions.md                 # L1 — always loaded
-.github/instructions/tests.instructions.md      # L2 — only when src/**/*.js matched
+.github/instructions/tests.instructions.md      # L2 — only when src/**/*.java matched
 .github/prompts/ralph.prompt.md                 # L2 — only when /ralph invoked
 ```
 

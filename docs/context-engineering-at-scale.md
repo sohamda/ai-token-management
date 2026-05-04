@@ -222,7 +222,7 @@ The repo includes tooling to **measure** context efficiency and prevent regressi
 | Content Type   | Chars/Token | Fixed Costs                       |
 | -------------- | ----------- | --------------------------------- |
 | English prose  | ~4.0        | Base system prompt: ~2,000 tokens |
-| Code (TS/JS)   | ~3.5        | Per tool: ~50-100 tokens          |
+| Code (Java/Kotlin) | ~3.5        | Per tool: ~50-100 tokens          |
 | Bicep/ARM JSON | ~3.0-3.2    | Per handoff: ~30-50 tokens        |
 | Markdown       | ~3.8        | Workspace info: ~200-500 tokens   |
 

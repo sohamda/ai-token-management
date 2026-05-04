@@ -1,27 +1,29 @@
 ---
-applyTo: "src/**/*.js"
+applyTo: "src/**/*.java"
 ---
 
 # Test conventions for src/
 
-When writing or editing tests in `src/**`:
+When writing or editing tests in `src/test/java/`:
 
-- Use the built-in `node --test` runner. Import from `node:test` and `node:assert/strict`.
-- Test files live next to the source as `<name>.test.js`.
-- One `describe` per exported function, one `test` per behavior.
+- Use JUnit 5 (`@Test` from `org.junit.jupiter.api`) and AssertJ for assertions.
+- Test classes live under `src/test/java/` mirroring the main source tree.
+- One test class per source class, named `<ClassName>Test.java`.
+- One `@Test` method per behavior.
 - Avoid mocks unless absolutely required.
-- No external test frameworks (no Jest, Mocha, Vitest, Chai).
+- No external test frameworks (no Mockito, TestNG, etc.) unless strictly necessary.
 
 Example skeleton:
 
-```js
-import { describe, test } from "node:test";
-import assert from "node:assert/strict";
-import { thing } from "./thing.js";
+```java
+import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-describe("thing", () => {
-  test("does X when Y", () => {
-    assert.equal(thing(1), 2);
-  });
-});
+class ThingTest {
+
+    @Test
+    void doesX_whenY() {
+        assertThat(new Thing().compute(1)).isEqualTo(2);
+    }
+}
 ```

@@ -8,7 +8,7 @@
 
 Pick a routine task:
 
-> Rename the `parseAddress` function to `parseAddressLine` across the repo. Show me the diff.
+> Rename the `parseAddress` method to `parseAddressLine` in `AddressParser.java` and update all usages. Show me the diff.
 
 Run it three times, in three fresh chats, with the model picker set to:
 

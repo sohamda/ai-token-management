@@ -8,24 +8,24 @@ Migrate the order-confirmation email from the legacy renderer to the new templat
 engine so we can delete `renderLegacy` in a follow-up PR.
 
 ## Acceptance criteria
-- [ ] `sendOrderConfirmation` uses `render("order_confirmation_v2", ...)`.
+- [ ] `OrderConfirmationService.sendOrderConfirmation` uses `render("order_confirmation_v2", ...)`.
 - [ ] The new template includes the customer's name, order id, and total.
-- [ ] `npm test` passes.
+- [ ] `./mvnw test` passes.
 - [ ] `renderLegacy` is **not** removed in this PR (separate cleanup).
 
 ## Tasks
-- [ ] T1: Update `src/email/orderConfirmation.js` to import `render` and call it with template id `order_confirmation_v2`.
-- [ ] T2: Extend the `order_confirmation_v2` template in `src/email/templateEngine.js` to include the items list, formatted as bullet lines.
-- [ ] T3: Add `src/email/orderConfirmation.test.js` asserting subject + body contain the order id and the customer name.
+- [ ] T1: Update `OrderConfirmationService.java` to call `render` with template id `order_confirmation_v2` instead of `renderLegacy`.
+- [ ] T2: Extend the `order_confirmation_v2` template in `TemplateEngine.java` to include the items list, formatted as bullet lines.
+- [ ] T3: Add `OrderConfirmationServiceTest.java` asserting subject + body contain the order id and the customer name.
 
 ## Files expected to change
-- src/email/orderConfirmation.js
-- src/email/templateEngine.js
-- src/email/orderConfirmation.test.js (new)
+- src/main/java/com/example/demo/email/OrderConfirmationService.java
+- src/main/java/com/example/demo/email/TemplateEngine.java
+- src/test/java/com/example/demo/email/OrderConfirmationServiceTest.java (new)
 
 ## Out of scope
 - Removing `renderLegacy`.
-- Any change to `welcomeEmail.js`.
+- Any change to `WelcomeEmailService.java`.
 
 ## Risks / open questions
-- Should the template format currency with `formatMoney`? Currently raw number.
+- Should the template format currency with `FormatUtils.formatMoney`? Currently raw number.

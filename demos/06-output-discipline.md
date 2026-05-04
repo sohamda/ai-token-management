@@ -8,13 +8,13 @@
 
 In a fresh chat:
 
-> In `#file:src/email/templateEngine.js`, the `welcome` template is missing an exclamation mark. Show me the **updated file**.
+> In `#file:src/main/java/com/example/demo/email/TemplateEngine.java`, the `welcome` template should end with a smiley emoji 😊. Show me the **updated file**.
 
 The model returns the entire file (~30 lines). With a 600-line file it would be 600 lines.
 
 ## Step 2 — the disciplined ask
 
-> In `#file:src/email/templateEngine.js`, the `welcome` template is missing an exclamation mark. Reply with a **unified diff only**, no commentary.
+> In `#file:src/main/java/com/example/demo/email/TemplateEngine.java`, the `welcome` template should end with a smiley emoji 😊. Reply with a **unified diff only**, no commentary.
 
 You get ~5 lines of diff.
 

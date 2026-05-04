@@ -4,7 +4,8 @@ Do this **before** the session.
 
 ## Prerequisites
 
-- Node.js 20+
+- Java 17+ (JDK)
+- Maven 3.9+ (or use the included `./mvnw` wrapper)
 - VS Code with the GitHub Copilot + Copilot Chat extensions
 - (Optional) Anthropic Claude Code CLI or Cursor for cross-tool comparisons
 - A second monitor or large window so the audience can see two panes at once
@@ -13,9 +14,8 @@ Do this **before** the session.
 
 ```powershell
 cd <repo-root>   # wherever you cloned ai-token-management
-npm install
-npm test     # should pass (no tests yet — exits 0)
-npm start    # should print "Demo app starting…"
+./mvnw package   # build + run tests — should pass
+./mvnw spring-boot:run   # should print "Demo app starting…"
 ```
 
 ## Reset between demos
@@ -39,7 +39,7 @@ git reset --hard origin/main
 - **Copilot Chat** — the main demo surface
 - **VS Code Output panel → "GitHub Copilot Chat"** — shows `ccreq` lines with model, latency, and request type per turn
 - **Developer Tools → Network tab** (`Ctrl+Shift+I` → Network → filter `completions`) — shows request/response payload sizes
-- **Terminal** — for `npm test`, `git status`, `git diff`
+- **Terminal** — for `./mvnw test`, `git status`, `git diff`
 - **The presentation** in fullscreen on the projector
 
 ### How to show usage

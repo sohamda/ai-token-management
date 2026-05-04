@@ -2,12 +2,8 @@
   "name": "ai-token-management-demo",
   "version": "1.0.0",
   "description": "Intentionally-messy demo app used in the AI Token Management tech session.",
-  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test src/**/*.test.js",
-    "lint": "echo \"(placeholder lint)\"",
     "lint:instr-size": "node tools/lint-instructions.js",
     "lint:prompt-size": "node tools/lint-prompts.js",
     "lint:glob-audit": "node tools/lint-glob-audit.js",

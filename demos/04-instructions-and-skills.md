@@ -15,12 +15,12 @@ Rename-Item .github\instructions\tests.instructions.md tests.instructions.md.bak
 
 Open a fresh Copilot Chat. Ask:
 
-> Add a unit test for `parseAddress` in `#file:src/utils/parseAddress.js`.
+> Add a unit test for `AddressParser.parseAddress` in `#file:src/main/java/com/example/demo/utils/AddressParser.java`.
 
 Watch the model:
-- Often picks **Jest** or **Vitest** (wrong — we want `node --test`).
-- May put the test in a new `__tests__/` folder.
-- May use **default** instead of named imports.
+- Often picks **Mockito** or **TestNG** (wrong — we want plain JUnit 5 + AssertJ).
+- May put the test in a random package.
+- May use a different assertion style.
 - Often verbose: explains what it's about to do, then does it.
 
 ## Step 2 — the "after" demo
@@ -35,9 +35,9 @@ Rename-Item .github\instructions\tests.instructions.md.bak tests.instructions.md
 Open a fresh chat. Ask the same question.
 
 Watch:
-- Uses `node --test` and `node:assert/strict`.
-- Puts the file at `src/utils/parseAddress.test.js`.
-- Named imports.
+- Uses JUnit 5 and AssertJ.
+- Puts the test at `src/test/java/com/example/demo/utils/AddressParserTest.java`.
+- Follows the project conventions.
 - Concise output, no preamble.
 
 ## Step 3 — show the scoping
@@ -46,7 +46,7 @@ Open `.github/instructions/tests.instructions.md`. Point out the frontmatter:
 
 ```yaml
 ---
-applyTo: "src/**/*.js"
+applyTo: "src/**/*.java"
 ---
 ```
 
@@ -62,7 +62,7 @@ Explain: this file is **only** loaded into context when matching files are refer
 
 ```powershell
 git checkout -- .
-git clean -fd src/
+git clean -fd src/test/
 ```
 
 ## References

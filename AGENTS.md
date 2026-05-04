@@ -4,23 +4,21 @@ Guidance for AI coding agents (Copilot, Claude Code, Cursor, Aider, etc.) workin
 
 ## Build / test / lint
 
-- Install: `npm install`
-- Run: `npm start`
-- Test: `npm test`
-- Lint: `npm run lint`
+- Build: `./mvnw package` (or `mvn package`)
+- Run: `./mvnw spring-boot:run`
+- Test: `./mvnw test`
 
 ## Conventions
 
-- Node.js 20+. Plain JavaScript (ES modules), no TypeScript.
-- One module = one file. Keep files under ~150 lines.
-- Use **named exports**. No default exports.
-- Tests live next to the source as `*.test.js` and use the built-in `node --test` runner.
-- Use camelCase for variables/functions, PascalCase for classes.
+- Java 17+, Spring Boot 3.4. No Kotlin, no Groovy.
+- One class per file. Keep files under ~150 lines.
+- Use **records** for simple data carriers.
+- Tests live under `src/test/java/` mirroring the main source tree, using JUnit 5 + AssertJ.
+- Use camelCase for variables/methods, PascalCase for classes.
 
 ## Don't touch
 
-- `dist/` — generated. Never read or edit.
-- Any `*.snapshot.json` — test fixtures.
+- `target/` — generated. Never read or edit.
 - `.github/prompts/*.prompt.md` — these are runtime artifacts, edit only with intent.
 
 ## Output style

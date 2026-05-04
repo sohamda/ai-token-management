@@ -6,8 +6,8 @@
 
 ## The setup
 
-This repo has two email files that are easy to confuse:
-`src/email/orderConfirmation.js` (legacy) and `src/email/templateEngine.js` (new).
+This repo has two email classes that are easy to confuse:
+`src/main/java/com/example/demo/email/OrderConfirmationService.java` (legacy) and `src/main/java/com/example/demo/email/TemplateEngine.java` (new).
 
 ## Step 1 — the bad way
 
@@ -18,7 +18,7 @@ Open Copilot Chat in **Agent mode** (which has full codebase access). Ask a vagu
 Watch:
 - The agent reads multiple files, exploring the repo to figure out which ones matter.
 - Open **Output → GitHub Copilot Chat**. Note the `ccreq` lines — multiple retrieval and summarization calls.
-- The model often grabs `welcomeEmail.js` and unrelated files too.
+- The model often grabs `WelcomeEmailService.java` and unrelated files too.
 - The proposed diff sometimes wanders (renames functions, adds Jest, etc.).
 
 Show the audience the response time and the context breakdown.
@@ -27,7 +27,7 @@ Show the audience the response time and the context breakdown.
 
 Open a **new chat** (Ask mode, not Agent mode). Ask with precise `#file` references:
 
-> Refactor `#file:src/email/orderConfirmation.js` to use `render` from `#file:src/email/templateEngine.js` instead of `renderLegacy`. Keep behaviour identical.
+> Refactor `#file:src/main/java/com/example/demo/email/OrderConfirmationService.java` to use `render` from `#file:src/main/java/com/example/demo/email/TemplateEngine.java` instead of `renderLegacy`. Keep behaviour identical.
 
 Watch:
 - Response is faster.

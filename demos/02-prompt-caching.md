@@ -9,22 +9,21 @@ Show the **principle** with a small script, then map it back to Copilot.
 
 ## Option A — Anthropic API (clearest)
 
-If you have an `ANTHROPIC_API_KEY`, run this Node snippet twice:
+The repo ships a pre-staged `scratch/` folder with the SDK dependency.
+Before the session:
 
-```js
-// scratch/cache-demo.js
-import Anthropic from "@anthropic-ai/sdk";
-const client = new Anthropic();
+```powershell
+cd scratch
+npm install
+$env:ANTHROPIC_API_KEY = "sk-ant-..."   # or export on macOS/Linux
+```
 
-const bigSystem = "You are a helpful coding assistant. " + "Lorem ipsum ".repeat(2000);
+Then run the script twice:
 
-const r = await client.messages.create({
-  model: "claude-sonnet-4-5",
-  max_tokens: 50,
-  system: [{ type: "text", text: bigSystem, cache_control: { type: "ephemeral" } }],
-  messages: [{ role: "user", content: "What is 2+2?" }],
-});
-console.log(r.usage);
+```powershell
+node scratch/cache-demo.js
+# wait a few seconds
+node scratch/cache-demo.js
 ```
 
 - **First run:** `cache_creation_input_tokens` is large, `cache_read_input_tokens` is 0.

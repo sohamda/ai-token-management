@@ -31,11 +31,15 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │   ├── 12-progressive-disclosure.md     ← Scaling L2: 3-level hierarchy
 │   ├── 13-context-shredding.md          ← Scaling L3+L4: tier selection
 │   └── 14-observability.md              ← Scaling L7: latency proxy + lints
-├── src/                                  ← intentionally messy demo code
-│   ├── api/
-│   ├── email/
-│   ├── utils/
-│   └── index.js
+├── src/                                  ← intentionally messy demo code (Java/Spring Boot)
+│   ├── main/java/com/example/demo/
+│   │   ├── DemoApplication.java
+│   │   ├── api/
+│   │   ├── email/
+│   │   ├── model/
+│   │   └── utils/
+│   ├── main/resources/
+│   └── test/java/com/example/demo/
 ├── .github/
 │   ├── copilot-instructions.md          ← apply during demo 04
 │   ├── instructions/
@@ -45,7 +49,7 @@ Two HTML presentations, a small demo repo with intentional bloat to showcase the
 │       ├── plan.prompt.md
 │       ├── build.prompt.md
 │       └── review.prompt.md
-├── AGENTS.md
+├── AGENTS.md\n├── pom.xml                               ← Maven build (Java 17, Spring Boot 3.4)
 ├── TODO.md                               ← used by the Ralph loop demo
 └── plan.md                               ← used by the handover demo
 ```

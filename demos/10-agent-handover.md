@@ -41,7 +41,7 @@ Open a **new** chat. Switch to **Claude Sonnet**. Enable **Agent mode**. Type:
 
 The implementer:
 - Reads `plan.md`.
-- Picks the first task. Edits the file. Runs `npm test`. Checks the box.
+- Picks the first task. Edits the file. Runs `./mvnw test`. Checks the box.
 - Loops until all tasks are checked.
 
 Talking points:

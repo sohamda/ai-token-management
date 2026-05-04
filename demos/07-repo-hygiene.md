@@ -10,44 +10,46 @@ In a fresh chat (Agent mode), ask a vague question:
 
 > Where is the build output defined?
 
-Watch the retrieved chunks — the assistant often surfaces `dist/bundle.js`,
-which is generated noise no one should reason about.
+Watch the retrieved chunks — the assistant often surfaces `target/` build output
+or generated class files, which are noise no one should reason about.
 
 Open the **Output → GitHub Copilot Chat** panel and point at the chunks pulled.
 
 ## Step 2 — add `dist/` to `.gitignore`
 
-The repo’s `.gitignore` already excludes `node_modules/` and `*.log`, but `dist/`
-is missing. Add it:
+The repo's `.gitignore` already excludes some entries, but `target/`
+may still surface. Ensure it’s excluded:
 
 ```diff
-+dist/
- node_modules/
++target/
  .DS_Store
  *.log
 ```
 
-Since `dist/bundle.js` is already tracked, adding it to `.gitignore` alone won't
-remove it from the index. Untrack it:
+Since `target/` files may be tracked, adding to `.gitignore` alone won't
+remove them from the index. Untrack them:
 
 ```powershell
-git rm --cached dist/bundle.js
+git rm -r --cached target/
 ```
 
 Commit. (For Copilot's repo indexer, `.gitignore` is the primary signal. For
 secrets and other org-policy noise, use **content exclusions** in the repo or
 org Copilot settings.)
 
-Re-ask the same question. The retrieved chunks no longer include `dist/`.
+Re-ask the same question. The retrieved chunks no longer include `target/`.
 
 ## Step 3 — the "summary at the top" trick
 
-Open `src/email/templateEngine.js`. Add a 3-line comment at the top:
+Open `src/main/java/com/example/demo/email/TemplateEngine.java`. Add a Javadoc comment at the top:
 
-```js
-// templateEngine — central renderer. Use `render(id, data)` for new emails.
-// `renderLegacy(id, data)` is deprecated and only used by orderConfirmation.js.
-// Templates registered: welcome, order_confirmation_v2.
+```java
+/**
+ * Central renderer. Use {@link #render(String, Map)} for new emails.
+ * {@link #renderLegacy(String, Map)} is deprecated and only used by
+ * OrderConfirmationService.
+ * Templates registered: welcome, order_confirmation_v2.
+ */
 ```
 
 Now ask the assistant *"what does the template engine do?"* — it answers from
