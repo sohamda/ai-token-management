@@ -4,14 +4,20 @@
  * generate-skill-digests.mjs
  *
  * Reads every SKILL.md under .github/skills/ and produces:
- *   - SKILL.digest.md  (~40-50% of original)
- *   - SKILL.minimal.md (~10-15% of original)
+ *   - SKILL.digest.md  (~30-40% of original lines)
+ *   - SKILL.minimal.md (~10-15% of original lines, max ~10 lines of content)
+ *
+ * The digest keeps:  H1 (with " (digest)" suffix), one-line summary,
+ *                    tables (columns trimmed), key-rule bullets.
+ * The minimal keeps: H1 (with " (minimal)" suffix), one-line summary.
+ *
+ * Both end with a pointer: > _See SKILL.md for full content._
  *
  * Usage:  node tools/scripts/generate-skill-digests.mjs
  * Run in CI to keep compressed variants in sync with the full skill.
  */
 
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 
 const SKILLS_DIR = ".github/skills";
@@ -39,6 +45,11 @@ async function findSkillFiles(dir) {
   return results;
 }
 
+/** Strip BOM if present. */
+function stripBom(text) {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
 function parseSections(text) {
   const lines = text.split("\n");
   const sections = [];
@@ -57,48 +68,81 @@ function parseSections(text) {
   return sections;
 }
 
-function generateDigest(sections, maxLines) {
+/**
+ * Condense a markdown table: drop the "Size" column (if present) to save
+ * tokens, and keep only the remaining columns. Returns the condensed rows.
+ */
+function condenseTable(tableLines) {
+  if (tableLines.length < 2) return tableLines;
+
+  // Parse header to find column indices
+  const header = tableLines[0];
+  const cols = header.split("|").map((c) => c.trim());
+
+  // Find columns to drop (verbose ones like "Size", "Typical size")
+  const dropCols = new Set();
+  cols.forEach((c, i) => {
+    const lower = c.toLowerCase();
+    if (lower.includes("size") || lower.includes("typical")) dropCols.add(i);
+  });
+
+  if (dropCols.size === 0) return tableLines;
+
+  return tableLines.map((line) => {
+    const parts = line.split("|");
+    const kept = parts.filter((_, i) => !dropCols.has(i));
+    return kept.join("|");
+  });
+}
+
+function generateDigest(sections) {
   const out = [];
+
   for (const s of sections) {
+    const isCritical = CRITICAL_HEADINGS.has((s.heading || "").toLowerCase());
+
     if (s.level === 0 || s.level === 1) {
-      // Always keep H1 and preamble
-      if (s.heading) out.push(`${"#".repeat(s.level || 1)} ${s.heading}`);
-      // Keep first paragraph, drop code blocks
-      let inCode = false;
-      for (const line of s.lines) {
-        if (line.startsWith("```")) {
-          inCode = !inCode;
-          continue;
-        }
-        if (!inCode) out.push(line);
-      }
-    } else {
-      // Keep tables and critical headings
-      const isCritical = CRITICAL_HEADINGS.has(s.heading.toLowerCase());
-      let sectionLines = [];
-      let inCode = false;
-      for (const line of s.lines) {
-        if (line.startsWith("```")) {
-          inCode = !inCode;
-          continue;
-        }
-        if (inCode) continue; // drop code blocks in digest
-
-        const isTable = line.startsWith("|");
-        const isBullet = /^\s*[-*\d]/.test(line);
-        if (isTable || (isCritical && isBullet) || line.trim() === "") {
-          sectionLines.push(line);
-        }
+      // H1 — rename with (digest) suffix
+      if (s.heading) {
+        out.push(`# ${s.heading} (digest)`);
       }
 
-      // Drop heading if the section body is empty after stripping
-      const hasContent = sectionLines.some((l) => l.trim() !== "");
-      if (!hasContent) continue;
+      // Keep only the first paragraph as a one-liner summary
+      const paraLines = [];
+      for (const line of s.lines) {
+        if (line.trim() === "" && paraLines.length > 0) break;
+        if (line.trim()) paraLines.push(line.trim());
+      }
+      if (paraLines.length) {
+        const para = paraLines.join(" ");
+        const sentences = para.match(/[^.!?]+[.!?]+/g);
+        const summary = sentences ? sentences[0].trim() : para;
+        out.push("");
+        out.push(summary);
+      }
+    } else if (isCritical) {
+      // Critical sections: keep heading + condensed tables + bullets (max 5)
+      out.push("");
+      out.push(`${"#".repeat(s.level)} ${s.heading}`);
+      out.push("");
 
-      if (s.heading) out.push(`${"#".repeat(s.level)} ${s.heading}`);
-      out.push(...sectionLines);
+      const tableLines = s.lines.filter((l) => l.startsWith("|"));
+      if (tableLines.length >= 2) {
+        const condensed = condenseTable(tableLines);
+        out.push(...condensed);
+      }
+
+      // Keep bullet points (max 5) — match both - / * and numbered lists
+      let bulletCount = 0;
+      for (const line of s.lines) {
+        if (bulletCount >= 5) break;
+        if (/^\s*[-*\d]/.test(line) && line.trim().length > 5) {
+          out.push(line);
+          bulletCount++;
+        }
+      }
     }
-    if (out.length > maxLines) break;
+    // Non-critical sections: drop entirely in digest
   }
 
   out.push("");
@@ -108,20 +152,60 @@ function generateDigest(sections, maxLines) {
 
 function generateMinimal(sections) {
   const out = [];
-  // H1 only
+
+  // H1 with (minimal) suffix
   const h1 = sections.find((s) => s.level <= 1 && s.heading);
   if (h1) out.push(`# ${h1.heading} (minimal)`);
   out.push("");
 
-  // Extract key bullet points (max 5)
-  let bullets = 0;
-  for (const s of sections) {
-    if (bullets >= 5) break;
-    for (const line of s.lines) {
-      if (bullets >= 5) break;
+  // One-line summary from the preamble
+  const preamble = sections.find((s) => s.level <= 1);
+  if (preamble) {
+    const paraLines = [];
+    for (const line of preamble.lines) {
+      if (line.trim() === "" && paraLines.length > 0) break;
+      if (line.trim()) paraLines.push(line.trim());
+    }
+    if (paraLines.length) {
+      const para = paraLines.join(" ");
+      const sentences = para.match(/[^.!?]+[.!?]+/g);
+      const summary = sentences ? sentences[0].trim() : para;
+      out.push(summary.length > 150 ? summary.slice(0, 147) + "..." : summary);
+    }
+  }
+
+  // Extract the most critical one-liner from "tiers" or "key rules" section
+  const tiersSection = sections.find(
+    (s) => s.heading && s.heading.toLowerCase() === "tiers"
+  );
+  if (tiersSection) {
+    // Emit a condensed prose summary of the tiers table
+    const tableLines = tiersSection.lines.filter((l) => l.startsWith("|") && !l.includes("---"));
+    if (tableLines.length > 1) {
+      // Skip header row, extract tier names and thresholds
+      const tiers = [];
+      for (const row of tableLines.slice(1)) {
+        const cols = row.split("|").map((c) => c.trim()).filter(Boolean);
+        if (cols.length >= 3) {
+          tiers.push(`${cols[0].toLowerCase()} (${cols[cols.length - 1]})`);
+        }
+      }
+      if (tiers.length) {
+        out.push(`Three tiers: ${tiers.join(", ")}.`);
+      }
+    }
+  }
+
+  // Extract one key rule
+  const rulesSection = sections.find(
+    (s) => s.heading && CRITICAL_HEADINGS.has(s.heading.toLowerCase())
+      && s.heading.toLowerCase() !== "tiers"
+  );
+  if (rulesSection) {
+    for (const line of rulesSection.lines) {
       if (/^\s*[-*\d]/.test(line) && line.trim().length > 10) {
-        out.push(line.replace(/^\s+/, "- "));
-        bullets++;
+        out.push(line.replace(/^\s+/, "").replace(/^\d+\.\s*/, "- "));
+        break;
       }
     }
   }
@@ -140,24 +224,27 @@ async function main() {
   }
 
   for (const path of skills) {
-    const text = await readFile(path, "utf8");
-    const lines = text.split("\n");
+    const raw = await readFile(path, "utf-8");
+    const text = stripBom(raw);
     const sections = parseSections(text);
 
-    const digestMaxLines = Math.ceil(lines.length * 0.5);
-    const digest = generateDigest(sections, digestMaxLines);
+    const digest = generateDigest(sections);
     const minimal = generateMinimal(sections);
 
     const dir = dirname(path);
     const digestPath = join(dir, "SKILL.digest.md");
     const minimalPath = join(dir, "SKILL.minimal.md");
 
-    await writeFile(digestPath, digest, "utf8");
-    await writeFile(minimalPath, minimal, "utf8");
+    await writeFile(digestPath, digest, "utf-8");
+    await writeFile(minimalPath, minimal, "utf-8");
 
-    console.log(`${path}`);
-    console.log(`  → ${digestPath} (${digest.split("\n").length} lines)`);
-    console.log(`  → ${minimalPath} (${minimal.split("\n").length} lines)`);
+    const digestLines = digest.split("\n").length;
+    const minimalLines = minimal.split("\n").length;
+    const sourceLines = text.split("\n").length;
+
+    console.log(`${path} (${sourceLines} lines)`);
+    console.log(`  \u2192 ${digestPath} (${digestLines} lines, ${Math.round(digestLines / sourceLines * 100)}%)`);
+    console.log(`  \u2192 ${minimalPath} (${minimalLines} lines, ${Math.round(minimalLines / sourceLines * 100)}%)`);
   }
 }
 

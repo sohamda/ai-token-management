@@ -54,12 +54,23 @@ This repo includes `tools/scripts/generate-skill-digests.mjs`
 that produces digest + minimal variants automatically by:
 
 1. Extracting H2 sections from `SKILL.md`
-2. Prioritizing critical headings
-3. Trimming each section to a max line budget
-4. Closing dangling code fences
-5. Adding `> _See SKILL.md for full content._` pointers
+2. Prioritizing critical headings (tiers, rules, constraints)
+3. Dropping non-critical sections and code blocks
+4. Condensing tables (removing verbose columns like "Size")
+5. Joining wrapped paragraphs into single-sentence summaries
+6. Adding `> _See SKILL.md for full content._` pointers
 
-Run it in CI to keep variants in sync.
+Run it live:
+
+```powershell
+node tools/scripts/generate-skill-digests.mjs
+```
+
+> **Presenter note:** The generator is a useful *starting point* — it gets you
+> to ~45% for digest and ~15% for minimal. For production skills you'll
+> want to hand-edit the output (tighten prose, reword tables). The checked-in
+> versions in this repo have been curated beyond what the script produces.
+> Treat the script as scaffolding, not a faithful round-trip.
 
 ## Talking points
 
@@ -69,6 +80,9 @@ Run it in CI to keep variants in sync.
   what it's learned, switches to minimal skills, then continues.
 - You don't have to build the generator on day one — just maintain the
   three sizes by hand for your top 3 skills first.
+- The generator is scaffolding: run it to get a first draft, then curate.
+  Don't run it in CI as a clobber-and-replace — a CI check that *diffs*
+  generated vs checked-in and warns on drift is more appropriate.
 
 ## Reset
 

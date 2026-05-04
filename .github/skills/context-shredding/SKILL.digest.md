@@ -1,6 +1,6 @@
 # Context Shredding (digest)
 
-Ship skills in three sizes: full, digest, minimal. Agent picks by context fill.
+Ship every skill in **three sizes** so the agent can pick the right tier based on how full the context window already is.
 
 ## Tiers
 
@@ -10,10 +10,12 @@ Ship skills in three sizes: full, digest, minimal. Agent picks by context fill.
 | Digest  | `SKILL.digest.md`  | 60–80%         |
 | Minimal | `SKILL.minimal.md` | > 80%          |
 
-## Key rules
+## Compression rules
 
-- Preserve tables, drop code blocks first.
-- Keep decision rationale over implementation details.
-- At 60–80% fill: pause, summarize, switch to compressed variants.
+1. Preserve **tables** — they're the densest format.
+2. Drop **code blocks** first — they're verbose.
+3. Keep **decision rationale** over implementation details.
+4. Always preserve H1 + first paragraph.
+5. Add a `> _See SKILL.md for full content._` pointer in compressed variants.
 
 > _See SKILL.md for full content._
