@@ -56,9 +56,9 @@ The single biggest waste in most AI workflows is asking vague questions of agent
 Compare:
 
 > **Bad:** *"Refactor the order confirmation email to use the new template engine."*
-> The agent opens four files in `src/email/`, reads `welcomeEmail.js` for context it doesn't need, considers whether `templates/` should exist, and proposes a sprawling diff that renames a function on the way through.
+> The agent opens four files under `src/main/java/com/example/demo/email/`, reads `WelcomeEmailService.java` for context it doesn't need, considers whether a `templates/` resource directory should exist, and proposes a sprawling diff that renames a method on the way through.
 
-> **Good:** *"Refactor `#file:src/email/orderConfirmation.js` to use `render` from `#file:src/email/templateEngine.js` instead of `renderLegacy`. Keep behaviour identical."*
+> **Good:** *"Refactor `#file:src/main/java/com/example/demo/email/OrderConfirmationService.java` to call `render` on `#file:src/main/java/com/example/demo/email/TemplateEngine.java` instead of `renderLegacy`. Keep behaviour identical."*
 > The agent opens two files. The diff is three semantically meaningful lines. The whole turn is roughly a tenth of the cost.
 
 Specificity is free. Every `#file:` (Copilot) or explicit path (Claude Code) you provide is a chunk the agent doesn't have to *find*. Every "keep behaviour identical" is a sentence of guard-rails that prevents a 200-line side quest.
@@ -85,9 +85,9 @@ Static at the top, dynamic at the bottom. The longest stable prefix you can cons
 
 The classic anti-pattern is innocent-looking and brutal:
 
-```js
+```java
 // Don't do this
-const system = `Today is ${new Date().toISOString()}\n\n` + ACTUAL_SYSTEM_PROMPT;
+String system = "Today is " + Instant.now() + "\n\n" + ACTUAL_SYSTEM_PROMPT;
 ```
 
 A timestamp at the top of your system prompt **busts the cache on every request**. You will pay full price for the same 10 KB of preamble all day. The fix is to push dynamic content down into the user message or tail of the prompt.
@@ -126,17 +126,17 @@ A small example is worth more than a long one:
 
 ![A 6-line copilot-instructions.md is enough to change every session in the repo](../images/04-instructions-snippet.png)
 
-Six lines. Now no chat in this repo will propose Jest, no chat will dump a whole-file rewrite when a diff would do, and no chat will preface its answer with "Sure! Let me explain what I'm about to do…"
+Six lines. Now no chat in this repo will propose JUnit 4 (we use JUnit 5), no chat will dump a whole-file rewrite when a diff would do, and no chat will preface its answer with "Sure! Let me explain what I'm about to do…"
 
 For stack-specific rules, use **path-scoped** instructions. In Copilot:
 
 ```yaml
 ---
-applyTo: "src/**/*.js"
+applyTo: "src/main/java/**/*.java"
 ---
 # Test conventions for src/
-- Use the built-in `node --test` runner.
-- Tests live next to the source as `<name>.test.js`.
+- Use JUnit 5 via `mvn test`.
+- Tests mirror the source tree under `src/test/java/...` as `<Name>Test.java`.
 ```
 
 This file is loaded *only* when a matching file is in scope. Repo-wide rules go in the global instructions; stack-specific rules go in scoped ones. Both are committed, both are versioned, both are team artifacts — not personal preferences buried in someone's IDE settings.
@@ -172,10 +172,10 @@ Every model has a "let me explain what I'm about to do" reflex. It's polite. It'
 
 Same fix, two ways to ask:
 
-> *"In `templateEngine.js`, the `welcome` template is missing an exclamation mark. **Show me the updated file.**"*
+> *"In `TemplateEngine.java`, the `welcome` template is missing an exclamation mark. **Show me the updated file.**"*
 > → 30 lines back. (With a 600-line file, 600 lines.)
 
-> *"In `templateEngine.js`, the `welcome` template is missing an exclamation mark. **Reply with a unified diff only, no commentary.**"*
+> *"In `TemplateEngine.java`, the `welcome` template is missing an exclamation mark. **Reply with a unified diff only, no commentary.**"*
 > → 5 lines back.
 
 Output tokens are typically three to five times the price of input tokens on direct APIs. In a per-request model like Copilot's, verbose output still hurts: it increases latency, fills the context for subsequent turns, and evicts earlier useful content sooner.
@@ -196,26 +196,27 @@ The leverage is in the system prompt. Two lines in `copilot-instructions.md` mak
 The indexer that powers retrieval respects `.gitignore`. Tighten it.
 
 ```diff
-+dist/
-+coverage/
-+*.snapshot.json
- node_modules/
++target/
++*.class
++*.jar
++.idea/
++*.iml
  *.log
 ```
 
 **Important gotcha:** if a file is *already tracked* in git, adding the path to `.gitignore` does not untrack it — the indexer still sees it. You also need:
 
 ```bash
-git rm --cached dist/bundle.js
+git rm --cached target/demo-0.0.1-SNAPSHOT.jar
 ```
 
 For secrets, fixtures, and vendored deps, use **content exclusions** at the org/repo level (most coding-assistant providers expose this).
 
 The other half of repo hygiene is **summary comments at the top of each module**:
 
-```js
-// templateEngine — central renderer. Use `render(id, data)` for new emails.
-// `renderLegacy(id, data)` is deprecated and only used by orderConfirmation.js.
+```java
+// TemplateEngine — central renderer. Use render(id, data) for new emails.
+// renderLegacy(id, data) is deprecated and only used by OrderConfirmationService.
 // Templates registered: welcome, order_confirmation_v2.
 ```
 
@@ -240,17 +241,26 @@ When the same question takes three times longer in your fourth chat than in a fr
 
 You can also lint for context bloat the same way you lint for bundle size. A 30-line script in CI is enough to catch the most common regressions:
 
-```js
-// fail if any .github/instructions/*.md exceeds 150 lines
-import { readdir, readFile } from "node:fs/promises";
-const files = (await readdir(".github/instructions")).filter(f => f.endsWith(".md"));
-let failed = false;
-for (const f of files) {
-  const lines = (await readFile(`.github/instructions/${f}`, "utf8")).split("\n").length;
-  console.log(`${lines > 150 ? "❌" : "✅"} ${f}: ${lines} lines`);
-  if (lines > 150) failed = true;
+```java
+// LintInstructions.java — run with: java LintInstructions.java
+// Fails if any .github/instructions/*.md exceeds 150 lines.
+import java.nio.file.*;
+import java.util.stream.*;
+
+public class LintInstructions {
+    public static void main(String[] args) throws Exception {
+        Path dir = Path.of(".github/instructions");
+        boolean failed = false;
+        try (Stream<Path> files = Files.list(dir)) {
+            for (Path f : (Iterable<Path>) files.filter(p -> p.toString().endsWith(".md"))::iterator) {
+                long lines = Files.lines(f).count();
+                System.out.println((lines > 150 ? "❌ " : "✅ ") + f.getFileName() + ": " + lines + " lines");
+                if (lines > 150) failed = true;
+            }
+        }
+        if (failed) System.exit(1);
+    }
 }
-if (failed) process.exit(1);
 ```
 
 Wire it into CI and context bloat stops accumulating silently across PRs.
@@ -272,7 +282,7 @@ Named after the *Simpsons* character whose superpower is relentless dumbness. Th
 
 1. Write a `TODO.md` with checkbox tasks.
 2. Open agent-mode chat with a **cheap model**.
-3. Tell it: *"Read `TODO.md`. Pick the first unchecked item. Implement only that. Run `npm test`. If green, check the box and commit. Pick the next. Repeat."*
+3. Tell it: *"Read `TODO.md`. Pick the first unchecked item. Implement only that. Run `mvn test`. If green, check the box and commit. Pick the next. Repeat."*
 
 That's it. The agent burns through the list one item at a time.
 

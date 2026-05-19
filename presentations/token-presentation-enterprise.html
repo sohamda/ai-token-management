@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Context Is a Budget — Reducing Token Usage in AI-Assisted Development</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root{
+  color-scheme:light;
+  --cp-bg:#f7f4ef; --cp-bg-elevated:#fcfbf8; --cp-surface:#ffffff; --cp-surface-soft:#f5f5f5;
+  --cp-border:#dedede; --cp-border-strong:#919191;
+  --cp-text:#242424; --cp-text-muted:#5c5c5c; --cp-text-soft:#6f6f6f;
+  --cp-accent:#b11f4b; --cp-accent-hover:#9a1a41; --cp-accent-soft:rgba(177,31,75,0.08);
+  --cp-accent-fg:#ffffff;
+  --cp-success:#16a34a; --cp-danger:#dc2626; --cp-warning:#f59e0b; --cp-link:#0078d4;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.12);
+  --cp-overlay:rgba(255,255,255,0.8); --cp-panel:rgba(255,255,255,0.86);
+  --cp-panel-strong:rgba(255,255,255,0.96); --cp-sheen:rgba(255,255,255,0.55);
+  --cp-highlight:rgba(177,31,75,0.12);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --cp-bg:#3d3b3a; --cp-bg-elevated:#343231; --cp-surface:#292929; --cp-surface-soft:#2e2e2e;
+  --cp-border:#474747; --cp-border-strong:#5f5f5f;
+  --cp-text:#dedede; --cp-text-muted:#919191; --cp-text-soft:#b0b0b0;
+  --cp-accent:#fd8ea1; --cp-accent-hover:#fb7b91; --cp-accent-soft:rgba(253,142,161,0.14);
+  --cp-accent-fg:#1a1a1a;
+  --cp-success:#4ade80; --cp-danger:#f87171; --cp-warning:#fbbf24; --cp-link:#4da6ff;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.32);
+  --cp-overlay:rgba(41,41,41,0.88); --cp-panel:rgba(41,41,41,0.72);
+  --cp-panel-strong:rgba(41,41,41,0.96); --cp-sheen:rgba(255,255,255,0.04);
+  --cp-highlight:rgba(253,142,161,0.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--cp-bg);color:var(--cp-text);
+  font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif;}
+code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
+
+.deck{height:100vh;display:flex;flex-direction:column}
+.stage{flex:1;overflow:hidden;position:relative}
+.slide{position:absolute;inset:0;padding:48px 72px 96px;overflow:auto;
+  display:none;flex-direction:column;animation:fade .25s ease}
+.slide.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.eyebrow{color:var(--cp-accent);text-transform:uppercase;letter-spacing:.12em;
+  font-size:12px;font-weight:700;margin-bottom:12px}
+h1{font-size:44px;margin:0 0 12px;line-height:1.1}
+h2{font-size:34px;margin:0 0 18px;line-height:1.15}
+h3{font-size:20px;margin:18px 0 8px}
+p{font-size:17px;line-height:1.55;color:var(--cp-text);margin:0 0 12px}
+.lead{font-size:20px;color:var(--cp-text-muted);max-width:1000px}
+ul{margin:0 0 12px 0;padding-left:22px}
+li{margin:6px 0;line-height:1.5}
+small,.muted{color:var(--cp-text-muted)}
+
+.grid{display:grid;gap:18px}
+.cols-2{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:1fr 1fr 1fr}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+
+.card{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:16px;padding:20px;box-shadow:0 0 2px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14)}
+.card h3{margin-top:0;color:var(--cp-accent)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;
+  background:var(--cp-accent-soft);color:var(--cp-accent);font-size:12px;font-weight:600;
+  margin-right:6px}
+
+.kbd{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
+  border-radius:6px;padding:1px 6px;font-size:13px}
+
+pre{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
+  border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;margin:0}
+
+.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;
+  background:var(--cp-bg-elevated);border-top:1px solid var(--cp-border)}
+.bar .nav{display:flex;gap:8px}
+button{font-family:inherit;font-size:14px;background:var(--cp-surface);
+  color:var(--cp-text);border:1px solid var(--cp-border);border-radius:10px;
+  padding:8px 14px;cursor:pointer;transition:all .15s}
+button:hover{border-color:var(--cp-border-strong)}
+button.primary{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
+button.primary:hover{background:var(--cp-accent-hover);border-color:var(--cp-accent-hover)}
+.counter{font-variant-numeric:tabular-nums;color:var(--cp-text-muted);font-size:13px}
+
+.title-slide{align-items:center;justify-content:center;text-align:center}
+.title-slide h1{font-size:60px;line-height:1.05;margin-bottom:18px}
+.title-slide .lead{font-size:22px}
+
+.metric{font-size:42px;font-weight:700;color:var(--cp-accent);line-height:1}
+.metric small{display:block;font-size:13px;color:var(--cp-text-muted);
+  font-weight:500;margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--cp-border)}
+th{color:var(--cp-text-muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:var(--cp-surface-soft)}
+
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.flow .step{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600}
+.flow .arrow{color:var(--cp-accent);font-weight:700}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.good{border-left:4px solid var(--cp-success)}
+.bad{border-left:4px solid var(--cp-danger)}
+.warn{border-left:4px solid var(--cp-warning)}
+
+.footer{position:absolute;bottom:14px;right:24px;font-size:12px;color:var(--cp-text-muted)}
+
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cp-border)}
+.dot.active{background:var(--cp-accent)}
+
+.hand{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:8px;align-items:center;margin:14px 0}
+.hand .ag{background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-radius:12px;padding:14px;text-align:center}
+.hand .ag.lead{border-color:var(--cp-accent)}
+.hand .ar{text-align:center;color:var(--cp-accent);font-size:22px;font-weight:700}
+
+.theme-toggle{position:absolute;top:14px;right:18px;z-index:10}
+
+/* big quote */
+.quote{font-size:28px;line-height:1.3;color:var(--cp-text);max-width:1000px;
+  border-left:4px solid var(--cp-accent);padding:6px 0 6px 24px;margin:18px 0}
+.quote small{display:block;margin-top:14px;font-size:14px;color:var(--cp-text-muted)}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+.road .col{background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:14px;padding:18px}
+.road .col h3{margin-top:0;color:var(--cp-accent)}
+.road .col .when{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cp-text-muted)}
+
+/* ROI mini-calc */
+.roi{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:6px}
+.roi .controls label{display:block;font-size:13px;color:var(--cp-text-muted);margin:10px 0 4px;font-weight:600}
+.roi .controls input,.roi .controls select{width:100%;padding:9px 12px;border-radius:10px;
+  border:1px solid var(--cp-border);background:var(--cp-surface);color:var(--cp-text);font-family:inherit;font-size:14px}
+.roi .controls input:focus,.roi .controls select:focus{outline:none;border-color:var(--cp-accent)}
+.roi .results{display:flex;flex-direction:column;gap:10px}
+.roi .res-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:10px 14px;background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:10px}
+.roi .res-row .lbl{font-size:13px;color:var(--cp-text-muted)}
+.roi .res-row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--cp-text)}
+.roi .res-row.total{background:var(--cp-accent-soft);border-color:var(--cp-accent)}
+.roi .res-row.total .val{color:var(--cp-accent);font-size:24px}
+.roi .savings{padding:12px 14px;background:var(--cp-surface);border:1px solid var(--cp-border);
+  border-left:4px solid var(--cp-success);border-radius:10px;font-size:14px;line-height:1.5}
+.roi .savings b{color:var(--cp-success)}
+
+/* ---------- ?print=1 layout ---------- */
+@page{size:A4 landscape;margin:0}
+html.print-mode,html.print-mode body{height:auto;overflow:visible}
+html.print-mode .deck{height:auto;display:block}
+html.print-mode .stage{overflow:visible;position:static;height:auto}
+html.print-mode .bar,html.print-mode .theme-toggle{display:none!important}
+html.print-mode .slide{position:static!important;display:flex!important;
+  width:100%;height:100vh;page-break-after:always;break-after:page;
+  overflow:hidden;animation:none}
+html.print-mode .slide:last-child{page-break-after:auto;break-after:auto}
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="theme-toggle">
+    <button id="themeBtn" title="Toggle theme">🌗</button>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="bar">
+    <div class="dots" id="dots"></div>
+    <div class="counter"><span id="cur">1</span> / <span id="total">1</span></div>
+    <div class="nav">
+      <button id="prev">← Prev</button>
+      <button class="primary" id="next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const slides = [
+
+// 1 — Title
+`<section class="slide title-slide">
+  <div class="eyebrow">Executive Briefing · 15 minutes</div>
+  <h1>Context Is a Budget</h1>
+  <p class="lead" style="font-size:26px;margin-top:6px"><b>Reducing Token Usage in AI-Assisted Development</b></p>
+  <p class="lead" style="margin-top:14px">Patterns that turn an expensive, unpredictable habit into a governable, measurable engineering practice.</p>
+  <div class="footer">Use ← → or Space to navigate · Press <span class="kbd">F</span> for fullscreen</div>
+</section>`,
+
+// 2 — The opportunity (and the silent tax)
+`<section class="slide">
+  <div class="eyebrow">The opportunity</div>
+  <h2>Coding assistants are now infrastructure</h2>
+  <div class="grid cols-3" style="margin-top:14px">
+    <div class="card"><div class="metric">55%<small>of dev time</small></div><p style="margin-top:14px">Median % of coding time augmented by AI in mature engineering orgs (2025 surveys, internal benchmarks).</p></div>
+    <div class="card"><div class="metric">2–4×<small>throughput uplift</small></div><p style="margin-top:14px">On well-scoped tasks (refactors, tests, glue code) — the upper end requires <i>workflow</i>, not just licenses.</p></div>
+    <div class="card"><div class="metric">$10–50k<small>per 50 devs / month</small></div><p style="margin-top:14px">Realistic burn rate on agentic tooling without governance. Easily 3× higher in heavy agent-mode shops.</p></div>
+  </div>
+  <p class="lead" style="margin-top:24px">The question is no longer <i>whether</i> to deploy AI assistants. It is <b>how to operate them at scale without losing the upside to waste, risk, and inconsistency.</b></p>
+</section>`,
+
+// 3 — The three silent taxes
+`<section class="slide">
+  <div class="eyebrow">Why this matters now</div>
+  <h2>Three silent taxes on every AI workflow</h2>
+  <div class="grid cols-3" style="margin-top:14px">
+    <div class="card bad">
+      <h3>💰 Cost drift</h3>
+      <p>Premium-request quotas burn unevenly across teams. Top 10% of users typically consume 60–70% of spend.</p>
+      <p class="muted"><b>Without governance:</b> month-to-month variance >40%.</p>
+    </div>
+    <div class="card warn">
+      <h3>⏱ Latency creep</h3>
+      <p>Bigger contexts = slower responses. A 30-turn chat is 3–5× slower than a fresh one.</p>
+      <p class="muted"><b>Felt as:</b> developer frustration, abandoned sessions, fewer iterations.</p>
+    </div>
+    <div class="card bad">
+      <h3>📉 Context rot</h3>
+      <p>Recall and reasoning <b>degrade</b> as the context window fills — even within the model's advertised limit. Quality goes <i>down</i>.</p>
+      <p class="muted"><b>Source:</b> Anthropic & Chroma research, 2024–25.</p>
+    </div>
+  </div>
+  <p class="quote" style="margin-top:18px">All three taxes have the same root cause: <b>treating context as free real estate</b> instead of a finite budget.</p>
+</section>`,
+
+// 4 — Anatomy of the spend
+`<section class="slide">
+  <div class="eyebrow">Where the budget goes</div>
+  <h2>Anatomy of an AI request</h2>
+  <table style="margin-top:6px">
+    <thead><tr><th>Bucket</th><th>Typical share</th><th>Why it bloats</th><th>Lever</th></tr></thead>
+    <tbody>
+      <tr><td>System prompt / instructions</td><td>5–15%</td><td>Copy-pasted boilerplate</td><td>Custom instructions, skills</td></tr>
+      <tr><td>Tool / function schemas</td><td>10–40%</td><td>Re-sent <b>every</b> turn; unused MCP servers</td><td>Tool hygiene</td></tr>
+      <tr><td>Retrieved files & code chunks</td><td>20–60%</td><td>Whole-file dumps; broad retrieval</td><td>Context engineering</td></tr>
+      <tr><td>Conversation history</td><td>10–30%</td><td>Grows linearly without compaction</td><td>Auto-compact</td></tr>
+      <tr><td>Model output</td><td>5–20%</td><td>"Let me explain what I'm about to do…"</td><td>Output discipline</td></tr>
+    </tbody>
+  </table>
+  <p class="lead" style="margin-top:18px">Most teams are surprised which bucket dominates theirs. <b>Profile first, optimize second.</b></p>
+</section>`,
+
+// 5 — The eight levers (overview)
+`<section class="slide">
+  <div class="eyebrow">The playbook</div>
+  <h2>Eight levers that move the needle</h2>
+  <div class="grid cols-4" style="margin-top:6px">
+    <div class="card"><h3>A · Context engineering</h3><p>Scope every ask. <b>#file:</b> over broad retrieval.</p></div>
+    <div class="card"><h3>B · Prompt caching</h3><p>Static at top, dynamic at bottom. ~10% of base cost on cache hits.</p></div>
+    <div class="card"><h3>C · Tool / MCP hygiene</h3><p>Disable unused servers. Compact tool responses by default.</p></div>
+    <div class="card"><h3>D · Instructions & skills</h3><p>Codify conventions once. Path-scoped instructions for stack-specific rules.</p></div>
+    <div class="card"><h3>E · Model routing</h3><p>Cheap for routine, mid for real work, top-tier only when stuck.</p></div>
+    <div class="card"><h3>F · Output discipline</h3><p>Diffs, not whole files. No preamble. Structured output.</p></div>
+    <div class="card"><h3>G · Repo hygiene</h3><p>.gitignore the indexer. Summary comments at module tops.</p></div>
+    <div class="card"><h3>H · Observability</h3><p>Latency as a token meter. CI lints for prompt/instruction bloat.</p></div>
+  </div>
+  <p class="lead" style="margin-top:18px">None are novel. None are hard. The <b>compounding</b> across all eight is what moves a $30k/mo bill to $12k/mo with <i>better</i> output quality.</p>
+</section>`,
+
+// 6 — Three workflow patterns
+`<section class="slide">
+  <div class="eyebrow">The multipliers</div>
+  <h2>Three workflow patterns that compound on top</h2>
+  <div class="grid cols-3" style="margin-top:6px">
+    <div class="card">
+      <h3>1 · The Ralph loop</h3>
+      <p>Cheap model + small fresh context + on-disk state (<code>TODO.md</code>).</p>
+      <ul>
+        <li>One iteration per task</li>
+        <li>State on disk, not in chat</li>
+        <li>Restartable, auditable in <code>git log</code></li>
+      </ul>
+      <p class="muted"><b>Use for:</b> chore lists, repetitive migrations, test backfill.</p>
+    </div>
+    <div class="card">
+      <h3>2 · Auto-compact</h3>
+      <p>Summarize a long chat to <code>plan.md</code>; continue in a new chat from the summary.</p>
+      <ul>
+        <li>4 KB summary keeps ~95% of the signal</li>
+        <li>~3% of the cost</li>
+        <li>Summary becomes a cacheable prefix</li>
+      </ul>
+      <p class="muted"><b>Use for:</b> any session past ~60% context.</p>
+    </div>
+    <div class="card">
+      <h3>3 · Agent handover</h3>
+      <p>Planner → Implementer → Reviewer. Three short chats, three model choices, one shared artifact.</p>
+      <ul>
+        <li>~5–8 premium reqs per feature</li>
+        <li>vs. 30+ on a single mega-chat</li>
+        <li>Auditable paper trail</li>
+      </ul>
+      <p class="muted"><b>Use for:</b> any non-trivial feature.</p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:18px">These are <b>composable</b>. Mature teams run all three on different workloads in the same week.</p>
+</section>`,
+
+// 7 — Agent handover detail (the showpiece pattern)
+`<section class="slide">
+  <div class="eyebrow">Pattern deep-dive</div>
+  <h2>Planner → Implementer → Reviewer</h2>
+  <div class="hand" style="margin:24px 0 12px">
+    <div class="ag lead">
+      <h3 style="margin:0;color:var(--cp-accent)">Planner</h3>
+      <p style="margin:8px 0 0">Top-tier model · 1 call</p>
+      <p class="muted" style="margin:4px 0 0;font-size:13px">Produces plan.md: goal, acceptance criteria, tasks, out-of-scope, risks. <b>No code.</b></p>
+    </div>
+    <div class="ar">→</div>
+    <div class="ag">
+      <h3 style="margin:0;color:var(--cp-accent)">Implementer</h3>
+      <p style="margin:8px 0 0">Cheap model · agent mode</p>
+      <p class="muted" style="margin:4px 0 0;font-size:13px">Ralph loop on plan.md: pick task, edit, test, check box, commit. Sees only plan.md + touched files.</p>
+    </div>
+    <div class="ar">→</div>
+    <div class="ag lead">
+      <h3 style="margin:0;color:var(--cp-accent)">Reviewer</h3>
+      <p style="margin:8px 0 0">Top-tier model · 1 call</p>
+      <p class="muted" style="margin:4px 0 0;font-size:13px">Sees plan.md + diff only. Marks each criterion PASS/FAIL. VERDICT: APPROVE / REQUEST CHANGES.</p>
+    </div>
+  </div>
+  <div class="grid cols-2" style="margin-top:14px">
+    <div class="card good">
+      <h3>The discipline</h3>
+      <p>Only the <b>handover artifact</b> (plan.md, the diff, the review notes) crosses the boundary. <b>Never chat history.</b></p>
+      <p>Each agent stays small, focused, cheap.</p>
+    </div>
+    <div class="card">
+      <h3>The economics</h3>
+      <p><b>~5–8 premium requests</b> for an end-to-end feature <i>with a paper trail</i>.</p>
+      <p>Compare: a single Opus mega-chat — 30+ requests at 10× the multiplier.</p>
+    </div>
+  </div>
+</section>`,
+
+// 8 — Governance & risk
+`<section class="slide">
+  <div class="eyebrow">Enterprise concerns</div>
+  <h2>Governance, security, and the audit trail</h2>
+  <div class="grid cols-2" style="margin-top:6px">
+    <div class="card">
+      <h3>What we control at the repo</h3>
+      <ul>
+        <li><b>Custom instructions</b> — committed, reviewed, versioned. Same artifact as code.</li>
+        <li><b>Path-scoped rules</b> — load only when relevant; no ambient cost.</li>
+        <li><b>Content exclusions</b> — secrets, fixtures, generated code never reach the model.</li>
+        <li><b>.gitignore + indexer policies</b> — only the right surface is retrievable.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What we observe at the platform</h3>
+      <ul>
+        <li><b>Per-user, per-team usage</b> — Copilot Metrics API, vendor dashboards.</li>
+        <li><b>Per-turn telemetry</b> — model, latency, status (Output panel <code>ccreq</code> lines).</li>
+        <li><b>CI lints</b> — fail builds when instruction/prompt files exceed budget.</li>
+        <li><b>Audit trail</b> — every implementer commit is one task = one revertible change.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="quote" style="margin-top:18px">"The worst tokens are the ones you're paying for and not noticing."<small>— a slogan that sounds glib until you see the first month's bill.</small></p>
+</section>`,
+
+// 9 — Impact calculator
+`<section class="slide">
+  <div class="eyebrow">Order-of-magnitude check</div>
+  <h2>What does discipline buy you?</h2>
+  <div class="roi">
+    <div class="controls">
+      <label>Team size (developers)</label>
+      <input type="number" id="rTeam" value="50" min="1" max="5000" />
+      <label>Complex tasks / dev / week <span class="muted" style="font-weight:400">(features, refactors, multi-file)</span></label>
+      <input type="number" id="rComplex" value="3" min="0" max="50" />
+      <label>Simple tasks / dev / week <span class="muted" style="font-weight:400">(small edits, tests, glue code)</span></label>
+      <input type="number" id="rSimple" value="15" min="0" max="200" />
+      <label>Default workflow today</label>
+      <select id="rNow">
+        <option value="heavy">Top-tier model, single mega-chat (heavy)</option>
+        <option value="mixed" selected>Mixed models, no routing discipline</option>
+        <option value="some">Some routing, occasional handover</option>
+      </select>
+      <label>After applying the playbook</label>
+      <select id="rAfter">
+        <option value="full" selected>Routing + caching + handover (full)</option>
+        <option value="partial">Routing + caching only (partial)</option>
+        <option value="aggressive">Aggressive — cheap models do most work</option>
+      </select>
+    </div>
+    <div class="results">
+      <div class="res-row"><span class="lbl">Model turns / month — today</span><span class="val" id="rNowTurns">—</span></div>
+      <div class="res-row"><span class="lbl">Model turns / month — after</span><span class="val" id="rAfterTurns">—</span></div>
+      <div class="res-row"><span class="lbl">Context tokens / month — today</span><span class="val" id="rNowTokens">—</span></div>
+      <div class="res-row"><span class="lbl">Context tokens / month — after</span><span class="val" id="rAfterTokens">—</span></div>
+      <div class="res-row total"><span class="lbl">Reduction in context consumed</span><span class="val" id="rPct">—</span></div>
+      <div class="res-row total"><span class="lbl">Engineer wait-time reclaimed</span><span class="val" id="rHours">—</span></div>
+      <div class="savings" id="rNote">Adjust the controls to see how routing + caching + handover compound for <b>your</b> team size.</div>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:14px">Numbers are illustrative — built to give an order-of-magnitude sense, not a quote. Real engagements include a measurement window first.</p>
+</section>`,
+
+// 10 — Live demo possibilities
+`<section class="slide">
+  <div class="eyebrow">If we have time / in a follow-up</div>
+  <h2>Live demos available on request</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>🎯 Context engineering — the 10× delta</h3>
+      <p>Same refactor, two prompts. Vague agent-mode ask vs. a <code>#file:</code>-pinned ask. Compare diffs and request payload sizes side by side.</p>
+      <p class="muted"><b>Time:</b> 3 min · <b>Shows:</b> immediate cost &amp; quality win.</p>
+    </div>
+    <div class="card">
+      <h3>🔄 Ralph loop on a real backlog</h3>
+      <p>A 5-item TODO.md drained autonomously by a cheap model. Per-task commits, all tests green, fully reset-able.</p>
+      <p class="muted"><b>Time:</b> 5 min · <b>Shows:</b> directed AI workload, audit trail.</p>
+    </div>
+    <div class="card">
+      <h3>📋 Planner → Implementer → Reviewer</h3>
+      <p>End-to-end feature delivered across three short chats. Count the premium requests as it runs.</p>
+      <p class="muted"><b>Time:</b> 6 min · <b>Shows:</b> paper trail + cost discipline together.</p>
+    </div>
+    <div class="card">
+      <h3>🚦 Observability &amp; CI lints</h3>
+      <p>The 30-line lint script that fails CI on instruction-file bloat. Demonstrate it passing, then bloat a file and watch it fail.</p>
+      <p class="muted"><b>Time:</b> 3 min · <b>Shows:</b> guardrails that survive PR reviews.</p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:18px">All four can run in <b>a single 60-min hands-on follow-up</b> using your own repo, with your security boundaries respected.</p>
+</section>`,
+
+// 11 — Adoption roadmap
+`<section class="slide">
+  <div class="eyebrow">How a rollout actually looks</div>
+  <h2>Phase 1 → Phase 2 → Phase 3</h2>
+  <div class="road">
+    <div class="col">
+      <div class="when">Phase 1</div>
+      <h3>Measure &amp; standardize</h3>
+      <ul>
+        <li>Baseline usage from vendor dashboards + Metrics API</li>
+        <li>Identify top 3 repos by AI activity</li>
+        <li>Land <b>AGENTS.md / copilot-instructions.md</b> in each</li>
+        <li>Add path-scoped instructions for the dominant stack</li>
+        <li>Disable unused MCP servers org-wide</li>
+      </ul>
+      <p class="muted"><b>Outcome:</b> visibility + a defensible default config.</p>
+    </div>
+    <div class="col">
+      <div class="when">Phase 2</div>
+      <h3>Adopt the patterns</h3>
+      <ul>
+        <li>Pilot the <b>Ralph loop</b> on one team's chore backlog</li>
+        <li>Pilot the <b>handover pattern</b> on one feature per squad</li>
+        <li>Train champions; capture before/after telemetry</li>
+        <li>Land the <b>CI lint scripts</b> in those repos</li>
+      </ul>
+      <p class="muted"><b>Outcome:</b> two teams with measured uplift &amp; reduced spend.</p>
+    </div>
+    <div class="col">
+      <div class="when">Phase 3</div>
+      <h3>Scale &amp; govern</h3>
+      <ul>
+        <li>Roll patterns out across the org's top-20 repos</li>
+        <li>Add lint scripts to org-wide CI templates</li>
+        <li>Establish a <b>model routing policy</b> (default mid-tier; top-tier requires reason)</li>
+        <li>Recurring cost &amp; latency review on a shared dashboard</li>
+      </ul>
+      <p class="muted"><b>Outcome:</b> repeatable, governed practice — not a tribal habit.</p>
+    </div>
+  </div>
+</section>`,
+
+// 12 — The ask
+`<section class="slide title-slide">
+  <div class="eyebrow">Next steps</div>
+  <h1>From expensive habit<br/>to disciplined practice</h1>
+  <p class="lead" style="margin-top:18px">A two-week assessment on one of your repos:<br/>baseline measurement → playbook fit → quantified projection.</p>
+  <div class="grid cols-3" style="margin-top:30px;width:90%;max-width:1000px">
+    <div class="card"><h3>Week 1</h3><p>Baseline current usage + collect <code>ccreq</code> telemetry from 1–2 pilot teams.</p></div>
+    <div class="card"><h3>Week 2</h3><p>Apply 3 levers + 1 workflow pattern. Measure delta on the same workloads.</p></div>
+    <div class="card"><h3>Out of it</h3><p>A short report: real numbers for <b>your</b> code, not industry averages, and a phased rollout plan.</p></div>
+  </div>
+  <p class="quote" style="margin-top:30px;font-size:24px">Treat your token budget the way you treat your cloud bill.<small>The discipline already exists in your org. We just port it over.</small></p>
+</section>`,
+
+];
+
+// ---------------- runtime ----------------
+const stage = document.getElementById("stage");
+const dotsEl = document.getElementById("dots");
+const curEl = document.getElementById("cur");
+const totalEl = document.getElementById("total");
+let cur = 0;
+
+function render(){
+  stage.innerHTML = slides.map((s,i) =>
+    s.replace('class="slide', `class="slide${i===cur?" active":""}`)
+  ).join("");
+  dotsEl.innerHTML = slides.map((_,i)=>`<div class="dot${i===cur?" active":""}"></div>`).join("");
+  curEl.textContent = cur + 1;
+  totalEl.textContent = slides.length;
+  bindCalc();
+}
+function go(d){ cur = Math.max(0, Math.min(slides.length-1, cur+d)); render(); }
+
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(+1);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") go(+1);
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") go(-1);
+  else if (e.key === "Home") { cur = 0; render(); }
+  else if (e.key === "End") { cur = slides.length - 1; render(); }
+  else if (e.key.toLowerCase() === "f") {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+
+document.getElementById("themeBtn").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+};
+
+// Impact calculator wiring (slide 9)
+function bindCalc(){
+  const team = document.getElementById("rTeam");
+  if (!team) return; // not on this slide
+  const complex = document.getElementById("rComplex");
+  const simple  = document.getElementById("rSimple");
+  const now     = document.getElementById("rNow");
+  const after   = document.getElementById("rAfter");
+  const nowTurns   = document.getElementById("rNowTurns");
+  const afterTurns = document.getElementById("rAfterTurns");
+  const nowTokens   = document.getElementById("rNowTokens");
+  const afterTokens = document.getElementById("rAfterTokens");
+  const pctEl   = document.getElementById("rPct");
+  const hoursEl = document.getElementById("rHours");
+  const note    = document.getElementById("rNote");
+
+  // Per-task profile: turns + avg context tokens per turn
+  // "Today" profiles
+  const todayProfile = {
+    heavy:  { complex: { turns: 40, ctx: 60000 }, simple: { turns: 8, ctx: 25000 } },
+    mixed:  { complex: { turns: 30, ctx: 50000 }, simple: { turns: 5, ctx: 20000 } },
+    some:   { complex: { turns: 20, ctx: 35000 }, simple: { turns: 4, ctx: 15000 } },
+  };
+  // "After playbook" profiles
+  const afterProfile = {
+    full:       { complex: { turns: 8,  ctx: 15000 }, simple: { turns: 2, ctx: 6000 } },
+    partial:    { complex: { turns: 14, ctx: 22000 }, simple: { turns: 3, ctx: 9000 } },
+    aggressive: { complex: { turns: 6,  ctx: 12000 }, simple: { turns: 2, ctx: 5000 } },
+  };
+
+  const fmtInt = (n) => Math.round(n).toLocaleString();
+  const fmtTokens = (n) => {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + " B";
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + " M";
+    if (n >= 1e3) return (n / 1e3).toFixed(0) + " K";
+    return Math.round(n).toString();
+  };
+
+  function totalsFor(profile){
+    const devs = +team.value;
+    const cTasks = (+complex.value) * devs * 4;  // weeks/month
+    const sTasks = (+simple.value)  * devs * 4;
+    const turns  = cTasks * profile.complex.turns + sTasks * profile.simple.turns;
+    const tokens = cTasks * profile.complex.turns * profile.complex.ctx
+                 + sTasks * profile.simple.turns  * profile.simple.ctx;
+    return { turns, tokens };
+  }
+
+  function recalc(){
+    const N = totalsFor(todayProfile[now.value]);
+    const A = totalsFor(afterProfile[after.value]);
+    nowTurns.textContent   = fmtInt(N.turns)  + " turns";
+    afterTurns.textContent = fmtInt(A.turns)  + " turns";
+    nowTokens.textContent   = fmtTokens(N.tokens);
+    afterTokens.textContent = fmtTokens(A.tokens);
+    const pct = N.tokens > 0 ? Math.round(100 * (1 - A.tokens / N.tokens)) : 0;
+    pctEl.textContent = pct + "% less context";
+    // Wait-time model: ~30 sec of dev wait/cognitive overhead per avoided turn
+    const turnsAvoided = Math.max(0, N.turns - A.turns);
+    const hours = (turnsAvoided * 30) / 3600;
+    hoursEl.textContent = fmtInt(hours) + " hrs / mo";
+    note.innerHTML = `Routing + caching + handover removes <b>${fmtInt(turnsAvoided)} model turns/month</b> (${pct}% less context shipped to the LLM) — recovering roughly <b>${fmtInt(hours)} engineer-hours</b> of waiting and re-prompting. The compounding win is fewer <i>turns to outcome</i>, not just cheaper turns.`;
+  }
+  [team, complex, simple, now, after].forEach(el => el.addEventListener("input", recalc));
+  recalc();
+}
+
+// ---------- print mode (?print=1) ----------
+if (new URLSearchParams(window.location.search).get('print') === '1') {
+  document.documentElement.classList.add('print-mode');
+  document.documentElement.setAttribute('data-theme', 'light');
+  // Render all slides visible at once
+  stage.innerHTML = slides.map((s) =>
+    s.replace('class="slide', 'class="slide active')
+  ).join('');
+  bindCalc();
+} else {
+  render();
+}
+</script>
+</body>
+</html>

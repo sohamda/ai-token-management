@@ -12,7 +12,7 @@ Named after the *Simpsons* character whose superpower is relentless dumbness. Th
 
 1. Write a `TODO.md` with checkbox tasks.
 2. Open agent-mode chat with a **cheap model**.
-3. Tell it: *"Read `TODO.md`. Pick the first unchecked item. Implement only that. Run `npm test`. If green, check the box and commit. Pick the next. Repeat."*
+3. Tell it: *"Read `TODO.md`. Pick the first unchecked item. Implement only that. Run `mvn test`. If green, check the box and commit. Pick the next. Repeat."*
 
 That's it. The agent burns through the list one item at a time.
 

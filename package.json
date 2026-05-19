@@ -9,6 +9,10 @@
     "lint:glob-audit": "node tools/lint-glob-audit.js",
     "lint:context": "npm run lint:instr-size && npm run lint:prompt-size && npm run lint:glob-audit"
   },
-  "keywords": ["demo", "ai", "copilot"],
+  "keywords": [
+    "demo",
+    "ai",
+    "copilot"
+  ],
   "license": "MIT"
 }
