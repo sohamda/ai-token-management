@@ -33,6 +33,7 @@ $ErrorActionPreference = 'Stop'
 if (-not (Test-Path $Html)) { throw "HTML not found: $Html" }
 $Html = (Resolve-Path $Html).Path
 if (-not $Output) { $Output = [IO.Path]::ChangeExtension($Html, '.pdf') }
+$Output = [IO.Path]::GetFullPath($Output)
 
 # Locate Edge (stable, then beta, then dev).
 $edgeCandidates = @(
@@ -64,12 +65,13 @@ Write-Host "  Output : $Output"
 $edgeArgs = @(
   '--headless=new'
   '--disable-gpu'
+  '--run-all-compositor-stages-before-draw'
   '--no-pdf-header-footer'
   '--hide-scrollbars'
   '--no-first-run'
   '--no-default-browser-check'
   "--user-data-dir=$profileDir"
-  "--virtual-time-budget=10000"
+  "--virtual-time-budget=60000"
   "--print-to-pdf=$Output"
   $url
 )
