@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>GitHub Copilot, end-to-end</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root{
+  color-scheme:light;
+  --cp-bg:#f7f4ef; --cp-bg-elevated:#fcfbf8; --cp-surface:#ffffff; --cp-surface-soft:#f5f5f5;
+  --cp-border:#dedede; --cp-border-strong:#919191;
+  --cp-text:#242424; --cp-text-muted:#5c5c5c; --cp-text-soft:#6f6f6f;
+  --cp-accent:#b11f4b; --cp-accent-hover:#9a1a41; --cp-accent-soft:rgba(177,31,75,0.08);
+  --cp-accent-fg:#ffffff;
+  --cp-success:#16a34a; --cp-danger:#dc2626; --cp-warning:#f59e0b; --cp-link:#0078d4;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.12);
+  --cp-overlay:rgba(255,255,255,0.8); --cp-panel:rgba(255,255,255,0.86);
+  --cp-panel-strong:rgba(255,255,255,0.96); --cp-sheen:rgba(255,255,255,0.55);
+  --cp-highlight:rgba(177,31,75,0.12);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --cp-bg:#3d3b3a; --cp-bg-elevated:#343231; --cp-surface:#292929; --cp-surface-soft:#2e2e2e;
+  --cp-border:#474747; --cp-border-strong:#5f5f5f;
+  --cp-text:#dedede; --cp-text-muted:#919191; --cp-text-soft:#b0b0b0;
+  --cp-accent:#fd8ea1; --cp-accent-hover:#fb7b91; --cp-accent-soft:rgba(253,142,161,0.14);
+  --cp-accent-fg:#1a1a1a;
+  --cp-success:#4ade80; --cp-danger:#f87171; --cp-warning:#fbbf24; --cp-link:#4da6ff;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.32);
+  --cp-overlay:rgba(41,41,41,0.88); --cp-panel:rgba(41,41,41,0.72);
+  --cp-panel-strong:rgba(41,41,41,0.96); --cp-sheen:rgba(255,255,255,0.04);
+  --cp-highlight:rgba(253,142,161,0.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--cp-bg);color:var(--cp-text);
+  font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif;}
+code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
+.deck{height:100vh;display:flex;flex-direction:column}
+.stage{flex:1;overflow:hidden;position:relative}
+.slide{position:absolute;inset:0;padding:48px 72px 96px;overflow:auto;display:none;flex-direction:column;animation:fade .25s ease}
+.slide.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.eyebrow{color:var(--cp-accent);text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700;margin-bottom:12px}
+h1{font-size:44px;margin:0 0 12px;line-height:1.1}
+h2{font-size:34px;margin:0 0 18px;line-height:1.15}
+h3{font-size:20px;margin:18px 0 8px}
+p{font-size:17px;line-height:1.55;color:var(--cp-text);margin:0 0 12px}
+.lead{font-size:20px;color:var(--cp-text-muted);max-width:900px}
+ul{margin:0 0 12px 0;padding-left:22px}
+li{margin:6px 0;line-height:1.5}
+small,.muted{color:var(--cp-text-muted)}
+.grid{display:grid;gap:18px}
+.cols-2{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:1fr 1fr 1fr}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:16px;padding:20px;box-shadow:0 0 2px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14)}
+.card h3{margin-top:0;color:var(--cp-accent)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--cp-accent-soft);color:var(--cp-accent);font-size:12px;font-weight:600;margin-right:6px}
+.kbd{background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:6px;padding:1px 6px;font-size:13px}
+pre{background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;margin:0}
+.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--cp-bg-elevated);border-top:1px solid var(--cp-border)}
+.bar .nav{display:flex;gap:8px}
+button{font-family:inherit;font-size:14px;background:var(--cp-surface);color:var(--cp-text);border:1px solid var(--cp-border);border-radius:10px;padding:8px 14px;cursor:pointer;transition:all .15s}
+button:hover{border-color:var(--cp-border-strong)}
+button.primary{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
+button.primary:hover{background:var(--cp-accent-hover);border-color:var(--cp-accent-hover)}
+.counter{font-variant-numeric:tabular-nums;color:var(--cp-text-muted);font-size:13px}
+.title-slide{align-items:center;justify-content:center;text-align:center}
+.title-slide h1{font-size:60px;line-height:1.05;margin-bottom:18px}
+.title-slide .lead{font-size:22px}
+.metric{font-size:42px;font-weight:700;color:var(--cp-accent);line-height:1}
+.metric small{display:block;font-size:13px;color:var(--cp-text-muted);font-weight:500;margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--cp-border)}
+th{color:var(--cp-text-muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:var(--cp-surface-soft)}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.flow .step{background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600}
+.flow .arrow{color:var(--cp-accent);font-weight:700}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.pill{background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:999px;padding:6px 12px;font-size:13px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.good{border-left:4px solid var(--cp-success)}
+.bad{border-left:4px solid var(--cp-danger)}
+.warn{border-left:4px solid var(--cp-warning)}
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cp-border)}
+.dot.active{background:var(--cp-accent)}
+.loop{display:flex;align-items:center;justify-content:center;gap:14px;margin:18px 0;flex-wrap:wrap}
+.loop .node{background:var(--cp-surface);border:2px solid var(--cp-accent);border-radius:14px;padding:14px 18px;font-weight:600;text-align:center;min-width:130px}
+.loop .arr{color:var(--cp-accent);font-size:24px;font-weight:700}
+.hand{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:8px;align-items:center;margin:14px 0}
+.hand .ag{background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:12px;padding:14px;text-align:center}
+.hand .ag.lead{border-color:var(--cp-accent)}
+.hand .ar{text-align:center;color:var(--cp-accent);font-size:22px;font-weight:700}
+.theme-toggle{position:absolute;top:14px;right:18px;z-index:10}
+.calc{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:8px}
+.calc .controls label{display:block;font-size:13px;color:var(--cp-text-muted);margin:10px 0 4px;font-weight:600}
+.calc .controls input,.calc .controls select{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--cp-border);background:var(--cp-surface);color:var(--cp-text);font-family:inherit;font-size:14px}
+.calc .controls input:focus,.calc .controls select:focus{outline:none;border-color:var(--cp-accent)}
+.calc .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calc .results{display:flex;flex-direction:column;gap:10px}
+.calc .res-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:10px}
+.calc .res-row .lbl{font-size:13px;color:var(--cp-text-muted)}
+.calc .res-row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--cp-text)}
+.calc .res-row.total{background:var(--cp-accent-soft);border-color:var(--cp-accent)}
+.calc .res-row.total .val{color:var(--cp-accent);font-size:24px}
+.calc .savings{padding:12px 14px;background:var(--cp-surface);border:1px solid var(--cp-border);border-left:4px solid var(--cp-success);border-radius:10px;font-size:14px;line-height:1.5}
+.calc .savings b{color:var(--cp-success)}
+.copilot-badge{display:inline-block;background:#24292e;color:#fff;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:.04em}
+html[data-theme="dark"] .copilot-badge{background:#fff;color:#24292e}
+
+/* ---------- ?print=1 layout ---------- */
+@page{size:A4 landscape;margin:0}
+html.print-mode,html.print-mode body{height:auto;overflow:visible}
+html.print-mode .deck{height:auto;display:block}
+html.print-mode .stage{overflow:visible;position:static;height:auto}
+html.print-mode .bar,html.print-mode .theme-toggle{display:none!important}
+html.print-mode .slide{position:static!important;display:flex!important;
+  width:100%;height:100vh;page-break-after:always;break-after:page;
+  overflow:hidden;animation:none}
+html.print-mode .slide:last-child{page-break-after:auto;break-after:auto}
+html.print-mode .refs-slide{padding:36px 56px 64px}
+html.print-mode .refs-slide h2{font-size:30px;margin-bottom:12px}
+html.print-mode .refs-slide .card{padding:16px}
+html.print-mode .refs-slide li{font-size:14px;line-height:1.35;margin:4px 0}
+</style>
+</head>
+<body>
+<div class="deck">
+  <button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
+  <div class="stage" id="stage"></div>
+  <div class="bar">
+    <div class="dots" id="dots"></div>
+    <div class="counter"><span id="cur">1</span> / <span id="total">1</span></div>
+    <div class="nav">
+      <button id="prev">← Prev</button>
+      <button class="primary" id="next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const slides = [
+  // 1
+  `<section class="slide title-slide">
+    <div class="eyebrow">Technical Session · <span class="copilot-badge">GitHub Copilot</span></div>
+    <h1>GitHub Copilot, end-to-end</h1>
+    <p class="lead">Using Copilot effectively across the IDE, the CLI, and the cloud coding agent — with the practices that make any of them stick.</p>
+    <div style="margin-top:30px;color:var(--cp-text-muted);font-size:13px">Use ← → or Space to navigate · Press <span class="kbd">F</span> for fullscreen</div>
+  </section>`,
+
+  // 2
+  `<section class="slide">
+    <div class="eyebrow">Set the stage</div>
+    <h2>One developer, three surfaces</h2>
+    <p class="lead">Most teams use Copilot like an autocomplete. The leverage sits in <b>knowing which surface to reach for</b> — and what to put in front of it.</p>
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="card"><h3>💻 IDE</h3><p>Synchronous. You're at the wheel. Chat, edits, agent mode in VS Code.</p><p class="muted">Best for: writing code with you, in the loop.</p></div>
+      <div class="card"><h3>🖥 CLI</h3><p>Terminal-native. Scriptable. Pairs with your existing dev loop.</p><p class="muted">Best for: shell answers, scripting Copilot into pipelines.</p></div>
+      <div class="card"><h3>☁️ Cloud agent</h3><p>Asynchronous. Assign an issue, Copilot opens a PR. You review.</p><p class="muted">Best for: well-scoped tasks while you do other work.</p></div>
+    </div>
+    <p class="muted" style="margin-top:14px">Same model family. Very different operating models.</p>
+  </section>`,
+
+  // 3
+  `<section class="slide">
+    <div class="eyebrow">Know your surfaces</div>
+    <h2>Where Copilot reads context</h2>
+    <table>
+      <thead><tr><th>Surface</th><th>What it sends</th><th>Token weight</th></tr></thead>
+      <tbody>
+        <tr><td><b>Inline completions</b> (ghost text)</td><td>Open file + nearby files (neighboring tabs)</td><td>Light · auto-managed</td></tr>
+        <tr><td><b>Copilot Chat</b></td><td>Active file, selection, attached <span class="kbd">#file</span>/<span class="kbd">#selection</span>, history</td><td>Medium · you control it</td></tr>
+        <tr><td><b>Agent mode (broad retrieval)</b></td><td>Indexed repo chunks via retrieval + tool calls</td><td>Heavy · scales with repo size</td></tr>
+        <tr><td><b>Edits / Agent mode</b></td><td>Working set + tool calls + multi-turn loop</td><td>Heaviest · multiplies per iteration</td></tr>
+        <tr><td><b>Coding agent (cloud)</b></td><td>Issue + repo + CI logs across many turns</td><td>Heavy · long-running</td></tr>
+        <tr><td><b>Copilot CLI</b></td><td>Shell context + files you reference</td><td>Light–medium</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:14px">Different surface, different optimization. Treat them differently.</p>
+  </section>`,
+
+  // 4
+  `<section class="slide">
+    <div class="eyebrow">Agenda · 45 min</div>
+    <h2>What we'll cover</h2>
+    <div class="grid cols-2">
+      <div class="card"><span class="tag">8 min</span><h3>IDE essentials + Demo</h3><p>Chat variables, agent mode, custom instructions, prompt files, an MCP server.</p></div>
+      <div class="card"><span class="tag">15 min</span><h3>Cloud coding agent + Demo ⭐</h3><p>Assign an issue → Copilot opens a PR → review loop. AGENTS.md, guardrails, <span class="kbd">gh aw</span> orchestration.</p></div>
+      <div class="card"><span class="tag">6 min</span><h3>Copilot CLI + Demo</h3><p><span class="kbd">gh copilot suggest</span> / <span class="kbd">explain</span> and scripting Copilot into your dev loop.</p></div>
+      <div class="card"><span class="tag">11 min</span><h3>Cross-cutting + adoption</h3><p>Context is a budget · model routing · Phase 1→3 rollout · <span class="kbd">awesome-copilot</span>.</p></div>
+    </div>
+  </section>`,
+
+  // 5
+  `<section class="slide">
+    <div class="eyebrow">Demo 1 · 8 min</div>
+    <h2>IDE essentials — live</h2>
+    <p class="lead">Same task, three ways. Watch the context, the model, and the outcome.</p>
+    <div class="grid cols-3" style="margin-top:14px">
+      <div class="card"><h3>1 · Broad vs scoped</h3><ul><li>Agent mode, no scoping</li><li>Same question with <span class="kbd">#file</span> + <span class="kbd">#selection</span></li><li>Compare turns + token weight</li></ul></div>
+      <div class="card"><h3>2 · Codify it</h3><ul><li>Add <span class="kbd">.github/copilot-instructions.md</span></li><li>Scope with <span class="kbd">*.instructions.md</span></li><li>Re-run · watch behavior shift</li></ul></div>
+      <div class="card"><h3>3 · Reuse it</h3><ul><li>Promote to a <span class="kbd">.prompt.md</span> file</li><li>Invoke as a slash command</li><li>Mention an MCP server tool</li></ul></div>
+    </div>
+    <p class="muted" style="margin-top:14px">Source: <span class="kbd">ai-token-management/demos/01</span> + <span class="kbd">04</span>.</p>
+  </section>`,
+
+  // 6
+  `<section class="slide">
+    <div class="eyebrow">Lever A</div>
+    <h2>Scoped context — the #1 Copilot win</h2>
+    <p class="lead">Most teams overuse broad retrieval (Agent mode for simple questions). It's powerful but expensive. Reach for sharper variables first.</p>
+    <div class="grid cols-2">
+      <div class="card good">
+        <h3>✅ Use targeted variables</h3>
+        <ul>
+          <li><span class="kbd">#file:src/api/orders.ts</span> — exactly the file</li>
+          <li><span class="kbd">#selection</span> — only what's highlighted</li>
+          <li><span class="kbd">#editor</span> — visible portion only</li>
+          <li><span class="kbd">#terminalLastCommand</span> / <span class="kbd">#terminalSelection</span></li>
+          <li><span class="kbd">#problems</span> — the diagnostics, not the whole file</li>
+          <li><span class="kbd">#fetch:&lt;url&gt;</span> — pull docs on demand</li>
+          <li><span class="kbd">#changes</span> — git diff vs base</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>❌ Don't reflexively reach for</h3>
+        <ul>
+          <li>Agent mode + a one-line question — retrieves & dumps a lot of context</li>
+          <li><span class="kbd">#codebase</span> when one <span class="kbd">#file</span> would do</li>
+          <li>Pasting whole stack traces — use <span class="kbd">#problems</span> or trim</li>
+          <li>"Look at all the test files" — attach the one you mean</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 7
+  `<section class="slide">
+    <div class="eyebrow">Lever B</div>
+    <h2>Custom instructions — codify it once</h2>
+    <p class="lead">Anything you tell Copilot in <i>every</i> chat belongs in an instructions file. It loads automatically — no tokens spent re-typing.</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Repo-wide</h3>
+        <pre>.github/copilot-instructions.md</pre>
+        <p>Build/test/lint commands, naming conventions, "be concise, no preamble", which dirs to ignore, output style. Auto-applied to every chat in the repo.</p>
+      </div>
+      <div class="card">
+        <h3>Scoped (path-targeted)</h3>
+<pre>.github/instructions/react.instructions.md
+---
+applyTo: "src/**/*.tsx"
+---
+Use functional components.
+Prefer hooks over HOCs.
+Tests live next to the component.</pre>
+        <p>Loaded only when files matching the glob are in context. Smaller per-turn footprint.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">Personal-level instructions live in VS Code settings — use these for your style preferences, not team standards.</p>
+  </section>`,
+
+  // 8
+  `<section class="slide">
+    <div class="eyebrow">Lever C</div>
+    <h2>Prompt files — reusable, parameterized</h2>
+    <p class="lead">For repeating tasks (write a test, scaffold a route, run a migration), a saved <span class="kbd">.prompt.md</span> beats re-typing the same prompt every time.</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Where they live</h3>
+        <pre>.github/prompts/new-endpoint.prompt.md</pre>
+        <p>Run with <span class="kbd">/new-endpoint</span> in chat. Versioned with the repo so the whole team uses the same recipe.</p>
+      </div>
+      <div class="card">
+        <h3>Why it saves tokens</h3>
+        <ul>
+          <li>One canonical prompt → consistent prefix → better cache hit rate.</li>
+          <li>Encodes "do this <i>exactly</i> this way" — model doesn't wander, fewer retries.</li>
+          <li>Embeds <span class="kbd">#file</span> references, so context is curated once.</li>
+          <li>Ship them in your repo template; new devs are productive on day one.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 9
+  `<section class="slide title-slide">
+    <div class="eyebrow">Marquee segment · 15 min</div>
+    <h1>The cloud coding agent</h1>
+    <p class="lead">Async Copilot. Assign an issue, get a pull request.</p>
+  </section>`,
+
+  // 10
+  `<section class="slide">
+    <div class="eyebrow">What it is</div>
+    <h2>Copilot coding agent — the mental model</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Async, not in your editor</h3>
+        <p>You file or pick an issue → assign it to Copilot → Copilot creates a branch, plans, edits, opens a PR. You review on github.com or in your IDE.</p>
+      </div>
+      <div class="card">
+        <h3>Lives inside your GitHub</h3>
+        <p>Runs as a GitHub Action with scoped permissions. PRs follow the same review rules as any teammate's: branch protection, CODEOWNERS, CI, the lot.</p>
+      </div>
+      <div class="card">
+        <h3>Good fits</h3>
+        <ul><li>Bug fix with a clear repro</li><li>Dependency bumps, codemods</li><li>Test coverage on a focused area</li><li>"Apply this pattern across N files"</li></ul>
+      </div>
+      <div class="card">
+        <h3>Bad fits</h3>
+        <ul><li>Ambiguous design work</li><li>Tasks that need lots of human judgment</li><li>Anything you can't describe in an issue someone else could pick up</li></ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 11
+  `<section class="slide">
+    <div class="eyebrow">The flow</div>
+    <h2>From issue to merge — what happens</h2>
+    <table>
+      <thead><tr><th>Step</th><th>Where</th><th>What you do · what it does</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Frame the task</td><td>Issue body</td><td>Write it like a task for a new teammate: context, acceptance criteria, scope guardrails.</td></tr>
+        <tr><td>2 · Assign Copilot</td><td>Issue assignee</td><td>Copilot reacts in seconds; a draft PR + branch get created.</td></tr>
+        <tr><td>3 · Plan & explore</td><td>PR description</td><td>Copilot posts its plan and what it'll touch. You can comment to redirect.</td></tr>
+        <tr><td>4 · Edit & test</td><td>Action runner</td><td>Runs in an ephemeral environment. CI runs on the PR like any other.</td></tr>
+        <tr><td>5 · Review iterate</td><td>PR comments</td><td>Treat it like a junior PR. Comments on diffs → new commits.</td></tr>
+        <tr><td>6 · Merge</td><td>Same as always</td><td>Branch protection, required reviews, CODEOWNERS all still apply.</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:12px">You don't lose control — you just shift from author to reviewer.</p>
+  </section>`,
+
+  // 12
+  `<section class="slide">
+    <div class="eyebrow">Repo prerequisites</div>
+    <h2>What your repo needs before you assign anything</h2>
+    <div class="grid cols-2">
+      <div class="card good">
+        <h3>✅ Must-have</h3>
+        <ul>
+          <li><span class="kbd">AGENTS.md</span> or <span class="kbd">.github/copilot-instructions.md</span> — build/test/lint commands, conventions, what NOT to touch</li>
+          <li>CI that actually catches problems (tests, lint, type-check)</li>
+          <li>Branch protection + required PR review</li>
+          <li>Clear issue templates (so prompts are uniform)</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3>✅ Nice-to-have</h3>
+        <ul>
+          <li>Scoped <span class="kbd">*.instructions.md</span> for sub-trees</li>
+          <li>Prompt files for recurring task shapes (bug-fix, dep-bump)</li>
+          <li>CODEOWNERS so the right humans get pinged</li>
+          <li>Custom <span class="kbd">.github/workflows/copilot-*.yml</span> for sandbox + secrets</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px">The repo IS the prompt. A messy repo gives a messy PR.</p>
+  </section>`,
+
+  // 13
+  `<section class="slide">
+    <div class="eyebrow">Guardrails</div>
+    <h2>Keeping the agent in its lane</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>🔐 Permissions</h3>
+        <ul><li>Workflow runs with least-privilege <span class="kbd">GITHUB_TOKEN</span></li><li>No prod secrets in the agent environment</li><li>Ephemeral container per run</li></ul>
+      </div>
+      <div class="card">
+        <h3>📋 Allowed tools</h3>
+        <ul><li>Whitelist MCP servers per repo</li><li>Disable unused ones (cost + risk)</li><li>Pin tool versions in workflow</li></ul>
+      </div>
+      <div class="card">
+        <h3>👀 Review gate</h3>
+        <ul><li>Required reviewers via CODEOWNERS</li><li>Required status checks</li><li>No auto-merge for Copilot PRs (start)</li></ul>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:16px">A Copilot PR is a PR. Your existing review discipline is the safety net — don't bypass it.</p>
+  </section>`,
+
+  // 14
+  `<section class="slide">
+    <div class="eyebrow">Orchestration · gh aw</div>
+    <h2>GitHub Actions Workflows for agentic tasks</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>What <span class="kbd">gh aw</span> gives you</h3>
+        <ul>
+          <li>Declarative agent workflows in <span class="kbd">.github/workflows/</span></li>
+          <li>Schedule + event triggers (cron, label, comment)</li>
+          <li>Composable steps with MCP tool access</li>
+          <li>Audit trail in standard Actions logs</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Patterns that earn their keep</h3>
+        <ul>
+          <li><b>Nightly</b>: dep audit + draft PR for findings</li>
+          <li><b>On-label</b> <span class="kbd">bug:triaged</span>: agent attempts a fix</li>
+          <li><b>On-comment</b> <span class="kbd">/copilot fix this</span>: scoped follow-ups</li>
+          <li><b>Codemod</b>: one issue → N PRs across N services</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">Reference: <span class="kbd">aks-store-demo/workshop-plan/handout-module-7-gh-aw.md</span>.</p>
+  </section>`,
+
+  // 15
+  `<section class="slide">
+    <div class="eyebrow">Demo 2 · 15 min · LIVE</div>
+    <h2>Cloud agent — end to end</h2>
+    <p class="lead">We'll watch Copilot pick up a real issue from <span class="kbd">aks-store-demo</span> and open a PR.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>What you'll see</h3>
+        <ol>
+          <li>The pre-staged issue (well-framed)</li>
+          <li>Assign → first comment / plan</li>
+          <li>The branch + diff as it lands</li>
+          <li>AGENTS.md influence on style</li>
+          <li>Review comment → follow-up commit</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>What to watch for</h3>
+        <ul>
+          <li>How much the agent re-asks vs assumes</li>
+          <li>What CI catches that the agent missed</li>
+          <li>Where a human still adds the most value</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 16
+  `<section class="slide">
+    <div class="eyebrow">CLI</div>
+    <h2>When the terminal beats the IDE</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Reach for the CLI when…</h3>
+        <ul>
+          <li>You're already in the shell — don't break flow</li>
+          <li>You need a quick "what does this command do?"</li>
+          <li>You want output you can pipe / script</li>
+          <li>You're on a server / container without an IDE</li>
+          <li>You're building Copilot into CI / pre-commit</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Stay in the IDE when…</h3>
+        <ul>
+          <li>You need the diff applied to a file</li>
+          <li>You want multi-file edits with review</li>
+          <li>You need agent mode's broad retrieval</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 17
+  `<section class="slide">
+    <div class="eyebrow">CLI · what to script</div>
+    <h2>From one-off prompts to pipeline hooks</h2>
+    <table>
+      <thead><tr><th>Command / pattern</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td><span class="kbd">gh copilot suggest "..."</span></td><td>Shell / git / gh command discovery without leaving the terminal</td></tr>
+        <tr><td><span class="kbd">gh copilot explain "..."</span></td><td>Decode an opaque command from logs or a teammate</td></tr>
+        <tr><td><span class="kbd">gh copilot suggest -t shell ...</span></td><td>Constrain to a specific tool (shell / gh / git)</td></tr>
+        <tr><td>Wrap in a shell alias / function</td><td>One-keystroke "fix this command", "what failed in CI"</td></tr>
+        <tr><td>Call from a pre-commit hook</td><td>Auto-explain risky diffs, suggest commit messages</td></tr>
+        <tr><td>Call from CI on failure</td><td>Attach a Copilot triage comment to the failed run</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:12px">Demo source: live in <span class="kbd">ai-token-management/tools/lint-*.js</span> as "Copilot in your pipelines".</p>
+  </section>`,
+
+  // 18
+  `<section class="slide">
+    <div class="eyebrow">Demo 3 · 6 min · LIVE</div>
+    <h2>Copilot CLI — live</h2>
+    <ol style="font-size:18px;line-height:1.7">
+      <li><span class="kbd">gh copilot suggest "find all *.md files modified this week"</span></li>
+      <li><span class="kbd">gh copilot explain "$(tail -1 ~/.bash_history)"</span></li>
+      <li>Pipe it: <span class="kbd">npm test 2>&1 | tail -50 | gh copilot explain</span></li>
+      <li>Show <span class="kbd">tools/lint-instructions.js</span> — Copilot wired into the team's pre-commit / CI</li>
+    </ol>
+  </section>`,
+
+  // 19
+  `<section class="slide">
+    <div class="eyebrow">Live calculator</div>
+    <h2>Premium-request budget calculator</h2>
+    <div class="calc">
+      <div class="controls">
+        <label>Model (multiplier per request)</label>
+        <select id="cModel">
+          <option value="gpt41">GPT-4.1 — base/included (0×)</option>
+          <option value="gpt5mini">GPT-5 mini — 0.33×</option>
+          <option value="gpt5" selected>GPT-5 — 1×</option>
+          <option value="sonnet">Claude Sonnet 4 — 1×</option>
+          <option value="sonnet45">Claude Sonnet 4.5 — 1×</option>
+          <option value="o3mini">o3-mini — 0.33×</option>
+          <option value="opus">Claude Opus 4 — 10×</option>
+          <option value="gemini">Gemini 2.5 Pro — 1×</option>
+        </select>
+        <div class="row">
+          <div><label>Chat requests / day / dev</label><input id="cReq" type="number" value="40" min="0"/></div>
+          <div><label>Agent runs / day / dev</label><input id="cAgent" type="number" value="3" min="0"/></div>
+        </div>
+        <div class="row">
+          <div><label>Avg tool turns per agent run</label><input id="cTurns" type="number" value="8" min="1"/></div>
+          <div><label>Developers</label><input id="cDev" type="number" value="50" min="1"/></div>
+        </div>
+        <label>Plan (monthly premium-request quota / user)</label>
+        <select id="cPlan">
+          <option value="0">Free — 50</option>
+          <option value="300">Pro — 300</option>
+          <option value="1500" selected>Business — 1500</option>
+          <option value="1500">Enterprise — 1500</option>
+        </select>
+      </div>
+      <div class="results">
+        <div class="res-row"><span class="lbl">Premium requests / dev / day</span><span class="val" id="rDay">—</span></div>
+        <div class="res-row"><span class="lbl">Premium requests / dev / month (22d)</span><span class="val" id="rMon">—</span></div>
+        <div class="res-row"><span class="lbl">% of monthly quota used</span><span class="val" id="rPct">—</span></div>
+        <div class="res-row total"><span class="lbl">Team total / month</span><span class="val" id="rTeam">—</span></div>
+        <div class="savings" id="rSav">Adjust the model or workload to see how the budget moves.</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">Multipliers per GitHub's published premium-request table. Agent runs count each tool turn that calls the model. Adjust to your reality.</p>
+  </section>`,
+
+  // 20
+  `<section class="slide">
+    <div class="eyebrow">Lever E</div>
+    <h2>The model picker is your routing knob</h2>
+    <table>
+      <thead><tr><th>Model</th><th>Multiplier</th><th>Reach for it when…</th></tr></thead>
+      <tbody>
+        <tr><td>GPT-4.1</td><td>0× (included)</td><td>Boilerplate, completions, simple Q&A. Default if it fits.</td></tr>
+        <tr><td>GPT-5 mini / o3-mini</td><td>0.33×</td><td>Lightweight chat, quick reasoning, cheap iterations.</td></tr>
+        <tr><td>GPT-5</td><td>1×</td><td>Default for "real" coding work, debugging, design.</td></tr>
+        <tr><td>Claude Sonnet 4 / 4.5</td><td>1×</td><td>Long contexts, agent mode, careful refactors.</td></tr>
+        <tr><td>Gemini 2.5 Pro</td><td>1×</td><td>Very long files, multimodal needs.</td></tr>
+        <tr><td>Claude Opus 4</td><td><b>10×</b></td><td>Genuinely hard reasoning. Use sparingly — one Opus call = ten Sonnet calls.</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:14px">Multipliers per GitHub's published list (May 2026). Verify in your billing settings.</p>
+    <div class="card warn" style="margin-top:14px">
+      <b>Rule:</b> start with the cheapest viable model. Escalate only when stuck. Most "I need Opus" feelings disappear with better context.
+    </div>
+  </section>`,
+
+  // 21
+  `<section class="slide">
+    <div class="eyebrow">Lever G</div>
+    <h2>Repo hygiene for Copilot's indexer</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Make retrieval cheap</h3>
+        <ul>
+          <li><span class="kbd">.gitignore</span> drives what Copilot indexes \u2014 keep it tight (no <span class="kbd">target/</span>, generated code, large fixtures).</li>
+          <li>Use <b>content exclusions</b> in repo / org settings to keep secrets and noise out of context.</li>
+          <li>Smaller, well-named modules → retrieval finds the right symbol.</li>
+          <li>Keep README and per-folder docstrings current — a 200-token summary beats re-reading 5,000 tokens of source.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Make completions sharper</h3>
+        <ul>
+          <li>Open the files Copilot should consider — <b>neighboring tabs</b> are inline-completion fuel.</li>
+          <li>Close noisy unrelated tabs.</li>
+          <li>Name things well — Copilot leans heavily on identifiers.</li>
+          <li>Type the function signature first; let inline completions fill the body.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 22
+  `<section class="slide">
+    <div class="eyebrow">Take-home</div>
+    <h2>Quick-win checklist for Copilot teams</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>This week</h3>
+        <ul>
+          <li>☐ Commit <span class="kbd">.github/copilot-instructions.md</span> — build, test, lint, "be concise".</li>
+          <li>☐ Add <span class="kbd">AGENTS.md</span> at repo root.</li>
+          <li>☐ Tighten <span class="kbd">.gitignore</span>; add content exclusions for secrets/generated code.</li>
+          <li>☐ Audit MCP servers — disable what you don't use.</li>
+          <li>☐ Switch default model to GPT-4.1 or GPT-5; reserve Opus for hard problems.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>This month</h3>
+        <ul>
+          <li>☐ Build 3 prompt files for your most common tasks (<span class="kbd">.github/prompts/</span>).</li>
+          <li>☐ Add scoped <span class="kbd">*.instructions.md</span> with <span class="kbd">applyTo</span> globs per stack.</li>
+          <li>☐ Adopt one-task-per-chat + manual compact via <span class="kbd">plan.md</span>.</li>
+          <li>☐ Try the planner→implementer→reviewer relay on one workstream.</li>
+          <li>☐ Train the team on <span class="kbd">#file</span>, <span class="kbd">#selection</span>, <span class="kbd">#problems</span> — kill Agent-mode-by-default.</li>
+          <li>☐ Review premium-request usage monthly.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 23
+  `<section class="slide">
+    <div class="eyebrow">Know your primitives</div>
+    <h2>Custom agents · MCP · Skills — when to use which</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>🤖 Custom agents</h3>
+        <p><b>What:</b> a packaged persona + instructions + allowed tools, invoked by name.</p>
+        <p><b>Reach for it when:</b> you have a recurring <i>role</i> (api-architect, sql-reviewer, release-notes-writer) that needs a consistent voice and toolset across many tasks.</p>
+        <p class="muted">Files: <span class="kbd">*.agent.md</span> · invoked via <span class="kbd">@agent-name</span></p>
+      </div>
+      <div class="card">
+        <h3>🔌 MCP servers</h3>
+        <p><b>What:</b> external tools the model can call (databases, APIs, file systems, browsers, your own services).</p>
+        <p><b>Reach for it when:</b> the agent needs <i>access</i> — fetch from Jira, query Postgres, hit an internal API, automate a browser.</p>
+        <p class="muted">Config: <span class="kbd">.vscode/mcp.json</span> · whitelist per repo</p>
+      </div>
+      <div class="card">
+        <h3>📚 Skills</h3>
+        <p><b>What:</b> packaged domain knowledge the agent lazy-loads only when relevant (instructions + helper scripts + examples).</p>
+        <p><b>Reach for it when:</b> you have a <i>capability</i> the agent should know how to do — write a PR description, debug a flaky test, generate API docs — without bloating every prompt.</p>
+        <p class="muted">Files: <span class="kbd">skills/&lt;name&gt;/SKILL.md</span> · loaded on demand</p>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:14px">Rule of thumb: <b>agents = who</b>, <b>MCP = what it can touch</b>, <b>skills = what it knows how to do</b>. Most real workflows use all three.</p>
+  </section>`,
+
+  // 24
+  `<section class="slide">
+    <div class="eyebrow">APM</div>
+    <h2>Agent Package Manager — npm for your agent setup</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>The problem APM solves</h3>
+        <ul>
+          <li>Every dev manually copies instructions, prompts, skills, MCP configs into every repo</li>
+          <li>No versioning, no lockfile, no provenance</li>
+          <li>Each tool (Copilot / Claude / Cursor / Codex) wants its own file layout</li>
+          <li>"It works on my agent" — different setups give different results</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What APM gives you</h3>
+        <ul>
+          <li><b>One manifest</b> (<span class="kbd">apm.yml</span>), <b>one lockfile</b> (<span class="kbd">apm.lock.yaml</span>)</li>
+          <li><span class="kbd">apm install</span> — every primitive in place, every client configured</li>
+          <li><span class="kbd">apm compile -t copilot</span> — writes <span class="kbd">.github/copilot-instructions.md</span> for you</li>
+          <li>Transitive deps, content-security scan, integrity hashes</li>
+          <li>Targets: Copilot · Claude Code · Cursor · OpenCode · Codex · Gemini · Windsurf</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">Think <span class="kbd">package.json</span> / <span class="kbd">requirements.txt</span> / <span class="kbd">Cargo.toml</span> — but for agent context. Repo: <span class="kbd">danielmeppiel/apm</span>.</p>
+  </section>`,
+
+  // 25
+  `<section class="slide">
+    <div class="eyebrow">The manifest</div>
+    <h2><span class="kbd">apm.yml</span> — your agent dependencies, declared once</h2>
+    <pre><code># apm.yml — ships with your repo
+name: payments-service
+version: 1.0.0
+
+dependencies:
+  apm:
+    # Skill packs
+    - anthropics/skills/skills/frontend-design
+    # Plugins from the community catalogue
+    - github/awesome-copilot/plugins/context-engineering
+    # A specific agent primitive
+    - github/awesome-copilot/agents/api-architect.agent.md
+    # A versioned org-internal package
+    - acme/platform-standards#v2.3.0
+
+  mcp:
+    # MCP servers installed into every detected client
+    - name: io.github.github/github-mcp-server
+      transport: http
+    - name: io.acme/postgres-mcp
+      transport: stdio
+</code></pre>
+    <div class="grid cols-2" style="margin-top:12px">
+      <div class="card">
+        <h3>What you commit</h3>
+        <ul><li><span class="kbd">apm.yml</span> — declared deps</li><li><span class="kbd">apm.lock.yaml</span> — resolved tree + hashes</li><li><span class="kbd">.apm/</span> — your own local primitives</li></ul>
+      </div>
+      <div class="card">
+        <h3>What you DON'T commit</h3>
+        <ul><li><span class="kbd">apm_modules/</span> — installed deps (gitignore it)</li><li>Tool-specific generated files (e.g. <span class="kbd">.github/copilot-instructions.md</span> if generated)</li></ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 26
+  `<section class="slide">
+    <div class="eyebrow">Don't reinvent</div>
+    <h2>Start from <span class="kbd">awesome-copilot</span></h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>What's in there</h3>
+        <ul>
+          <li><b>instructions/</b> — copy-paste <span class="kbd">*.instructions.md</span> by stack</li>
+          <li><b>prompts/</b> — reusable <span class="kbd">.prompt.md</span> templates</li>
+          <li><b>skills/</b> — packaged skills the agent loads on demand</li>
+          <li><b>agents/</b> — sub-agent definitions</li>
+          <li><b>cookbook/</b> — recipes for common workflows</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>How to use it</h3>
+        <ul>
+          <li>Fork → trim to your stack → publish internally</li>
+          <li>Pin versions; treat updates like a dependency PR</li>
+          <li>Add a CI lint so your artifacts stay clean</li>
+          <li>Contribute back what works</li>
+        </ul>
+      </div>
+    </div>
+  </section>`,
+
+  // 27
+  `<section class="slide title-slide">
+    <h1>Pick the right surface,<br/>then make the repo the prompt.</h1>
+    <p class="lead">IDE · CLI · cloud agent — same model, three operating modes. The leverage is in matching the surface to the task, and giving each one a repo it can actually reason about.</p>
+  </section>`
+];
+
+const stage = document.getElementById('stage');
+const dots  = document.getElementById('dots');
+const cur   = document.getElementById('cur');
+const tot   = document.getElementById('total');
+
+stage.innerHTML = slides.join('');
+const slideEls = [...stage.querySelectorAll('.slide')];
+tot.textContent = slideEls.length;
+
+slideEls.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot'; d.dataset.i = i;
+  d.addEventListener('click', () => go(i));
+  dots.appendChild(d);
+});
+
+// Premium-request multipliers (per GitHub's published table)
+const MULT = {
+  gpt41: 0, gpt5mini: 0.33, o3mini: 0.33,
+  gpt5: 1, sonnet: 1, sonnet45: 1, gemini: 1,
+  opus: 10
+};
+function fmt(n){
+  if (n >= 1000) return n.toLocaleString(undefined,{maximumFractionDigits:0});
+  if (n >= 10)   return n.toFixed(1);
+  return n.toFixed(2);
+}
+function recalc(){
+  const sel = document.getElementById('cModel');
+  if (!sel) return;
+  const m  = MULT[sel.value] ?? 1;
+  const ch = +document.getElementById('cReq').value || 0;
+  const ag = +document.getElementById('cAgent').value || 0;
+  const tu = +document.getElementById('cTurns').value || 1;
+  const dv = +document.getElementById('cDev').value || 1;
+  const quota = +document.getElementById('cPlan').value || 0;
+
+  const reqsPerDayPerDev = (ch + ag * tu) * m;
+  const reqsPerMonth = reqsPerDayPerDev * 22;
+  const team = reqsPerMonth * dv;
+  const pct = quota ? Math.round((reqsPerMonth / quota) * 100) : 0;
+
+  document.getElementById('rDay').textContent  = fmt(reqsPerDayPerDev);
+  document.getElementById('rMon').textContent  = fmt(reqsPerMonth);
+  document.getElementById('rPct').textContent  = quota ? pct + '%' : '—';
+  document.getElementById('rTeam').textContent = fmt(team);
+
+  let msg = '';
+  if (m === 0) {
+    msg = `<b>GPT-4.1 doesn't consume premium requests</b> on most plans — it's the safest default for high-volume work.`;
+  } else if (pct > 100) {
+    msg = `⚠️ At this rate each dev burns <b>${pct}%</b> of monthly quota — they'll hit the cap mid-month.`;
+  } else if (pct > 70) {
+    msg = `Each dev uses <b>${pct}%</b> of quota. Tight. Consider routing routine work to GPT-4.1 (0×).`;
+  } else {
+    msg = `Each dev uses <b>${pct}%</b> of monthly quota — comfortable. Switching to Opus (10×) would <b>10×</b> these numbers.`;
+  }
+  document.getElementById('rSav').innerHTML = msg;
+}
+
+if (new URLSearchParams(window.location.search).get('print') === '1') {
+  document.documentElement.classList.add('print-mode');
+  document.documentElement.setAttribute('data-theme', 'light');
+  stage.innerHTML = slides.map((s) =>
+    s.replace('class="slide', 'class="slide active')
+  ).join('');
+} else {
+  let idx = 0;
+  function go(i){
+    idx = Math.max(0, Math.min(slideEls.length - 1, i));
+    slideEls.forEach((el,j) => el.classList.toggle('active', j === idx));
+    [...dots.children].forEach((d,j) => d.classList.toggle('active', j === idx));
+    cur.textContent = idx + 1;
+    recalc();
+  }
+  go(0);
+
+  document.getElementById('prev').onclick = () => go(idx - 1);
+  document.getElementById('next').onclick = () => go(idx + 1);
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(idx + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slideEls.length - 1);
+    else if (e.key.toLowerCase() === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+  document.getElementById('themeToggle').onclick = () => {
+    const c = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', c === 'dark' ? 'light' : 'dark');
+  };
+
+  document.addEventListener('input', e => { if (['cModel','cReq','cAgent','cTurns','cDev','cPlan'].includes(e.target.id)) recalc(); });
+  document.addEventListener('change', e => { if (['cModel','cReq','cAgent','cTurns','cDev','cPlan'].includes(e.target.id)) recalc(); });
+}
+</script>
+</body>
+</html>
