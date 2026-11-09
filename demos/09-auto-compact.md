@@ -1,58 +1,59 @@
-# Demo 09 — Auto-compact
+# Demo 09 — Checkpoint & reset
 
-**Slide reference:** Lever H · Pattern 2
-**Time:** ~3 minutes
-**Punchline:** A 4 KB summary keeps 95% of the signal at 3% of the cost.
+**Pattern:** 2 · **Time:** ~3 min
+**Punchline:** Compaction is automatic now. *When* you reset is still your call, and the options cost very different amounts.
 
-## Step 1 — fake (or use) a long chat
+## Step 1 — a session with history
 
-Either:
-- Reuse a chat from the previous demos that's been running for a while, or
-- Start a new chat and have a few back-and-forth exchanges asking the agent to
-  explore the repo (read `src/email/`, then `src/api/`, then summarize). Three
-  or four substantive turns are enough.
+Reuse a session from the earlier demos, or build one in three turns:
 
-Open the chat sidebar; show the "context window" indicator if your Copilot
-build exposes one. (If not, just point at how many turns there are.)
+> Read the classes under @src/main/java/com/example/demo/email/ and summarise how emails are built.
 
-## Step 2 — compact
+> Now do the same for @src/main/java/com/example/demo/api/.
 
-In the same chat, type:
+> Which of these classes have no tests?
 
-> Summarize what we've discussed: the goal, files we've touched, decisions made,
-> open questions, and the next step. Keep it under 300 words and use bullet points.
+Run `/context`: the messages section is now the biggest layer. Point at the status line's `ctx %`.
 
-Save the output to `plan.md` (or any markdown file).
+## Step 2 — the four options
 
-## Step 3 — start fresh
+Walk through them on the slide, demo two:
 
-Open a brand new chat. Attach the summary:
+| Action | Cost | When |
+|---|---|---|
+| `/clear` | free | switching to an unrelated task (`/rename` first, `/resume` later) |
+| `/rewind` (or Esc Esc) | small: returns to an already-cached prefix | the last turns went down a wrong path |
+| `/compact <focus>` | one request that reads the whole conversation: cheap while the cache is warm | mid-task, you want to continue with less |
+| auto-compaction | same as `/compact`, at a moment you didn't pick | you forgot the other three |
 
-> Continue from `#file:plan.md`. The next step is …
+Demo `/compact keep the list of untested classes and nothing else`, then `/context` again: the messages layer shrank. Then `/rename email-audit` and `/clear`, and show `/resume` brings it back.
 
-Watch:
-- The new chat's first request payload is dramatically smaller than the old chat's last one.
-- The model picks up the thread without missing a beat.
+## Step 3 — a deliberate hand-off
 
-## Step 4 — show the bonus pattern
+> Write NOTES.md: goal, decisions, files touched, next step. Under 15 lines.
 
-The summary file becomes a **stable, cacheable prefix**. Every future chat that
-references it benefits from prompt caching on top of the compaction.
+`/clear`, then:
+
+> Read @NOTES.md and do the next step.
 
 ## Talking points
 
-- Copilot doesn't auto-compact aggressively. **You** have to drive it.
-- **Rule of thumb:** one task per chat. New task → new chat with summary attached.
-- For Agent mode and the cloud coding agent, this is doubly important — tool
-  output stacks fast.
+- Project-root `CLAUDE.md` / `AGENTS.md` are re-read after compaction; instructions you only typed in chat are not. Put anything you'll need again in a file.
+- A `# Compact instructions` section in `CLAUDE.md` steers every compaction (see demo 04 for the `@AGENTS.md` import that makes that work in this repo).
+- Compacting right after a long break is the expensive case: the cache is cold, so the summary request re-reads everything at full price.
+- Rule of thumb: one task per session, and compact at a natural break.
 
 ## Reset
 
-Nothing to reset; this demo is non-destructive.
+```bash
+rm -f NOTES.md
+```
+
+Then `/clear`.
 
 ## References
 
-- [Anthropic — Claude Code best practices: compaction](https://www.anthropic.com/engineering/claude-code-best-practices) — `/compact` command and auto-compaction
-- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/claude-code-best-practices) — hierarchical summarization and scratchpad patterns
-- [Cursor — Long context chat](https://docs.cursor.com/chat/overview) — Cursor’s auto-summarization behavior
-- [GitHub — Using prompt files](https://docs.github.com/en/copilot/customizing-copilot/using-copilot-prompt-files) — attaching `plan.md` via `#file`
+- [Claude Code — Manage context proactively](https://code.claude.com/docs/en/costs#manage-context-proactively)
+- [Claude Code — Compacting the conversation (cache cost)](https://code.claude.com/docs/en/prompt-caching#compacting-the-conversation)
+- [Claude Code — Instructions seem lost after /compact](https://code.claude.com/docs/en/memory#instructions-seem-lost-after-%2Fcompact)
+- [Claude Code — Checkpointing and /rewind](https://code.claude.com/docs/en/checkpointing)

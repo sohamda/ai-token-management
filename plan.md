@@ -10,7 +10,7 @@ engine so we can delete `renderLegacy` in a follow-up PR.
 ## Acceptance criteria
 - [ ] `OrderConfirmationService.sendOrderConfirmation` uses `render("order_confirmation_v2", ...)`.
 - [ ] The new template includes the customer's name, order id, and total.
-- [ ] `./mvnw test` passes.
+- [ ] `mvn test` passes.
 - [ ] `renderLegacy` is **not** removed in this PR (separate cleanup).
 
 ## Tasks

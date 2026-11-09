@@ -1,12 +1,13 @@
 # AGENTS.md
 
-Guidance for AI coding agents (Copilot, Claude Code, Cursor, Aider, etc.) working in this repo.
+Guidance for AI coding agents (Claude Code, Copilot, Cursor, Aider, etc.) working in this repo.
+Claude Code reads this file natively when there is no CLAUDE.md.
 
 ## Build / test / lint
 
-- Build: `./mvnw package` (or `mvn package`)
-- Run: `./mvnw spring-boot:run`
-- Test: `./mvnw test`
+- Build: `mvn package`
+- Run: `mvn spring-boot:run`
+- Test: `mvn test` (one class: `mvn test -Dtest=<ClassName>Test`)
 
 ## Conventions
 
@@ -19,7 +20,7 @@ Guidance for AI coding agents (Copilot, Claude Code, Cursor, Aider, etc.) workin
 ## Don't touch
 
 - `target/` — generated. Never read or edit.
-- `.github/prompts/*.prompt.md` — these are runtime artifacts, edit only with intent.
+- `.github/prompts/*.prompt.md` and `.claude/agents/*.md` — demo artifacts, edit only with intent.
 
 ## Output style
 

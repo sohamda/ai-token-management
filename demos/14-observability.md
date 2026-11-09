@@ -1,93 +1,70 @@
-# Demo 14 — Observability: latency as a proxy + lint scripts
+# Demo 14 — Read the meter, set a budget
 
-**Lever:** Scaling layer 7
-**Slides:** "Layers 4–7"
-**Time:** 3 min
+**Lever:** H · **Time:** ~4 min
+**Punchline:** "You can't see the tokens" isn't true any more. Look at them.
 
-The point: you can't watch token counts directly in Copilot — but you can
-watch **latency**. And you can lint for context bloat the same way you lint
-for code smells.
+## Step 1 — the always-on meter
 
-## Setup
+Point at the status line, which has been on screen all talk:
 
-Have a stopwatch (or just count "one Mississippi") visible.
-
-## Step 1 — Show the latency-tokens correlation
-
-Live: ask Copilot the same question twice — once in a fresh chat, once
-after pasting a 5,000-line file with `#file:`.
-
-| Copilot reply latency | ≈ Input tokens                |
-| --------------------- | ----------------------------- |
-| < 5s                  | < 20K                         |
-| 5–10s                 | 20–60K                        |
-| 10–20s                | 60–120K                       |
-| > 20s                 | Near limit — start a new chat |
-
-When the second one takes 3× longer, you've just shown the audience their
-own token meter — they had it the whole time.
-
-## Step 2 — Show the warning thresholds
-
-```text
-Yellow flags                                Red flags
-─────────────────────────────────────────────────────────────
-Fixed agent context > 5,000 tokens          > 10,000
-Instruction files matched > 5               > 10
-Turns without handoff > 15                  > 25
-Single file read > 5,000 tokens             > 15,000
-Cumulative file reads / session > 30,000    > 60,000
+```
+Sonnet 5.5 · medium  │  ctx 23%  │  cache 91%  │  $0.46  │  5h 12%
 ```
 
-## Step 3 — Run the context-bloat lint scripts
+Open `.claude/statusline.sh`: one `jq` expression over the JSON Claude Code pipes in (`context_window.used_percentage`, `prompt_cache.hit_ratio`, `cost.total_cost_usd`, `rate_limits.five_hour`). It's wired up in `.claude/settings.json`.
 
-The repo ships three lint scripts in `tools/` and wires them up in `package.json`.
-Run them live:
+## Step 2 — what's in the window
 
-```powershell
+`/context`: system prompt, tools (deferred MCP tools listed by name), memory files, skills, messages. This is the "anatomy of a request" slide with your real numbers.
+
+## Step 3 — where the budget went
+
+`/usage`:
+- **Session**: cost by model, plus the `Prompt cache (main)` line (demo 02).
+- **On subscription plans**: attribution to skills, subagents, plugins and MCP servers, and recommendations with a share of your usage. If the footer says `f to fix`, press `f` and Claude Code applies what it can.
+
+Mention `/insights` for a longer-term report on how you work.
+
+## Step 4 — set a budget
+
+- Headless runs: `--max-budget-usd` (every iteration of `tools/ralph.sh` has one).
+- Teams: workspace spend limits in the Console, or spend limits in Team/Enterprise admin settings, and OpenTelemetry export for your own dashboards.
+- Baseline from Anthropic's docs: about $13 per developer per active day, $150–250 per month, 90% of users under $30 a day.
+
+## Step 5 — keep bloat out in CI
+
+```bash
 npm run lint:context
 ```
 
-This runs all three in sequence:
+Three checks, Copilot and Claude Code files alike:
 
-| Script | What it checks | Threshold |
+| Script | Checks | Limit |
 |---|---|---|
-| `lint:instr-size` | `.github/instructions/*.md` line count | > 150 lines → FAIL |
-| `lint:prompt-size` | `.github/prompts/*.md` line count | > 250 lines → FAIL |
-| `lint:glob-audit` | `applyTo:` globs in instruction files | `**` → FAIL, broad extension → WARN |
+| `lint:instr-size` | `AGENTS.md`, `CLAUDE.md`, `copilot-instructions.md` / scoped rules | 200 / 150 lines |
+| `lint:prompt-size` | subagents, skills, prompt files, `tools/ralph-prompt.md` | 250 lines |
+| `lint:glob-audit` | `paths:` and `applyTo:` globs | `**` fails, `**/*.x` warns |
 
-All three should pass on this repo. To show a **failure**, temporarily bloat
-an instruction file:
+To show a failure:
 
-```powershell
-# Add 200 blank lines to trip the lint
-1..200 | ForEach-Object { Add-Content .github\instructions\tests.instructions.md "" }
-npm run lint:instr-size   # now fails with ❌
-git checkout -- .github/instructions/   # restore
+```bash
+for i in $(seq 1 200); do echo >> .claude/rules/tests.md; done
+npm run lint:instr-size        # ❌
+git checkout -- .claude/rules/tests.md
 ```
 
 ## Talking points
 
-- "The worst tokens are the ones you're paying for and not noticing."
-- Run these in CI — context bloat accumulates silently across PRs the
-  same way JAR size does.
-- `npm run lint:context` is a single command to catch all context-size regressions.
-- Parse the VS Code Copilot Chat log's `ccreq` lines to get per-turn
-  latency, model, and status:
-  ```powershell
-  Get-ChildItem "$env:APPDATA\Code\logs" -Recurse -Filter "GitHub Copilot Chat.log" |
-    Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object {
-      Select-String "ccreq.*success" $_.FullName
-    }
-  ```
+- Copilot equivalents: the context-window indicator in VS Code, `/context` in Copilot CLI, the usage page, and AI-credit budgets per enterprise, cost center or user.
+- The worst tokens are the ones you're paying for and not noticing.
 
 ## Reset
 
-Nothing to reset — the scripts are committed.
+Nothing to reset.
 
 ## References
 
-- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — premium-request dashboard and org-level metrics
-- [GitHub — Copilot Metrics API](https://docs.github.com/en/rest/copilot/copilot-metrics) — REST API for programmatic usage tracking
-- [GitHub — Premium requests](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — model multipliers and plan allowances
-- [VS Code — Developer Tools](https://code.visualstudio.com/docs/devadvanced/devtools) — using `Ctrl+Shift+I` to inspect network requests
+- [Claude Code — Manage costs effectively](https://code.claude.com/docs/en/costs)
+- [Claude Code — Status line](https://code.claude.com/docs/en/statusline)
+- [Claude Code — Monitoring usage (OpenTelemetry)](https://code.claude.com/docs/en/monitoring-usage)
+- [GitHub — Copilot billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing-and-usage/organizations-and-enterprises/billing)

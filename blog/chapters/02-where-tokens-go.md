@@ -2,24 +2,22 @@
 
 ## Where the tokens actually go
 
-Every request to a coding assistant is a stack of buckets. The shape varies by tool and session, but it tends to look like this:
+Every request to a coding agent is a stack of layers, re-sent in full on every turn:
 
-| Bucket | Typical share | Notes |
+| Layer | What makes it grow | Re-sent each turn? |
 |---|---|---|
-| System prompt / instructions | 5–15% | Boilerplate that's been copy-pasted for months |
-| Tool / function schemas | 10–40% | Re-sent on **every** turn |
-| Retrieved files & code chunks | 20–60% | The biggest lever, almost always |
-| Conversation history | 10–30% | Grows linearly until you compact it |
-| Model output | 5–20% | Verbose prose is expensive to produce *and* to read |
+| System prompt and tool definitions | MCP servers, plugins. Much smaller now that tools load on demand | Yes, usually from cache |
+| Project instructions | `CLAUDE.md`, `AGENTS.md`, `copilot-instructions.md`, unscoped rules | Yes, usually from cache |
+| Files and tool output | Broad exploration, whole-file reads, test and build logs | Yes, once they're in the conversation |
+| Conversation history | Every turn you don't clear or compact | Yes |
+| Model output and thinking | Narration, recaps, high effort on easy tasks | Produced once, then re-read as history |
 
 A few things to notice:
 
-- **Tool schemas dominate more than people expect.** Five connected MCP servers can easily contribute 5,000–10,000 tokens to every request before you've typed a word. The model doesn't have to *use* the tool — the schema ships either way.
-- **Conversation history grows without bound.** A 30-turn chat is paying for the first 29 turns on every new question, plus your fresh one.
-- **Output is small in volume but expensive per token.** On most direct APIs, output tokens cost three to five times input tokens. A reply that says "Sure! Let me explain what I'm about to do…" before doing it is pure tax.
+- **Everything is re-sent.** The model has no memory between requests, so turn 30 pays to re-read turns 1 to 29. Caching makes that re-read cheap (10% of the input price on Sonnet 5.5) but not free, and a cache miss makes it full price.
+- **Tool output is the new tool schema.** Two years ago the surprise was how much the tool definitions cost. Both major tools now defer them. Today's surprise is a single `mvn test` dumping hundreds of lines into context, where they're re-read for the rest of the session.
+- **Output is small in volume but expensive.** Output tokens cost five times input on every current Claude model, and thinking tokens bill as output.
 
-> **Rule of thumb:** profile your own traffic before optimizing. The bucket dominating *your* sessions is rarely the one your gut says.
+> **Rule of thumb:** measure your own sessions before optimising. The layer dominating *your* sessions is rarely the one your gut says.
 
-In a Copilot context, you can't see token counts directly — but you can see the symptom. Open **Output → "GitHub Copilot Chat"** and watch the `ccreq` lines: each one shows the model, latency, and request type per turn. When the same question takes three times longer in chat #2 than chat #1, you've just watched your token meter the entire time.
-
-![VS Code Output panel showing Copilot Chat ccreq lines — your free token meter](../images/02-ccreq-output.png)
+You no longer have to guess. In Claude Code, `/context` breaks down the current window by layer, and `/usage` shows the session's cost and cache hit rate. In VS Code, Copilot shows a context-window indicator; Copilot CLI has `/context` too. Run one of those now, before you read the levers. It's the most useful minute in this post.

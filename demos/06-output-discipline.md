@@ -1,50 +1,48 @@
-# Demo 06 — Output discipline (whole file vs diff)
+# Demo 06 — Output discipline
 
-**Slide reference:** Lever F
-**Time:** ~2 minutes
-**Punchline:** Same fix, 50× fewer output tokens.
+**Lever:** F · **Time:** ~2 min
+**Punchline:** Output costs 5× input, and every word of it is re-read on every later turn.
 
-## Step 1 — the verbose ask
+## Step 1 — the open question
 
-In a fresh chat:
+`/clear`, then:
 
-> In `#file:src/main/java/com/example/demo/email/TemplateEngine.java`, the `welcome` template should end with a smiley emoji 😊. Show me the **updated file**.
+> Explain @src/main/java/com/example/demo/email/TemplateEngine.java.
 
-The model returns the entire file (~30 lines). With a 600-line file it would be 600 lines.
+Watch the token count next to the spinner (`↓ … tokens`): it's the current turn's output, growing live. You'll get paragraphs and a method-by-method tour.
 
-## Step 2 — the disciplined ask
+## Step 2 — the bounded question
 
-> In `#file:src/main/java/com/example/demo/email/TemplateEngine.java`, the `welcome` template should end with a smiley emoji 😊. Reply with a **unified diff only**, no commentary.
+`/clear`, then:
 
-You get ~5 lines of diff.
+> In three bullets: what does @src/main/java/com/example/demo/email/TemplateEngine.java do, and which method should new emails call?
 
-## Step 3 — the system-prompt fix
+Compare the spinner count, then `/usage`.
 
-Open `.github/copilot-instructions.md`. Show the lines:
+## Step 3 — make it the default
+
+Open `AGENTS.md`, section *Output style*:
 
 ```
-- Be concise. No preamble.
-- Prefer diffs over full files.
+- Be concise. No preamble. No re-explaining the request back to the user.
+- Return diffs, not full files, when editing.
+- If you need more context, ask one targeted question instead of guessing.
 ```
 
-Now any chat in this repo defaults to the disciplined behavior — without re-typing it.
+Every session in the repo inherits this; nobody has to remember to ask.
 
 ## Talking points
 
-- In direct API usage, output tokens are **3–5× more expensive** than input tokens. In Copilot’s premium-request model you pay per request, but verbose output still hurts: it increases latency, fills the context for subsequent turns, and causes earlier context to be evicted sooner.
-- Verbose "let me explain what I'm about to do" prefaces are pure tax.
-- Diff-mode tools (`apply_patch`, `edit`) are the cheapest editing pattern.
-- Structured output / JSON mode for machine consumers — no prose padding.
+- Code edits are already diffs in agentic tools. The waste that's left is prose: narration, recaps, unrequested explanations.
+- Thinking tokens bill as output too. That's lever E's effort knob.
+- For machine consumers (scripts, CI), ask for JSON: `claude -p … --output-format json`.
 
 ## Reset
 
-```powershell
-git checkout -- src/
-```
+`/clear`.
 
 ## References
 
-- [OpenAI — Structured outputs](https://platform.openai.com/docs/guides/structured-outputs) — JSON mode to eliminate prose padding
-- [Anthropic — Reducing output tokens](https://docs.anthropic.com/en/docs/build-with-claude/reduce-latency#reduce-output-tokens) — techniques to control output verbosity
-- [OpenAI — Pricing](https://openai.com/api/pricing/) — input vs output token cost differential (3–4×)
-- [Anthropic — Pricing](https://www.anthropic.com/pricing) — input vs output token cost differential (3–5×)
+- [Claude Code — Read the token count beside the spinner](https://code.claude.com/docs/en/costs#read-the-token-count-beside-the-spinner)
+- [Claude Code — Output styles](https://code.claude.com/docs/en/output-styles)
+- [Claude — Pricing](https://platform.claude.com/docs/en/about-claude/pricing)

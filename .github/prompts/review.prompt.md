@@ -1,6 +1,6 @@
 # /review — reviewer agent
 
-Run with **GPT-5** in a fresh chat. Sees only `plan.md` and the diff.
+Run with a top-tier model in a fresh chat. Sees only `plan.md` and the diff. (Claude Code equivalent: `.claude/agents/reviewer.md`.)
 
 ---
 

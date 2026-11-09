@@ -1,68 +1,57 @@
-# Demo 05 — Model routing & live calculator
+# Demo 05 — Right-size the model and the effort
 
-**Slide reference:** Lever E
-**Time:** ~4 minutes
-**Punchline:** You probably just paid 10× for the same answer.
+**Lever:** E · **Time:** ~4 min
+**Punchline:** Haiku to Sonnet is 20×. Effort can move cost as much as the model does.
 
 ## Step 1 — same task, three models
 
-Pick a routine task:
+A routine task, each run starting from `/clear` **and** a fresh `/model` (so no run pays for a cache rebuild):
 
-> Rename the `parseAddress` method to `parseAddressLine` in `AddressParser.java` and update all usages. Show me the diff.
+> Rename `parseAddress` to `parseAddressLine` in @src/main/java/com/example/demo/utils/AddressParser.java and update all usages. Run the tests.
 
-Run it three times, in three fresh chats, with the model picker set to:
+1. `/clear`, `/model haiku`, run it, `/usage` → note the cost.
+2. `git reset --hard demo-start`, `/clear`, `/model sonnet`, run it, `/usage`.
+3. `git reset --hard demo-start`, `/clear`, `/model opus`, run it, `/usage`.
 
-1. **GPT-4.1** (premium-request multiplier 0× on most plans — base model)
-2. **GPT-5** (1×)
-3. **Claude Opus 4** (10×)
+Compare the diffs (`git diff` after each run, before resetting). For a mechanical rename they're the same.
 
-After each run, show the cost difference:
+## Step 2 — effort
 
-- **Output panel** — compare `ccreq` lines: same `success` result, but note the model name.
-- **DevTools Network tab** — compare request/response sizes across the three runs.
-- **Org usage dashboard** — `https://github.com/organizations/<YOUR-ORG>/settings/copilot/usage`
-  (or `https://github.com/settings/copilot/usage` for individual subscribers).
+Stay on Sonnet. `/clear`, `/effort low`, run the task again, `/usage`. Then the same with `/effort high`.
 
-Compare the diffs side-by-side. They are essentially identical.
+Point out the token count next to the spinner: thinking is output, and output costs 5× input. On the 5.5 models, changing effort mid-session keeps the cache (API key or subscription); changing model doesn't.
 
-> **Punchline:** "Same answer. The Opus version cost 10 premium requests instead of 1."
+## Step 3 — routing inside one session
 
-## Step 2 — open the live calculator
+Open `.claude/agents/planner.md` and `implementer.md`: each sets its own `model:` and `effort:`. Your session can stay on Sonnet while the planner runs on Opus, with no model switch and no cache rebuild (demo 10).
 
-In the Copilot deck (`presentations/token-presentation-copilot.html`), navigate
-to **slide 4 — Live calculator**.
+## Step 4 — the calculator
 
-Take audience input:
-- Their team size
-- Their typical chat requests/day
-- Their typical agent runs/day
-- Switch the model dropdown
+In the deck, the **"What does this actually cost?"** slide. Take numbers from the room: team size, requests per day. Switch Haiku / Sonnet / Opus and the cache hit rate.
 
-Watch the **% of monthly quota** field. Some combinations exceed 100% — that's the moment the room goes quiet.
+## Talking points
 
-## Step 3 — the routing rule
+| Task | Model · effort |
+|---|---|
+| Search, summarise, mechanical edits (often as a subagent) | Haiku · low/medium |
+| Day-to-day coding | Sonnet · medium |
+| Hard design or debugging | Sonnet · high, then Opus |
 
-Show this slide of recommended defaults:
-
-| Task | Model | Multiplier |
-|---|---|---|
-| Inline completions, simple chat | GPT-4.1 | 0× |
-| Real coding work | GPT-5 / Claude Sonnet | 1× |
-| Long-context refactor / agent mode | Claude Sonnet | 1× |
-| Genuinely hard reasoning | Claude Opus | **10×** |
-
-Rule: **start cheap, escalate only when stuck.**
+- Go up in effort before you go up in model. Switch model only right after `/clear`.
+- Haiku 5.5's low price applies to prompts up to 100K tokens; above that it's 5× more. Another reason to keep context small.
+- Copilot: since June 1, 2026 it bills tokens at these same API rates. The old "Opus = 10×" multiplier is gone.
 
 ## Reset
 
-```powershell
-git checkout -- src/
+```bash
+git reset --hard demo-start && git clean -fd
 ```
+
+Then `/model sonnet`, `/effort medium`, `/clear`.
 
 ## References
 
-- [GitHub — Premium requests and model multipliers](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests) — per-model multiplier table, plan allowances
-- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — how to track premium request consumption
-- [GitHub — Plans for GitHub Copilot](https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot) — monthly quota per plan
-- [GitHub — Copilot auto model selection](https://docs.github.com/en/copilot/concepts/auto-model-selection) — 10% multiplier discount when using auto selection
-- [OpenAI — Batch API](https://platform.openai.com/docs/guides/batch) — 50% discount for offline workloads (direct API)
+- [Claude Code — Choose the right model / Adjust extended thinking](https://code.claude.com/docs/en/costs#choose-the-right-model)
+- [Claude Code — Model configuration and effort](https://code.claude.com/docs/en/model-config)
+- [Claude — Pricing](https://platform.claude.com/docs/en/about-claude/pricing)
+- [GitHub blog — Copilot is moving to usage-based billing](https://github.blog/news-insights/company-news/github-copilot-is-moving-to-usage-based-billing/)

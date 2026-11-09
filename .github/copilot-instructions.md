@@ -3,9 +3,9 @@
 You are working in a small Java Spring Boot demo app used in a tech session.
 
 ## Build, test, lint
-- Build: `./mvnw package` (or `mvn package`)
-- Run: `./mvnw spring-boot:run`
-- Test: `./mvnw test` (uses JUnit 5 + AssertJ)
+- Build: `mvn package`
+- Run: `mvn spring-boot:run`
+- Test: `mvn test` (uses JUnit 5 + AssertJ)
 
 ## Conventions
 - Java 17+, Spring Boot 3.4. No Kotlin.

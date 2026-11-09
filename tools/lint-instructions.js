@@ -2,38 +2,37 @@
 
 /**
  * lint-instructions.js
- * Fail if any .github/instructions/*.md exceeds a line-count limit.
- * Default limit: 150 lines.
+ * Fail if instruction files grow past their line budget.
+ *   Always-loaded files (AGENTS.md, CLAUDE.md, copilot-instructions.md): 200 lines
+ *   Scoped files (.github/instructions/*.md, .claude/rules/**.md):         150 lines
  */
 
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const DIR = ".github/instructions";
-const MAX_LINES = 150;
+const ALWAYS = ["AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"];
+const SCOPED_DIRS = [".github/instructions", ".claude/rules"];
+const LIMITS = { always: 200, scoped: 150 };
 
-const files = (await readdir(DIR).catch(() => [])).filter((f) =>
-  f.endsWith(".md"),
-);
+const scoped = [];
+for (const dir of SCOPED_DIRS) {
+  const entries = await readdir(dir, { recursive: true }).catch(() => []);
+  scoped.push(...entries.filter((f) => f.endsWith(".md")).map((f) => join(dir, f)));
+}
 
 let failed = false;
-
-for (const file of files) {
-  const text = await readFile(join(DIR, file), "utf8");
+const check = async (file, limit) => {
+  const text = await readFile(file, "utf8").catch(() => null);
+  if (text === null) return;
   const lines = text.split("\n").length;
-  const status = lines > MAX_LINES ? "FAIL" : "ok";
-  const marker = lines > MAX_LINES ? "❌" : "✅";
-  console.log(`${marker}  ${file}: ${lines} lines (limit ${MAX_LINES})`);
-  if (lines > MAX_LINES) failed = true;
-}
+  console.log(`${lines > limit ? "❌" : "✅"}  ${file}: ${lines} lines (limit ${limit})`);
+  if (lines > limit) failed = true;
+};
 
-if (files.length === 0) {
-  console.log("No instruction files found in", DIR);
-}
+for (const file of ALWAYS) await check(file, LIMITS.always);
+for (const file of scoped) await check(file, LIMITS.scoped);
 
 if (failed) {
-  console.error(
-    "\nInstruction files over the limit increase ambient token cost every turn.",
-  );
+  console.error("\nInstruction files over the limit add ambient token cost to every request.");
   process.exit(1);
 }

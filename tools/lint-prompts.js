@@ -2,38 +2,33 @@
 
 /**
  * lint-prompts.js
- * Fail if any .github/prompts/*.md exceeds a line-count limit.
- * Default limit: 250 lines.
+ * Fail if any on-demand prompt file exceeds 250 lines:
+ * Copilot prompt files, Claude Code subagents and skills, the Ralph prompt.
  */
 
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const DIR = ".github/prompts";
+const DIRS = [".github/prompts", ".claude/agents", ".claude/skills", ".github/skills"];
+const EXTRA = ["tools/ralph-prompt.md"];
 const MAX_LINES = 250;
 
-const files = (await readdir(DIR).catch(() => [])).filter((f) =>
-  f.endsWith(".md"),
-);
+const files = [...EXTRA];
+for (const dir of DIRS) {
+  const entries = await readdir(dir, { recursive: true }).catch(() => []);
+  files.push(...entries.filter((f) => f.endsWith(".md")).map((f) => join(dir, f)));
+}
 
 let failed = false;
-
 for (const file of files) {
-  const text = await readFile(join(DIR, file), "utf8");
+  const text = await readFile(file, "utf8").catch(() => null);
+  if (text === null) continue;
   const lines = text.split("\n").length;
-  const status = lines > MAX_LINES ? "FAIL" : "ok";
-  const marker = lines > MAX_LINES ? "❌" : "✅";
-  console.log(`${marker}  ${file}: ${lines} lines (limit ${MAX_LINES})`);
+  console.log(`${lines > MAX_LINES ? "❌" : "✅"}  ${file}: ${lines} lines (limit ${MAX_LINES})`);
   if (lines > MAX_LINES) failed = true;
 }
 
-if (files.length === 0) {
-  console.log("No prompt files found in", DIR);
-}
-
 if (failed) {
-  console.error(
-    "\nPrompt files over the limit consume excessive context per invocation.",
-  );
+  console.error("\nPrompt files over the limit consume excessive context per invocation.");
   process.exit(1);
 }

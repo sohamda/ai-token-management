@@ -1,70 +1,57 @@
-# AI Token Management — Tech Session
+# Context Is a Budget — token management for coding agents
 
-Materials for a developer-focused technical session on **reducing token usage in AI-assisted development**.
-
-Two HTML presentations, a small demo repo with intentional bloat to showcase the techniques, and step-by-step demo scripts for each lever.
+Materials for the talk *Context Is a Budget*: eight levers and three workflow patterns for spending tokens well with coding agents. Live demos run in **Claude Code**; every slide also shows the GitHub Copilot equivalent.
 
 ## Contents
 
 ```
 .
 ├── presentations/
-│   ├── token-presentation.html          ← general (Copilot, Claude Code, Cursor, etc.)
-│   └── token-presentation-copilot.html  ← GitHub Copilot–focused
-├── docs/
-│   ├── title-and-abstract.md            ← session title options + abstract
-│   ├── session-outline.md               ← long-form notes the deck was built from
-│   └── context-engineering-at-scale.md  ← case-study deep-dive: 7-layer system
-├── demos/
-│   ├── 00-setup.md
-│   ├── 01-context-engineering.md        ← broad retrieval vs #file
-│   ├── 02-prompt-caching.md
-│   ├── 03-tool-and-mcp-hygiene.md
-│   ├── 04-instructions-and-skills.md    ← copilot-instructions.md before/after
-│   ├── 05-model-routing.md              ← live calculator
-│   ├── 06-output-discipline.md          ← whole-file vs diff
-│   ├── 07-repo-hygiene.md               ← .gitignore, content exclusions
-│   ├── 08-ralph-loop.md                 ← agent loop on TODO.md
-│   ├── 09-auto-compact.md
-│   ├── 10-agent-handover.md             ← /plan → /build → /review
-│   ├── 11-context-budget.md             ← Scaling L1: budget at design time
-│   ├── 12-progressive-disclosure.md     ← Scaling L2: 3-level hierarchy
-│   ├── 13-context-shredding.md          ← Scaling L3+L4: tier selection
-│   └── 14-observability.md              ← Scaling L7: latency proxy + lints
-├── src/                                  ← intentionally messy demo code (Java/Spring Boot)
-│   ├── main/java/com/example/demo/
-│   │   ├── DemoApplication.java
-│   │   ├── api/
-│   │   ├── email/
-│   │   ├── model/
-│   │   └── utils/
-│   ├── main/resources/
-│   └── test/java/com/example/demo/
-├── .github/
-│   ├── copilot-instructions.md          ← apply during demo 04
-│   ├── instructions/
-│   │   └── tests.instructions.md
-│   └── prompts/
-│       ├── ralph.prompt.md
-│       ├── plan.prompt.md
-│       ├── build.prompt.md
-│       └── review.prompt.md
-├── AGENTS.md\n├── pom.xml                               ← Maven build (Java 17, Spring Boot 3.4)
-├── TODO.md                               ← used by the Ralph loop demo
-└── plan.md                               ← used by the handover demo
+│   ├── token-presentation.html             ← the talk (J-Fall 2026): levers A–H, patterns 1–3
+│   ├── token-presentation-copilot.html     ← older Copilot-only deck (premium requests era)
+│   ├── token-presentation-enterprise.html  ← older 15-minute exec briefing
+│   └── session-copilot-end-to-end.html     ← older Copilot end-to-end session
+├── blog/                                    ← the companion post (chapters + merged draft)
+├── demos/                                   ← one script per demo, Claude Code (see demos/README.md)
+├── docs/                                    ← abstract, long-form outline, scaling case study
+├── src/main/java/…                          ← the demo app (Java 17, Spring Boot 3.4)
+├── src/email/, src/api/, src/utils/, dist/  ← intentional dead JS, used by demos 01 and 07
+├── AGENTS.md                                ← always-loaded instructions (Claude Code reads it natively)
+├── .claude/
+│   ├── settings.json                        ← test-output hook, status line, Read deny for target/
+│   ├── rules/tests.md                       ← path-scoped rule (paths: src/test/java/**)
+│   ├── agents/                              ← planner, implementer, reviewer subagents
+│   ├── hooks/filter-test-output.sh          ← trims `mvn test` output before Claude sees it
+│   └── statusline.sh                        ← model · effort │ ctx % │ cache % │ cost
+├── .github/                                 ← the Copilot equivalents (instructions, prompts, skills)
+├── tools/
+│   ├── ralph.sh, ralph-prompt.md            ← headless Ralph loop (`claude -p` per TODO item)
+│   └── lint-*.js                            ← `npm run lint:context`: instruction size and glob checks
+├── TODO.md                                  ← backlog for the Ralph loop
+└── plan.md                                  ← example output of the planner subagent
 ```
+
+## The levers and patterns
+
+| | |
+|---|---|
+| **A** Scope the ask | **E** Right-size the model *and* the effort |
+| **B** Don't break the cache | **F** Output discipline |
+| **C** Make tool output cheap | **G** Make the repo cheap to read |
+| **D** Codify once, load on demand | **H** Read the meter, set a budget |
+
+Patterns: **1** Loop with state on disk (Ralph) · **2** Checkpoint & reset · **3** Plan → Build → Review.
 
 ## How to use
 
-1. Open `presentations/token-presentation.html` (or the Copilot variant) in a browser.
-2. Walk the audience through the slides; switch to the demos at lever H, then return for the "Scaling: 7-layer system" group at the end.
-3. For each demo, follow the script in `demos/`.
-4. Reset between demos with `git stash && git checkout -- .` so re-runs are clean.
+1. Follow [demos/00-setup.md](demos/00-setup.md) the day before: JDK 17, Maven, jq, Claude Code v2.1.305+, then `git tag -f demo-start`.
+2. Open `presentations/token-presentation.html` in a browser, press `F` for fullscreen and `P` for the presenter view (notes, timer, time cues). The 45-minute plan is in [docs/run-sheet.md](docs/run-sheet.md).
+3. Run the demos from `demos/` when a slide's eyebrow says so. Reset with `git reset --hard demo-start && git clean -fd`.
 
 ## Credits
 
-- Workflow patterns inspired by Geoffrey Huntley's *Ralph Wiggum agentic coding pattern*, Anthropic's *Claude Code best practices* (incl. `/compact`), and Cognition's *Don't build multi-agents*.
-- The 7-layer scaling architecture (`docs/context-engineering-at-scale.md`) is adapted from a real production landing-zone repo running ~40 specialized skills.
+- Patterns inspired by Geoffrey Huntley's *Ralph Wiggum* loop, Anthropic's Claude Code documentation and *Effective context engineering for AI agents*, and Cognition's *Don't build multi-agents*.
+- The scaling section (`docs/context-engineering-at-scale.md`) is adapted from a production landing-zone repo running ~40 specialised skills.
 
 ## License
 

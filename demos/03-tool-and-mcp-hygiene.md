@@ -1,62 +1,57 @@
-# Demo 03 — Tool & MCP hygiene
+# Demo 03 — Make tool output cheap
 
-**Slide reference:** Lever C
-**Time:** ~3 minutes
-**Punchline:** Every connected tool's schema is re-sent on every turn.
+**Lever:** C · **Time:** ~4 min
+**Punchline:** Tool definitions are deferred now. The tax moved to what tools *return*.
 
-## Step 1 — show the bloat
+## Step 1 — tool definitions are cheap now
 
-Open VS Code → Command Palette → **MCP: List Servers**.
-If you have several servers connected (filesystem, github, playwright, brave-search…),
-each contributes a tool list that ships with every Copilot Chat request.
+`/clear`, then `/context`. Point at the tools section: MCP tools show as deferred (names only) until Claude actually uses one. Then `/mcp` and disable anything you won't use today. Do it **now, at the start of the session**: lever B says tool changes mid-session can cost a cache rebuild.
 
-Approximate cost per turn:
-- Tool name + description: ~50–150 tokens
-- Each parameter description: ~20–80 tokens
-- A typical MCP server with 8–15 tools: **400–2,500 tokens**, every turn
+## Step 2 — tool output is the new tax
 
-With 5 servers connected, you might pay **5–10k tokens per turn just for tool definitions** the model never uses.
+In the second terminal:
 
-## Step 2 — disable unused servers
-
-Open VS Code Settings (`Ctrl+,`) and search **MCP**, or use the Command Palette →
-**MCP: List Servers**. Disable everything not needed for the session. For this demo,
-keep only the filesystem server (or none).
-
-> **Note:** This repo doesn't ship a `.vscode/mcp.json` — the demo uses whatever
-> MCP servers the presenter has enabled in their own VS Code profile.
-
-Re-ask a small question. Show the request payload shrank.
-
-## Step 3 — show "good vs bad" tool output
-
-A tool that returns `{ id, summary }` is cheap. A tool that returns a 50-field JSON object is expensive — the model will re-process all 50 fields each turn it's referenced.
-
-Demo with a quick HTTP fetch:
-
-```js
-// bad
-const r = await fetch("https://api.example.com/orders/o_1001").then(r => r.json());
-// returns 1.5kb JSON
-
-// good — server-side projection
-const r = await fetch("https://api.example.com/orders/o_1001?fields=id,total,status").then(r => r.json());
-// returns 80 bytes
+```bash
+mvn test | wc -l          # a hundred-plus lines of banners, progress and results
 ```
+
+Every one of those lines would land in Claude's context and be re-read on every later turn.
+
+In Claude Code:
+
+> Run the tests.
+
+Show what Claude actually received: a few `Tests run:` lines, `BUILD SUCCESS`, and `(full log: …/claude-mvn-test.log)`. Then open `.claude/hooks/filter-test-output.sh` and `.claude/settings.json`: a `PreToolUse` hook rewrites `mvn test` so the full log goes to a file and only summary and failures come back. The exit code survives, so Claude still sees red as red.
+
+## Step 3 — make it fail
+
+Break a test on purpose, for example change an expected value in `FormatUtilsTest.java`, then:
+
+> Run the tests and fix what fails.
+
+The hook passes through the `<<< FAILURE!` block with the expected/actual lines, which is all Claude needs.
+
+## Step 4 — delegate the noisy part
+
+> Use a subagent to run the full test suite and report only the failures.
+
+The verbose output stays in the subagent's context; only its summary lands in yours.
 
 ## Talking points
 
-- Disable MCP servers per session. Treat them like browser extensions: only the ones you actually use.
-- Audit `.vscode/mcp.json` if your repo ships one — a generous default is a tax on every developer.
-- Custom tools you build: default to compact responses with optional `?expand=...`.
+- Prefer CLIs to MCP servers where both exist: `gh pr view 42` returns what you asked for; an MCP server returns whole JSON objects.
+- Tools you build yourself: return `{id, summary}` by default, make the big object opt-in.
+- Copilot: tool search does the deferring; output filtering is up to the commands you let it run.
 
 ## Reset
 
-Re-enable any MCP servers you disabled if you actually need them after the demo.
+```bash
+git reset --hard demo-start && git clean -fd
+```
 
 ## References
 
-- [GitHub — Using MCP servers in VS Code](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-in-vs-code/using-mcp-servers-in-vs-code) — configuring `.vscode/mcp.json`, enabling/disabling servers
-- [Model Context Protocol — Specification](https://modelcontextprotocol.io/) — the open standard for tool schemas
-- [Anthropic — Tool use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — how tool definitions consume tokens
-- [OpenAI — Function calling](https://platform.openai.com/docs/guides/function-calling) — token cost of tool schemas
+- [Claude Code — Offload processing to hooks and skills](https://code.claude.com/docs/en/costs#offload-processing-to-hooks-and-skills) — the hook this one is adapted from
+- [Claude Code — Hooks reference](https://code.claude.com/docs/en/hooks)
+- [Claude Code — Reduce MCP server overhead](https://code.claude.com/docs/en/costs#reduce-mcp-server-overhead)
+- [VS Code blog — Improving token efficiency in GitHub Copilot](https://code.visualstudio.com/blogs/2026/06/17/improving-token-efficiency-in-github-copilot) — tool search, −18% tokens per user

@@ -1,8 +1,6 @@
 # Demo 13 — Context shredding (runtime tier selection)
 
-**Lever:** Scaling layers 3 + 4
-**Slides:** "Layers 1–3" + "Layers 4–7"
-**Time:** 5 min
+**Section:** Scaling up (appendix) · **Time:** ~5 min · optional
 
 The point: ship every skill in **three sizes**. The agent picks which one to
 load based on how full the context already is.
@@ -19,13 +17,12 @@ Show the slide table:
 
 ## Step 1 — Demonstrate on the demo skill
 
-Use the existing `.github/copilot-instructions.md` as the "skill" and create
-two compressed siblings live:
+Open the shipped example, `.github/skills/context-shredding/`:
 
 ```text
-.github/copilot-instructions.md          # full, ~80 lines
-.github/copilot-instructions.digest.md   # ~30 lines: keep H2s, drop examples
-.github/copilot-instructions.minimal.md  # ~10 lines: just the decisions
+SKILL.md          # full
+SKILL.digest.md   # keep H2s and tables, drop examples
+SKILL.minimal.md  # just the decisions
 ```
 
 Walk through the rules used:
@@ -37,16 +34,16 @@ Walk through the rules used:
 
 ## Step 2 — Add the `<context_awareness>` tag
 
-In a long prompt file (e.g. `.github/prompts/build.prompt.md`), add at the top:
+In a long subagent or prompt file (e.g. `.claude/agents/implementer.md`), add at the top:
 
 ```markdown
 <context_awareness>
-This prompt is ~250 lines. At >60% context used, load
-copilot-instructions.digest.md instead of the full file.
-At >80% switch to copilot-instructions.minimal.md and stop
-re-reading prior turns.
+At >60% context used, read SKILL.digest.md instead of SKILL.md.
+At >80% read SKILL.minimal.md and stop re-reading earlier files.
 </context_awareness>
 ```
+
+In Claude Code you can check the percentage yourself: it's `ctx %` on the status line.
 
 ## Step 3 — The digest generator
 
@@ -62,7 +59,7 @@ that produces digest + minimal variants automatically by:
 
 Run it live:
 
-```powershell
+```bash
 node tools/scripts/generate-skill-digests.mjs
 ```
 
@@ -86,7 +83,9 @@ node tools/scripts/generate-skill-digests.mjs
 
 ## Reset
 
-Delete the `.digest.md` / `.minimal.md` files you created live.
+```bash
+git reset --hard demo-start && git clean -fd
+```
 
 ## References
 

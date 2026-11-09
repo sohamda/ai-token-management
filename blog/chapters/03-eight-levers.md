@@ -1,227 +1,213 @@
-<!-- target: ~1,800 words (~225 per lever × 8) -->
+<!-- target: ~2,200 words (~275 per lever × 8) -->
 
 ## The eight levers
 
-These aren't in priority order — they're in the order you'd naturally encounter them in a session. The first three (context, caching, tools) are about the request *shape*. The next three (instructions, model, output) are about how you *talk* to the assistant. The last two (repo, observability) are the foundations that make all of the others stick.
+A year ago, half of this list was plumbing you had to do yourself: put the stable text first so it caches, switch off tool schemas you don't use, summarise the chat before it fills up. The tools do most of that now. Claude Code and Copilot both place cache breakpoints, load tool definitions on demand and compact long sessions on their own.
+
+What they can't do is make your decisions. Each lever below is stated as a principle that will outlive the next release, followed by what it looks like in Claude Code (the tool I demo) and in Copilot.
 
 ---
 
-### A. Context engineering — scope your asks
+### A. Scope the ask
 
-The single biggest waste in most AI workflows is asking vague questions of agent-mode chat with full codebase access. The agent dutifully explores, reads ten files to find the two it needed, summarizes them all, and then answers. You pay for every step.
+The most expensive prompt in agentic coding is the vague one. The agent can't ask you what you meant, so it explores, and you pay for every file it opens on the way.
 
-Compare:
+This demo repo has a trap in it: an old JavaScript version of the email code still sits under `src/email/`, next to the real Java under `src/main/java/.../email/`. Watch what a vague ask does:
 
-> **Bad:** *"Refactor the order confirmation email to use the new template engine."*
-> The agent opens four files under `src/main/java/com/example/demo/email/`, reads `WelcomeEmailService.java` for context it doesn't need, considers whether a `templates/` resource directory should exist, and proposes a sprawling diff that renames a method on the way through.
+> **Vague:** *"Refactor the order confirmation email to use the new template engine."*
+> The agent greps for "order confirmation", finds both implementations, reads both, reads the welcome email for comparison, and then asks which one you meant. Or it doesn't ask, and edits the wrong one.
 
-> **Good:** *"Refactor `#file:src/main/java/com/example/demo/email/OrderConfirmationService.java` to call `render` on `#file:src/main/java/com/example/demo/email/TemplateEngine.java` instead of `renderLegacy`. Keep behaviour identical."*
-> The agent opens two files. The diff is three semantically meaningful lines. The whole turn is roughly a tenth of the cost.
+> **Scoped:** *"In @src/main/java/com/example/demo/email/OrderConfirmationService.java, call `render("order_confirmation_v2", …)` from @src/main/java/com/example/demo/email/TemplateEngine.java instead of `renderLegacy`. Keep behaviour identical."*
+> Two files read, one small diff.
 
-Specificity is free. Every `#file:` (Copilot) or explicit path (Claude Code) you provide is a chunk the agent doesn't have to *find*. Every "keep behaviour identical" is a sentence of guard-rails that prevents a 200-line side quest.
+Anthropic's cost guide puts it bluntly: vague requests trigger broad scanning. Specificity costs you ten seconds of typing and saves the agent's whole discovery phase.
 
-**Do this Monday:** make `#file:` your default. Use agent-mode-with-broad-retrieval only when you genuinely don't know what you don't know.
+- **Claude Code:** `@path` mentions, and plan mode (Shift+Tab) for anything bigger than one file, so you approve the approach before tokens go into the wrong one. For Java, install a code intelligence plugin: one "go to definition" call replaces a grep followed by several candidate file reads.
+- **Copilot:** `#file`, `#selection` and `#problems` do the same job.
+
+**Do this Monday:** name the file and the method in the prompt. Use open-ended exploration only when you genuinely don't know where to look.
 
 ---
 
-### B. Prompt caching — order matters
+### B. Don't break the cache
 
-Every major provider supports prompt caching now. Anthropic and OpenAI both charge roughly **10% of base input cost for cache hits**. Google's Gemini does it explicitly. The mechanism is the same: a stable prefix at the front of your prompt is cached after the first request and read back cheaply on subsequent ones.
+Every turn re-sends the whole conversation. Prompt caching is what makes that affordable: the provider recognises the prefix it has already processed and bills it at the cached rate. On Sonnet 5.5 a cached input token costs 10% of a fresh one; on Opus 5.5 it costs 5%. In a long session most of your input should be cache reads.
 
-The cost discipline is therefore about **order**:
+You no longer place the cache breakpoints yourself. Both tools order each request so the stable parts come first: tools and system prompt, then your project instructions, then the conversation. What you can still do is break the cache. The match is an exact prefix match, so any change near the top makes the next request re-process everything after it.
 
-```
-[ tool definitions ]   ← rarely change       ┐
-[ system prompt ]      ← rarely changes      │ cache these
-[ skills / rules ]     ← stable per repo     ┘
-[ retrieved files ]    ← changes per task
-[ conversation ]       ← changes every turn
-```
+What breaks it in Claude Code:
 
-Static at the top, dynamic at the bottom. The longest stable prefix you can construct is the most cacheable one.
+- **Switching model mid-session.** Each model has its own cache. Claude Code asks you to confirm `/model` while the cache is warm, for exactly this reason.
+- **Coming back after the cache has expired.** The first message after a long break re-processes the full context. On a subscription the main conversation gets a one-hour cache; with an API key it's five minutes by default.
+- **Connecting or removing MCP servers, and enabling plugins that bring them**, when tool definitions aren't deferred.
+- **Compaction**, by design (more in pattern 2).
 
-The classic anti-pattern is innocent-looking and brutal:
+What doesn't break it: editing files, invoking skills, entering plan mode, spawning subagents, and changing effort on the 5.5 models with an API key or subscription. Editing CLAUDE.md or AGENTS.md mid-session doesn't break it either, but it also doesn't take effect until the next `/clear`, `/compact` or restart.
+
+Copilot reached the same conclusion from the other side. In June GitHub explained that its Auto model selection only switches model on the first turn or after compaction, because switching mid-session "can cost more than the routing change saves".
+
+If you build your own agents on the API, the old rule still applies: never put a timestamp or request ID at the top of the system prompt.
 
 ```java
-// Don't do this
-String system = "Today is " + Instant.now() + "\n\n" + ACTUAL_SYSTEM_PROMPT;
+// Don't: the first 30 characters change every request, so nothing after them caches
+String system = "Today is " + Instant.now() + "\n\n" + SYSTEM_PROMPT;
 ```
 
-A timestamp at the top of your system prompt **busts the cache on every request**. You will pay full price for the same 10 KB of preamble all day. The fix is to push dynamic content down into the user message or tail of the prompt.
-
-**Do this Monday:** audit the *first* 200 tokens of your system prompts. Anything that changes per-request belongs further down.
+**Do this Monday:** pick the model and effort at the start of a session. Run `/usage` and read the `Prompt cache (main)` line. If it shows misses, it names the likely cause.
 
 ---
 
-### C. Tool & MCP hygiene — every schema is a tax
+### C. Make tool output cheap
 
-Each connected tool ships its full JSON schema with every request. A typical MCP server with 8–15 tools costs **400–2,500 tokens per turn**. Five servers connected? You may be paying 5,000–10,000 tokens per turn for tool definitions the model never invokes.
+The old version of this lever was "every MCP schema is a tax on every turn". The harnesses fixed most of that: Claude Code defers MCP tool definitions by default, so only tool names enter context until a tool is used, and VS Code measured an 18% drop in total tokens per user (median) after it turned on Anthropic's server-side tool search.
 
-Treat MCP servers like browser extensions: useful, but only the ones you actually need today.
+The tax moved. Today it's in what tools *return*. One `mvn test` run prints hundreds of lines of plugin banners, download progress and stack frames, and every one of them lands in context and gets re-read, from cache, on every turn after.
 
-```jsonc
-// .vscode/mcp.json — keep this short
-{
-  "servers": {
-    "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem"] }
-    // disable github, playwright, brave-search, etc. when you don't need them
-  }
-}
-```
+Three ways to shrink it:
 
-The same discipline applies to **the tools you build yourself**. A tool that returns `{ id, summary }` is cheap. A tool that returns a 50-field JSON object is expensive — the model re-processes all 50 fields on every turn it's referenced. Default to compact responses with optional `?expand=...` for the rare caller that needs the rest.
+- **Filter before the model sees it.** This repo ships a Claude Code `PreToolUse` hook (`.claude/hooks/filter-test-output.sh`) that rewrites `mvn test` so the full log goes to a file and Claude sees only the `Tests run:` lines, the failures and `BUILD SUCCESS` or `BUILD FAILURE`. The exit code survives, so Claude still knows when tests fail.
+- **Delegate verbose work to a subagent.** "Use a subagent to run the tests and report only the failures": the log stays in the subagent's context, and only its summary comes back.
+- **Prefer CLIs to MCP servers.** `gh pr view 42` returns what you asked for. A GitHub MCP server adds a tool listing and returns full JSON objects.
 
-**Do this Monday:** open MCP server list, disable everything you didn't actively use this week. Re-enable on demand.
+If you write tools yourself, the rule from the first version of this talk still stands: return `{id, summary}` by default and make the 50-field object opt-in.
 
----
+- **Claude Code:** hooks, subagents, `/mcp` to disable servers you aren't using, `/context` to see what's loaded.
+- **Copilot:** tool search does the deferring. Output filtering is up to the commands you let the agent run.
 
-### D. Custom instructions & skills — codify it once
-
-Anything you find yourself re-typing in chats belongs in an instructions file. The exact filename varies — `.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`, Cursor Rules — but the principle is identical: write your team conventions once, commit them, and let every chat in the repo inherit them.
-
-A small example is worth more than a long one:
-
-![A 6-line copilot-instructions.md is enough to change every session in the repo](../images/04-instructions-snippet.png)
-
-Six lines. Now no chat in this repo will propose JUnit 4 (we use JUnit 5), no chat will dump a whole-file rewrite when a diff would do, and no chat will preface its answer with "Sure! Let me explain what I'm about to do…"
-
-For stack-specific rules, use **path-scoped** instructions. In Copilot:
-
-```yaml
----
-applyTo: "src/main/java/**/*.java"
----
-# Test conventions for src/
-- Use JUnit 5 via `mvn test`.
-- Tests mirror the source tree under `src/test/java/...` as `<Name>Test.java`.
-```
-
-This file is loaded *only* when a matching file is in scope. Repo-wide rules go in the global instructions; stack-specific rules go in scoped ones. Both are committed, both are versioned, both are team artifacts — not personal preferences buried in someone's IDE settings.
-
-**Do this Monday:** check what you've typed into chat windows in the last week. Anything that reappeared more than twice is a candidate for an instructions file.
+**Do this Monday:** run `/context` in a fresh session, then once more after a test run. Whatever grew is your next hook.
 
 ---
 
-### E. Model routing — start cheap, escalate when stuck
+### D. Codify once, load on demand
 
-Routine tasks pick the most expensive model by default if you let them. You probably just paid 10× for the same answer.
+Anything you've typed into a chat three times belongs in a file. The question is which file, because files load at different times:
 
-A defensible default routing table:
-
-| Task | Model | Multiplier (Copilot) |
+| Loads | Claude Code | Copilot |
 |---|---|---|
-| Inline completions, simple chat | Cheapest available (e.g. GPT-4.1) | 0× |
-| Real coding work | Mid-tier (GPT-5 / Claude Sonnet) | 1× |
-| Long-context refactor / agent mode | Mid-tier with long context | 1× |
-| Genuinely hard reasoning | Top-tier (Claude Opus) | **10×** |
+| Every session | `CLAUDE.md`, or `AGENTS.md` when there's no `CLAUDE.md` | `.github/copilot-instructions.md`, `AGENTS.md` |
+| When a matching file is touched | `.claude/rules/*.md` with `paths:` | `.github/instructions/*.instructions.md` with `applyTo:` |
+| When invoked or relevant | Skills, subagents | Prompt files, skills |
 
-The rule is: **start cheap, escalate only when stuck.** "Stuck" means you've tried the mid-tier model with good context and it's plainly missing the point — not "I want to feel sure," not "I have time to spare."
+Keep the always-loaded layer short. Anthropic's guidance is under 200 lines, and anything that only matters for one workflow or one directory moves down a row. This repo's `AGENTS.md` is 30 lines: build and test commands, conventions, what not to touch, output style. Test conventions live in `.claude/rules/tests.md`, scoped with `paths: ["src/test/java/**/*.java"]`, and load only when Claude opens a test.
 
-The math compounds. A team of fifty doing twenty agent runs each per day at 10× costs five times more than at 2× — for the same diffs, on most days.
+Two gotchas worth a slide of their own:
 
-**Do this Monday:** pin your default to the mid-tier. Make Opus a deliberate choice with a reason.
+- **Scope the glob to where the rule applies.** The first version of this repo scoped its *test* rules to `src/**/*.java`, so they loaded whenever the agent touched production code. It's an easy mistake to make, and the bundled `npm run lint:glob-audit` catches it.
+- **AGENTS.md and CLAUDE.md don't stack by default.** Claude Code reads `AGENTS.md` natively (v2.1.277 and later), but only when there's no `CLAUDE.md` or `CLAUDE.local.md`. The day someone adds a `CLAUDE.md`, your `AGENTS.md` silently stops loading, unless that `CLAUDE.md` imports it with `@AGENTS.md`.
 
----
-
-### F. Output discipline — diffs, not novels
-
-Every model has a "let me explain what I'm about to do" reflex. It's polite. It's also pure cost.
-
-Same fix, two ways to ask:
-
-> *"In `TemplateEngine.java`, the `welcome` template is missing an exclamation mark. **Show me the updated file.**"*
-> → 30 lines back. (With a 600-line file, 600 lines.)
-
-> *"In `TemplateEngine.java`, the `welcome` template is missing an exclamation mark. **Reply with a unified diff only, no commentary.**"*
-> → 5 lines back.
-
-Output tokens are typically three to five times the price of input tokens on direct APIs. In a per-request model like Copilot's, verbose output still hurts: it increases latency, fills the context for subsequent turns, and evicts earlier useful content sooner.
-
-The leverage is in the system prompt. Two lines in `copilot-instructions.md` make every chat in the repo behave better forever:
-
-```
-- Be concise. No preamble.
-- Prefer diffs over full files.
-```
-
-**Do this Monday:** add those two lines.
+**Do this Monday:** count the lines in your always-loaded files. Move anything workflow-specific into a skill and anything directory-specific into a scoped rule.
 
 ---
 
-### G. Repo hygiene — what the indexer sees
+### E. Right-size the model *and* the effort
 
-The indexer that powers retrieval respects `.gitignore`. Tighten it.
+The old version of this lever was a multiplier table: GPT-4.1 at 0×, Sonnet at 1×, Opus at 10×. That table is gone. Since June 1, 2026 Copilot bills by token at each model's API rate, so both tools now follow the same price list:
 
-```diff
-+target/
-+*.class
-+*.jar
-+.idea/
-+*.iml
- *.log
-```
-
-**Important gotcha:** if a file is *already tracked* in git, adding the path to `.gitignore` does not untrack it — the indexer still sees it. You also need:
-
-```bash
-git rm --cached target/demo-0.0.1-SNAPSHOT.jar
-```
-
-For secrets, fixtures, and vendored deps, use **content exclusions** at the org/repo level (most coding-assistant providers expose this).
-
-The other half of repo hygiene is **summary comments at the top of each module**:
-
-```java
-// TemplateEngine — central renderer. Use render(id, data) for new emails.
-// renderLegacy(id, data) is deprecated and only used by OrderConfirmationService.
-// Templates registered: welcome, order_confirmation_v2.
-```
-
-Three lines, ~50 tokens. Now "what does the template engine do?" can be answered without reading the rest of the file. A 200-token summary at the top of each module beats re-reading 5,000 tokens of code, every single time.
-
-**Do this Monday:** `git rm --cached` whatever shouldn't be indexed; add three-line summaries to your top-of-mind modules.
-
----
-
-### H. Observability — latency is your token meter
-
-You can't see Copilot's token counts. You don't need to. Use the proxy you already have:
-
-| Reply latency | ≈ Input tokens |
+| Model | Input / output per million tokens |
 |---|---|
-| < 5 s | < 20 K |
-| 5–10 s | 20–60 K |
-| 10–20 s | 60–120 K |
-| > 20 s | Near limit — start a new chat |
+| Claude Haiku 5.5 | $0.10 / $0.50 (prompts up to 100K tokens) |
+| Claude Sonnet 5.5 | $2 / $10 |
+| Claude Opus 5.5 | $4 / $20 |
 
-When the same question takes three times longer in your fourth chat than in a fresh one, you've just watched your context bloat in real time. The fix is "new chat with a summary," not "wait it out."
+Two things changed the routing story. Opus now costs twice Sonnet per token, not five or ten times. The new large gap is between Haiku and everything else: Sonnet costs 20× Haiku, which makes Haiku the obvious choice for subagents that search, read and summarise.
 
-You can also lint for context bloat the same way you lint for bundle size. A 30-line script in CI is enough to catch the most common regressions:
+The second change is **effort**. The 5.5 models always think, and thinking tokens are billed as output, so the effort level (`low` to `max`) often moves cost more than the model choice does. It's also the cheaper knob to turn: on the 5.5 models with an API key or subscription, changing effort mid-session keeps the cache, while switching model throws it away.
+
+- **Claude Code:** `/model` at the start of a task, `/effort` during it, and `model: haiku` in the frontmatter of subagents that do simple work. The subagents in this repo set `model:` and `effort:` per role.
+- **Copilot:** the model picker, the reasoning level, or Auto, which now picks at session boundaries for you.
+
+**Do this Monday:** default to Sonnet at medium effort. Go up in effort before you go up in model, and switch model only right after `/clear`.
+
+---
+
+### F. Output discipline
+
+Output tokens cost five times input on every current Claude model, and every output token you produce is re-read as input on every later turn. A reply that opens with "Great question! Let me explain what I'm going to do…" costs you twice.
+
+The good news: agentic tools already edit with diffs, so "return a diff, not the whole file" is mostly solved for code. The waste that's left is prose: narration before tool calls, recaps after them, and explanations you didn't ask for.
+
+Same question, two ways:
+
+> *"Explain `TemplateEngine.java`."* → several paragraphs, plus a method-by-method tour.
+> *"In three bullets: what does `TemplateEngine.java` do, and which method should new emails call?"* → three lines.
+
+Then make it the default, so nobody has to remember. This repo's `AGENTS.md` ends with:
+
+```
+- Be concise. No preamble. No re-explaining the request back to the user.
+- Return diffs, not full files, when editing.
+- If you need more context, ask one targeted question instead of guessing.
+```
+
+In Claude Code the token count next to the spinner shows the current turn's output growing live, which makes this lever easy to demo.
+
+**Do this Monday:** add those three lines to the instructions file every session loads.
+
+---
+
+### G. Make the repo cheap to read
+
+Copilot retrieves from a semantic index. Claude Code has no index: it searches with grep and glob, then reads files. Either way, whatever is lying around in the repo gets found, and that includes dead code.
+
+That's the trap from lever A. The old JavaScript under `src/email/`, `src/api/` and `dist/` hasn't run in months, but it matches every search for "order confirmation", so the agent reads it, reasons about it and sometimes edits it. Delete it: git history keeps it for anyone who needs it.
+
+What you can't delete, hide:
+
+```json
+// .claude/settings.json
+{ "permissions": { "deny": ["Read(./target/**)"] } }
+```
+
+`.gitignore` matters too, because both Copilot's index and Claude Code's search respect it. If a file is already tracked, adding it to `.gitignore` doesn't untrack it; you also need `git rm --cached`.
+
+The cheapest read is the one the agent doesn't need to make. A three-line summary at the top of a class answers "what does this do?" without reading the other 200 lines:
 
 ```java
-// LintInstructions.java — run with: java LintInstructions.java
-// Fails if any .github/instructions/*.md exceeds 150 lines.
+/**
+ * Central renderer. New emails call render(templateId, data).
+ * renderLegacy(...) is deprecated; only OrderConfirmationService still uses it.
+ */
+```
+
+**Do this Monday:** search your repo for a domain term and count how many of the hits are dead. Delete them.
+
+---
+
+### H. Read the meter, set a budget
+
+The first version of this talk said "you can't see Copilot's token counts, so use latency as a proxy". That's no longer true for either tool, and a talk called *Context is a budget* should show the budget.
+
+In Claude Code:
+
+- `/context` shows what's in the window right now: system prompt, tools, memory files, skills, messages.
+- `/usage` shows the session's cost by model and the prompt cache line. On subscription plans it also attributes recent usage to skills, subagents, plugins and MCP servers, and recommends changes; press `f` to apply the ones Claude Code can.
+- The status line can show context %, cache hit rate and session cost on every turn. This repo ships one (`.claude/statusline.sh`).
+- For automation, `claude -p --max-budget-usd 0.50` stops a headless run at a dollar cap.
+- Teams get spend limits (Console workspaces, or Team and Enterprise admin settings) and OpenTelemetry export for their own dashboards.
+
+In Copilot, VS Code shows a context-window indicator, Copilot CLI has `/context`, and admins set AI-credit budgets per enterprise, cost center or user.
+
+For a baseline, Anthropic reports that Claude Code averages about $13 per developer per active day across enterprise deployments, $150–250 per developer per month, with 90% of users under $30 a day. If your numbers are far above that, the levers above tell you where to look.
+
+The meter tells you about today. To stop bloat from creeping back in, lint for it in CI the way you lint for JAR size. The repo's `npm run lint:context` checks instruction and prompt sizes and flags globs that match everything. Here is the core of it in plain Java, for a Java shop:
+
+```java
+// LintInstructions.java: java LintInstructions.java
 import java.nio.file.*;
-import java.util.stream.*;
 
 public class LintInstructions {
     public static void main(String[] args) throws Exception {
-        Path dir = Path.of(".github/instructions");
         boolean failed = false;
-        try (Stream<Path> files = Files.list(dir)) {
-            for (Path f : (Iterable<Path>) files.filter(p -> p.toString().endsWith(".md"))::iterator) {
-                long lines = Files.lines(f).count();
-                System.out.println((lines > 150 ? "❌ " : "✅ ") + f.getFileName() + ": " + lines + " lines");
-                if (lines > 150) failed = true;
-            }
+        for (String f : new String[] {"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"}) {
+            Path p = Path.of(f);
+            if (!Files.exists(p)) continue;
+            long lines = Files.lines(p).count();
+            System.out.println((lines > 200 ? "❌ " : "✅ ") + f + ": " + lines + " lines");
+            failed |= lines > 200;
         }
         if (failed) System.exit(1);
     }
 }
 ```
 
-Wire it into CI and context bloat stops accumulating silently across PRs.
-
-![A 30-line lint script catches context bloat the way bundle-size lints catch JS bloat](../images/05-lint-output.png)
-
-**Do this Monday:** put a stopwatch next to your editor for one day. Count Mississippis. You'll know which chats to rotate.
+**Do this Monday:** add a status line that shows context %, cache hit rate and cost, and leave it on for a week.

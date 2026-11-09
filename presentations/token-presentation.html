@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reducing Token Usage in AI-Assisted Development</title>
+<title>Context Is a Budget</title>
 <script>
   (() => {
     const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
@@ -46,7 +46,7 @@ code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
 
 .deck{height:100vh;display:flex;flex-direction:column}
 .stage{flex:1;overflow:hidden;position:relative}
-.slide{position:absolute;inset:0;padding:48px 72px 96px;overflow:auto;
+.slide{position:absolute;inset:0;padding:48px 72px 72px;overflow:auto;
   display:none;flex-direction:column;animation:fade .25s ease}
 .slide.active{display:flex}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -54,12 +54,12 @@ code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
 .eyebrow{color:var(--cp-accent);text-transform:uppercase;letter-spacing:.12em;
   font-size:12px;font-weight:700;margin-bottom:12px}
 h1{font-size:44px;margin:0 0 12px;line-height:1.1}
-h2{font-size:34px;margin:0 0 18px;line-height:1.15}
+h2{font-size:38px;margin:0 0 18px;line-height:1.15}
 h3{font-size:20px;margin:18px 0 8px}
-p{font-size:17px;line-height:1.55;color:var(--cp-text);margin:0 0 12px}
-.lead{font-size:20px;color:var(--cp-text-muted);max-width:900px}
+p{font-size:19px;line-height:1.5;color:var(--cp-text);margin:0 0 12px}
+.lead{font-size:22px;color:var(--cp-text-muted);max-width:1000px}
 ul{margin:0 0 12px 0;padding-left:22px}
-li{margin:6px 0;line-height:1.5}
+li{margin:6px 0;line-height:1.45;font-size:18px}
 small,.muted{color:var(--cp-text-muted)}
 
 .grid{display:grid;gap:18px}
@@ -75,10 +75,10 @@ small,.muted{color:var(--cp-text-muted)}
   margin-right:6px}
 
 .kbd{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
-  border-radius:6px;padding:1px 6px;font-size:13px}
+  border-radius:6px;padding:1px 6px;font-size:.85em}
 
 pre{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
-  border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;margin:0}
+  border-radius:10px;padding:14px 16px;overflow:auto;font-size:15px;line-height:1.5;margin:0}
 
 .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;
   background:var(--cp-bg-elevated);border-top:1px solid var(--cp-border)}
@@ -99,7 +99,7 @@ button.primary:hover{background:var(--cp-accent-hover);border-color:var(--cp-acc
 .metric small{display:block;font-size:13px;color:var(--cp-text-muted);
   font-weight:500;margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
 
-table{width:100%;border-collapse:collapse;font-size:14.5px}
+table{width:100%;border-collapse:collapse;font-size:16.5px}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--cp-border)}
 th{color:var(--cp-text-muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
 tr:hover td{background:var(--cp-surface-soft)}
@@ -114,6 +114,7 @@ tr:hover td{background:var(--cp-surface-soft)}
   border-radius:999px;padding:6px 12px;font-size:13px}
 
 .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid>*,.split>*{min-width:0}
 .good{border-left:4px solid var(--cp-success)}
 .bad{border-left:4px solid var(--cp-danger)}
 .warn{border-left:4px solid var(--cp-warning)}
@@ -138,6 +139,39 @@ tr:hover td{background:var(--cp-surface-soft)}
 .hand .ar{text-align:center;color:var(--cp-accent);font-size:22px;font-weight:700}
 
 .theme-toggle{position:absolute;top:14px;right:18px;z-index:10}
+
+/* new slide components */
+.slide .notes{display:none}
+.measure{display:inline-block;border:2px dashed var(--cp-warning);border-radius:8px;padding:0 8px;color:var(--cp-warning)}
+.feature{font-size:21px;padding:14px 18px;border-radius:12px;background:var(--cp-accent-soft);border-left:4px solid var(--cp-accent)}
+.card .metric{margin-top:14px}
+.card.pattern{border-style:dashed}
+.card h3:only-of-type:last-child{margin-bottom:0}
+pre.meter{font-size:20px;margin-top:6px}
+table.compact{font-size:15px}
+table.compact td,table.compact th{padding:7px 10px}
+tr.total-row td{font-weight:700;font-size:20px}
+.qr svg{display:block;width:100%;height:100%}
+.qr{background:#fff;padding:8px;border-radius:10px}
+.qr-corner{position:absolute;right:28px;bottom:48px;width:130px;text-align:center}
+.qr-corner small{display:block;margin-top:6px;font-size:11px;color:var(--cp-text-muted)}
+.qr-big{display:flex;align-items:center;gap:24px;margin-top:22px;text-align:left}
+.qr-big .qr{width:190px;height:190px}
+.qr-big p{font-size:22px;margin:0}
+
+/* presenter view: open with P, or ?presenter */
+#presenter{display:none}
+body.presenter .stage,body.presenter .theme-toggle{display:none}
+body.presenter #presenter{display:flex;flex-direction:column;gap:14px;flex:1;padding:28px 40px;overflow:auto}
+#presenter .p-top{display:flex;justify-content:space-between;align-items:baseline;gap:24px}
+#pTimer{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums}
+#pCue{font-size:22px;font-variant-numeric:tabular-nums}
+#pCue.ok{color:var(--cp-success)} #pCue.late{color:var(--cp-danger)}
+#pTitle{font-size:30px;font-weight:700}
+#pNext{font-size:18px;color:var(--cp-text-muted)}
+#pNotes{font-size:26px;line-height:1.5;max-width:1100px}
+#pHelp{font-size:13px;color:var(--cp-text-muted)}
+a{color:var(--cp-link)}
 
 /* calculator */
 .calc{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:8px}
@@ -165,6 +199,13 @@ tr:hover td{background:var(--cp-surface-soft)}
 <div class="deck">
   <button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
   <div class="stage" id="stage"></div>
+  <div id="presenter">
+    <div class="p-top"><div id="pTimer">0:00</div><div id="pCue"></div></div>
+    <div id="pTitle"></div>
+    <div id="pNext"></div>
+    <div id="pNotes"></div>
+    <div id="pHelp">← → navigate (both windows follow) · T restart timer · the audience window is the one you opened this from</div>
+  </div>
   <div class="bar">
     <div class="dots" id="dots"></div>
     <div class="counter"><span id="cur">1</span> / <span id="total">1</span></div>
@@ -176,74 +217,497 @@ tr:hover td{background:var(--cp-surface-soft)}
 </div>
 
 <script>
+// Repo QR code (inline SVG, generated with CoreImage; decodes to REPO_URL).
+const REPO_URL = 'github.com/sohamda/ai-token-management';
+const QR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><rect width="35" height="35" fill="#fff"/><path d="M1 1h1v1h-1zM2 1h1v1h-1zM3 1h1v1h-1zM4 1h1v1h-1zM5 1h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM19 1h1v1h-1zM20 1h1v1h-1zM21 1h1v1h-1zM24 1h1v1h-1zM27 1h1v1h-1zM28 1h1v1h-1zM29 1h1v1h-1zM30 1h1v1h-1zM31 1h1v1h-1zM32 1h1v1h-1zM33 1h1v1h-1zM1 2h1v1h-1zM7 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM17 2h1v1h-1zM19 2h1v1h-1zM22 2h1v1h-1zM23 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM27 2h1v1h-1zM33 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM7 3h1v1h-1zM12 3h1v1h-1zM17 3h1v1h-1zM18 3h1v1h-1zM21 3h1v1h-1zM23 3h1v1h-1zM25 3h1v1h-1zM27 3h1v1h-1zM29 3h1v1h-1zM30 3h1v1h-1zM31 3h1v1h-1zM33 3h1v1h-1zM1 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM11 4h1v1h-1zM15 4h1v1h-1zM17 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM23 4h1v1h-1zM25 4h1v1h-1zM27 4h1v1h-1zM29 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM33 4h1v1h-1zM1 5h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM7 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM21 5h1v1h-1zM23 5h1v1h-1zM25 5h1v1h-1zM27 5h1v1h-1zM29 5h1v1h-1zM30 5h1v1h-1zM31 5h1v1h-1zM33 5h1v1h-1zM1 6h1v1h-1zM7 6h1v1h-1zM11 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM25 6h1v1h-1zM27 6h1v1h-1zM33 6h1v1h-1zM1 7h1v1h-1zM2 7h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM9 7h1v1h-1zM11 7h1v1h-1zM13 7h1v1h-1zM15 7h1v1h-1zM17 7h1v1h-1zM19 7h1v1h-1zM21 7h1v1h-1zM23 7h1v1h-1zM25 7h1v1h-1zM27 7h1v1h-1zM28 7h1v1h-1zM29 7h1v1h-1zM30 7h1v1h-1zM31 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM1 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM27 9h1v1h-1zM30 9h1v1h-1zM32 9h1v1h-1zM33 9h1v1h-1zM1 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM12 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM27 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM33 10h1v1h-1zM2 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM15 11h1v1h-1zM17 11h1v1h-1zM18 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM28 11h1v1h-1zM29 11h1v1h-1zM30 11h1v1h-1zM32 11h1v1h-1zM33 11h1v1h-1zM1 12h1v1h-1zM3 12h1v1h-1zM6 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM23 12h1v1h-1zM26 12h1v1h-1zM27 12h1v1h-1zM28 12h1v1h-1zM30 12h1v1h-1zM33 12h1v1h-1zM1 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM22 13h1v1h-1zM24 13h1v1h-1zM25 13h1v1h-1zM26 13h1v1h-1zM28 13h1v1h-1zM29 13h1v1h-1zM30 13h1v1h-1zM33 13h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM22 14h1v1h-1zM25 14h1v1h-1zM28 14h1v1h-1zM32 14h1v1h-1zM1 15h1v1h-1zM2 15h1v1h-1zM3 15h1v1h-1zM4 15h1v1h-1zM7 15h1v1h-1zM10 15h1v1h-1zM11 15h1v1h-1zM12 15h1v1h-1zM13 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM22 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM28 15h1v1h-1zM29 15h1v1h-1zM30 15h1v1h-1zM2 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM17 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM22 16h1v1h-1zM26 16h1v1h-1zM27 16h1v1h-1zM28 16h1v1h-1zM30 16h1v1h-1zM31 16h1v1h-1zM4 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM19 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM26 17h1v1h-1zM27 17h1v1h-1zM29 17h1v1h-1zM30 17h1v1h-1zM31 17h1v1h-1zM1 18h1v1h-1zM3 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM25 18h1v1h-1zM26 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM30 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM1 19h1v1h-1zM3 19h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM10 19h1v1h-1zM12 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM25 19h1v1h-1zM28 19h1v1h-1zM29 19h1v1h-1zM31 19h1v1h-1zM32 19h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM27 20h1v1h-1zM29 20h1v1h-1zM32 20h1v1h-1zM5 21h1v1h-1zM7 21h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM30 21h1v1h-1zM31 21h1v1h-1zM33 21h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM30 22h1v1h-1zM33 22h1v1h-1zM3 23h1v1h-1zM4 23h1v1h-1zM5 23h1v1h-1zM7 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM22 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM26 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM31 23h1v1h-1zM32 23h1v1h-1zM33 23h1v1h-1zM2 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM25 24h1v1h-1zM27 24h1v1h-1zM28 24h1v1h-1zM32 24h1v1h-1zM33 24h1v1h-1zM1 25h1v1h-1zM3 25h1v1h-1zM5 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM9 25h1v1h-1zM13 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM23 25h1v1h-1zM25 25h1v1h-1zM26 25h1v1h-1zM27 25h1v1h-1zM28 25h1v1h-1zM29 25h1v1h-1zM32 25h1v1h-1zM33 25h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM11 26h1v1h-1zM14 26h1v1h-1zM16 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM25 26h1v1h-1zM29 26h1v1h-1zM30 26h1v1h-1zM1 27h1v1h-1zM2 27h1v1h-1zM3 27h1v1h-1zM4 27h1v1h-1zM5 27h1v1h-1zM6 27h1v1h-1zM7 27h1v1h-1zM9 27h1v1h-1zM10 27h1v1h-1zM13 27h1v1h-1zM14 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM23 27h1v1h-1zM24 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM29 27h1v1h-1zM1 28h1v1h-1zM7 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM13 28h1v1h-1zM14 28h1v1h-1zM16 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM1 29h1v1h-1zM3 29h1v1h-1zM4 29h1v1h-1zM5 29h1v1h-1zM7 29h1v1h-1zM11 29h1v1h-1zM12 29h1v1h-1zM18 29h1v1h-1zM20 29h1v1h-1zM21 29h1v1h-1zM24 29h1v1h-1zM25 29h1v1h-1zM26 29h1v1h-1zM27 29h1v1h-1zM28 29h1v1h-1zM29 29h1v1h-1zM31 29h1v1h-1zM32 29h1v1h-1zM33 29h1v1h-1zM1 30h1v1h-1zM3 30h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM7 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM11 30h1v1h-1zM15 30h1v1h-1zM19 30h1v1h-1zM20 30h1v1h-1zM21 30h1v1h-1zM22 30h1v1h-1zM24 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM31 30h1v1h-1zM32 30h1v1h-1zM33 30h1v1h-1zM1 31h1v1h-1zM3 31h1v1h-1zM4 31h1v1h-1zM5 31h1v1h-1zM7 31h1v1h-1zM9 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM13 31h1v1h-1zM14 31h1v1h-1zM20 31h1v1h-1zM23 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM30 31h1v1h-1zM31 31h1v1h-1zM1 32h1v1h-1zM7 32h1v1h-1zM10 32h1v1h-1zM13 32h1v1h-1zM14 32h1v1h-1zM16 32h1v1h-1zM17 32h1v1h-1zM18 32h1v1h-1zM20 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM25 32h1v1h-1zM26 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM33 32h1v1h-1zM1 33h1v1h-1zM2 33h1v1h-1zM3 33h1v1h-1zM4 33h1v1h-1zM5 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM9 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM14 33h1v1h-1zM16 33h1v1h-1zM17 33h1v1h-1zM18 33h1v1h-1zM19 33h1v1h-1zM22 33h1v1h-1zM24 33h1v1h-1zM27 33h1v1h-1zM29 33h1v1h-1zM31 33h1v1h-1z" fill="#000"/></svg>';
+
+// Each slide: data-cue = where you should be (mm:ss elapsed) when you leave it.
+// <aside class="notes"> is shown only in the presenter view (press P).
 const slides = [
   // 1 — title
-  `<section class="slide title-slide">
-    <div class="eyebrow">Technical Session</div>
-    <h1>Reducing Token Usage in<br/>AI-Assisted Development</h1>
-    <p class="lead">Context engineering, the Ralph Wiggum loop, auto-compact, agent handover, and the standards that turn an expensive habit into a disciplined practice.</p>
-    <div class="footer">Use ← → or Space to navigate · Press <span class="kbd">F</span> for fullscreen</div>
+  `<section class="slide title-slide" data-cue="0:30">
+    <div class="eyebrow">J-Fall 2026</div>
+    <h1>Context Is a Budget</h1>
+    <p class="lead">Eight levers and three workflow patterns for spending tokens well with coding agents.</p>
+    <div class="qr-corner"><div class="qr">${QR_SVG}</div><small>${REPO_URL}</small></div>
+    <div class="footer">← → or Space · <span class="kbd">F</span> fullscreen · <span class="kbd">P</span> presenter view</div>
+    <aside class="notes">Name, one line about you. Poll the room: hands up for Copilot, Claude Code, JetBrains AI / Junie, Cursor. Say: "I demo Claude Code; every lever works in your tool too, and there's a Copilot slide." Slides and demos are behind the QR code.</aside>
   </section>`,
 
-  // 2 — why tokens matter
-  `<section class="slide">
-    <div class="eyebrow">Set the stage</div>
-    <h2>Why tokens matter</h2>
-    <div class="grid cols-4" style="margin-top:14px">
-      <div class="card"><div class="metric">$$$<small>Cost</small></div><p style="margin-top:14px">A 50-dev team can burn $10–50k/mo on agentic tools. Most of it is avoidable.</p></div>
-      <div class="card"><div class="metric">⏱<small>Latency</small></div><p style="margin-top:14px">Larger contexts = slower TTFT and slower tool loops. Devs feel the lag.</p></div>
-      <div class="card"><div class="metric">📉<small>Context rot</small></div><p style="margin-top:14px">Recall and reasoning <b>degrade</b> as context fills — even within the advertised window.</p></div>
-      <div class="card"><div class="metric">🚦<small>Rate limits</small></div><p style="margin-top:14px">TPM caps stall CI, agents, and pair-programming when sessions get fat.</p></div>
+  // 2 — hook: one feature, two ways
+  `<section class="slide" data-cue="3:00">
+    <div class="eyebrow">One feature, two ways</div>
+    <h2>Same feature. Same repo. Very different bill.</h2>
+    <div class="feature">When an order total exceeds $100, the confirmation email adds "VIP customer — free shipping on your next order".</div>
+    <div class="grid cols-2" style="margin-top:18px">
+      <div class="card bad">
+        <h3>The default way</h3>
+        <ul><li>Opus at max effort, one long session</li><li>"Add a VIP line to the order emails"</li><li>Raw <span class="kbd">mvn test</span> output, every run</li></ul>
+        <div class="metric"><span class="measure">$?.??</span><small>measured on this repo</small></div>
+      </div>
+      <div class="card good">
+        <h3>The way this talk ends</h3>
+        <ul><li>Sonnet session, Opus only to plan and review</li><li>Scoped asks, fresh context per role</li><li>Test output trimmed to the failures</li></ul>
+        <div class="metric"><span class="measure">$?.??</span><small>measured on this repo</small></div>
+      </div>
     </div>
-    <p class="lead" style="margin-top:24px">Mental shift: <b>prompt engineering → context engineering</b>. Tokens are a finite <i>attention budget</i>, not free real estate.</p>
+    <p class="lead" style="margin-top:18px">Every step between those two numbers is one of eight levers or three patterns.</p>
+    <aside class="notes">FILL IN both numbers from the dry run (demo 10 run twice: default vs disciplined, /usage after each). Don't explain how yet; promise the answer at the end (slide "Back to the feature"). If the dry run shows a small gap, say so honestly and lean on speed and quality instead.</aside>
   </section>`,
 
-  // 3 — anatomy
-  `<section class="slide">
+  // 3 — the budget is real now
+  `<section class="slide" data-cue="5:00">
+    <div class="eyebrow">Set the stage</div>
+    <h2>The budget is real now</h2>
+    <div class="grid cols-3" style="margin-top:6px">
+      <div class="card"><h3>Copilot · since June 1</h3><p><b>AI Credits</b> bill every input, output and cached token at the model's API rate. Premium requests are gone.</p></div>
+      <div class="card"><h3>Claude Code</h3><p><b>Per token</b> on the API. On a subscription: an allowance that resets every <b>5 hours</b> and every <b>week</b>.</p></div>
+      <div class="card"><div class="metric">~$13<small>per developer per active day</small></div><p style="margin-top:12px">Anthropic's enterprise average; 90% of users stay under $30.</p></div>
+    </div>
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="card"><h3>💸 Cost</h3><p>An invoice, or the agent stopping for the afternoon.</p></div>
+      <div class="card"><h3>⏱ Speed</h3><p>Every token in the window is processed on every turn.</p></div>
+      <div class="card"><h3>📉 Quality</h3><p>Recall and reasoning <b>degrade</b> as the window fills.</p></div>
+    </div>
+    <aside class="notes">Most of this room doesn't pay the bill, so lead with speed and quality: a bloated context is slower and dumber. Context rot: Chroma's research shows recall dropping well inside the advertised window. Cost is the proof, not the pitch.</aside>
+  </section>`,
+
+  // 4 — anatomy
+  `<section class="slide" data-cue="7:30">
     <div class="eyebrow">Know your enemy</div>
     <h2>Anatomy of a request</h2>
     <table>
-      <thead><tr><th>Bucket</th><th>Typical share</th><th>Why it bloats</th></tr></thead>
+      <thead><tr><th>Layer</th><th>What makes it grow</th></tr></thead>
       <tbody>
-        <tr><td>System prompt / instructions</td><td>5–15%</td><td>Copy-pasted boilerplate, never trimmed</td></tr>
-        <tr><td>Tool / function schemas</td><td>10–40%</td><td>Re-sent <b>every turn</b>; unused MCP servers</td></tr>
-        <tr><td>Retrieved files & code chunks</td><td>20–60%</td><td>Whole-file dumps instead of ranged reads</td></tr>
-        <tr><td>Conversation history</td><td>10–30%</td><td>Grows linearly without compaction</td></tr>
-        <tr><td>Model output</td><td>5–20%</td><td>Verbose explanations, "let me think out loud"</td></tr>
+        <tr><td>System prompt + tools</td><td>MCP servers, plugins. Small now that tools load on demand</td></tr>
+        <tr><td>Project instructions</td><td><span class="kbd">AGENTS.md</span>, <span class="kbd">CLAUDE.md</span>, unscoped rules</td></tr>
+        <tr><td>Files and tool output</td><td>Broad exploration, whole-file reads, <b>build and test logs</b></td></tr>
+        <tr><td>Conversation history</td><td>Every turn you don't clear or compact</td></tr>
+        <tr><td>Output and thinking</td><td>Narration, recaps, high effort on easy tasks: <b>5× the input price</b></td></tr>
       </tbody>
     </table>
-    <p class="lead" style="margin-top:18px">⚠️ Profile before optimizing. Most teams are surprised which bucket dominates theirs.</p>
+    <p class="lead" style="margin-top:18px">All of it is re-sent on <b>every turn</b>. Caching makes that cheap, not free.</p>
+    <aside class="notes">LIVE (1 min): switch to the terminal, fresh session, run /context. Point at each layer on the real screen. "Turn 30 pays to re-read turns 1–29." Fallback: screenshot of /context.</aside>
   </section>`,
 
-  // 4 — calculator
+  // 5 — what changed
+  `<section class="slide" data-cue="9:00">
+    <div class="eyebrow">One year later</div>
+    <h2>The tool does the mechanics. You own the decisions.</h2>
+    <table>
+      <thead><tr><th>A year ago, you had to…</th><th>Now the tool does it</th><th>Still your call</th></tr></thead>
+      <tbody>
+        <tr><td>Order prompts so they cache</td><td>Cache breakpoints placed for you</td><td><b>Not breaking</b> the cache</td></tr>
+        <tr><td>Prune MCP tool schemas</td><td>Tools load on demand</td><td>What tools <b>return</b></td></tr>
+        <tr><td>Summarise chats by hand</td><td>Auto-compaction</td><td><b>When</b> to clear or compact</td></tr>
+        <tr><td>Guess, because tokens were invisible</td><td><span class="kbd">/context</span>, <span class="kbd">/usage</span>, status line</td><td><b>Looking</b>, and setting a cap</td></tr>
+        <tr><td>Dodge Copilot's "Opus = 10×"</td><td>Per-token billing</td><td>Model <b>and effort</b> per task</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">Point at the right-hand column only: that's the talk. The tools got better at plumbing; none of them can decide for you what goes in the window.</aside>
+  </section>`,
+
+  // 6 — roadmap
+  `<section class="slide" data-cue="9:30">
+    <div class="eyebrow">Roadmap</div>
+    <h2>Eight levers, three patterns</h2>
+    <div class="grid cols-4">
+      <div class="card"><span class="tag">A</span><h3>Scope the ask</h3></div>
+      <div class="card"><span class="tag">B</span><h3>Don't break the cache</h3></div>
+      <div class="card"><span class="tag">C</span><h3>Make tool output cheap</h3></div>
+      <div class="card"><span class="tag">D</span><h3>Codify once, load on demand</h3></div>
+      <div class="card"><span class="tag">E</span><h3>Right-size model and effort</h3></div>
+      <div class="card"><span class="tag">F</span><h3>Output discipline</h3></div>
+      <div class="card"><span class="tag">G</span><h3>Make the repo cheap to read</h3></div>
+      <div class="card"><span class="tag">H</span><h3>Read the meter, set a budget</h3></div>
+    </div>
+    <div class="grid cols-3" style="margin-top:16px">
+      <div class="card pattern"><span class="tag">1</span><h3>Loop with state on disk</h3><p class="muted">many small tasks</p></div>
+      <div class="card pattern"><span class="tag">2</span><h3>Checkpoint &amp; reset</h3><p class="muted">one long task</p></div>
+      <div class="card pattern"><span class="tag">3</span><h3>Plan → Build → Review</h3><p class="muted">one feature, several roles</p></div>
+    </div>
+    <aside class="notes">Ten seconds. Levers shrink the cost of a turn; patterns shrink the number of expensive turns.</aside>
+  </section>`,
+
+  // 7 — Lever A
+  `<section class="slide" data-cue="12:30">
+    <div class="eyebrow">Lever A · demo 01</div>
+    <h2>Scope the ask</h2>
+    <p class="lead">The agent can't ask what you meant until it has explored. Exploration is what you pay for.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card bad">
+        <h3>❌ Vague</h3>
+        <pre>Refactor the order confirmation email
+to use the new template engine.</pre>
+        <p style="margin-top:10px">Finds the Java <b>and</b> a dead JavaScript copy, reads both, then asks which one you meant.</p>
+      </div>
+      <div class="card good">
+        <h3>✅ Scoped</h3>
+        <pre>In @…/OrderConfirmationService.java,
+call render("order_confirmation_v2", …)
+instead of renderLegacy.
+Keep behaviour identical.</pre>
+        <p style="margin-top:10px">Two files read. One small diff.</p>
+      </div>
+    </div>
+    <aside class="notes">LIVE demo 01 (2 min): /clear, vague prompt, /usage; /clear, scoped prompt with @-mentions, /usage. If the vague run behaves well, say so: "the model got lucky; on a real repo it won't" and show the recording. Mention plan mode (Shift+Tab) and the Java code intelligence plugin in one sentence.</aside>
+  </section>`,
+
+  // 8 — Lever B
+  `<section class="slide" data-cue="15:00">
+    <div class="eyebrow">Lever B · demo 02</div>
+    <h2>Don't break the cache</h2>
+    <p class="lead">Every turn re-sends the whole conversation. Cached, it costs <b>10%</b> of input on Sonnet, <b>5%</b> on Opus.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card bad">
+        <h3>Breaks it</h3>
+        <ul>
+          <li><b>Switching model</b> mid-session</li>
+          <li>Coming back after it expires: <b>1 h</b> on a subscription, <b>5 min</b> on an API key</li>
+          <li>Compaction, by design</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3>Cache-safe</h3>
+        <ul>
+          <li>Editing files, skills, plan mode, subagents</li>
+          <li><span class="kbd">/effort</span> on the 5.5 models</li>
+          <li>Editing <span class="kbd">AGENTS.md</span>, but it applies only after <span class="kbd">/clear</span></li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">LIVE demo 02, step 2 only (1 min): in the warm session from demo 01, run /model opus and read the confirmation warning aloud. Then /usage → Prompt cache (main) line. Copilot made the same call: Auto only switches model at session boundaries. Building your own agent: no timestamp at the top of the system prompt.</aside>
+  </section>`,
+
+  // 9 — Lever C
+  `<section class="slide" data-cue="18:30">
+    <div class="eyebrow">Lever C · demo 03</div>
+    <h2>Make tool output cheap</h2>
+    <p class="lead">Tool definitions load on demand now. The tax moved to what tools <b>return</b>.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>Filter before the model sees it</h3>
+        <pre># .claude/hooks/filter-test-output.sh
+mvn test  →  mvn test > $log 2>&amp;1
+             grep -E 'Tests run:|FAILURE|BUILD'
+             exit $rc</pre>
+        <p class="muted" style="margin-top:8px"><span class="measure">???</span> lines → <span class="measure">??</span> lines. Red still reads as red.</p>
+      </div>
+      <div class="card">
+        <h3>Other ways</h3>
+        <ul>
+          <li><b>Subagents</b> for noisy work: only the summary comes back</li>
+          <li><b>CLIs over MCP</b>: <span class="kbd">gh pr view 42</span></li>
+          <li><b>Your own tools</b>: <span class="kbd">{id, summary}</span> by default</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">LIVE demo 03 (2.5 min): second terminal, mvn test | wc -l. Then in Claude Code: "Run the tests" and show the trimmed output. Open the hook for 10 seconds. FILL IN the line counts from the dry run.</aside>
+  </section>`,
+
+  // 10 — Lever D
+  `<section class="slide" data-cue="20:30">
+    <div class="eyebrow">Lever D · demo 04</div>
+    <h2>Codify once, load on demand</h2>
+    <table style="margin-top:6px">
+      <thead><tr><th>Loads</th><th>Claude Code</th><th>Copilot</th></tr></thead>
+      <tbody>
+        <tr><td>Every session</td><td><span class="kbd">CLAUDE.md</span> or <span class="kbd">AGENTS.md</span></td><td><span class="kbd">copilot-instructions.md</span></td></tr>
+        <tr><td>Matching file touched</td><td><span class="kbd">.claude/rules/</span> + <span class="kbd">paths:</span></td><td><span class="kbd">*.instructions.md</span> + <span class="kbd">applyTo:</span></td></tr>
+        <tr><td>When invoked</td><td>Skills, subagents</td><td>Prompt files, skills</td></tr>
+      </tbody>
+    </table>
+    <div class="grid cols-2" style="margin-top:18px">
+      <div class="card"><h3>Keep the always-on layer short</h3><p>Under 200 lines. This repo's <span class="kbd">AGENTS.md</span> is 30.</p></div>
+      <div class="card warn"><h3>Two gotchas</h3><ul>
+        <li>Test rules scoped to <span class="kbd">src/**</span> load on every production edit.</li>
+        <li>A <span class="kbd">CLAUDE.md</span> hides <span class="kbd">AGENTS.md</span> unless it imports <span class="kbd">@AGENTS.md</span>.</li>
+      </ul></div>
+    </div>
+    <aside class="notes">Slides only (2 min). The first gotcha was a real bug in this repo's first version. The second is the one people hit: someone adds a CLAUDE.md and the team's AGENTS.md silently stops loading.</aside>
+  </section>`,
+
+  // 11 — Lever E
+  `<section class="slide" data-cue="22:30">
+    <div class="eyebrow">Lever E</div>
+    <h2>Right-size the model <i>and</i> the effort</h2>
+    <div class="grid cols-2" style="margin-top:10px">
+      <div class="card">
+        <table>
+          <thead><tr><th>Model</th><th>In / out per MTok</th></tr></thead>
+          <tbody>
+            <tr><td>Haiku 5.5</td><td>$0.10 / $0.50</td></tr>
+            <tr><td>Sonnet 5.5</td><td>$2 / $10</td></tr>
+            <tr><td>Opus 5.5</td><td>$4 / $20</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:10px">Opus is 2× Sonnet now. Sonnet is 20× Haiku.</p>
+      </div>
+      <div class="card">
+        <h3>Effort is the cheaper knob</h3>
+        <ul>
+          <li>The 5.5 models always think; <b>thinking bills as output</b></li>
+          <li>Changing effort keeps the cache. Changing model doesn't.</li>
+          <li>Default: Sonnet · medium. Haiku for subagents.</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">Slides only (2 min). Haiku's price is for prompts up to 100K tokens; above that it's 5× more, one more reason to keep context small. Rule: go up in effort before you go up in model, and switch model only right after /clear. The calculator is in the appendix if someone asks.</aside>
+  </section>`,
+
+  // 12 — Lever F
+  `<section class="slide" data-cue="24:00">
+    <div class="eyebrow">Lever F</div>
+    <h2>Output discipline</h2>
+    <p class="lead">Output costs <b>5× input</b>, then gets re-read on every later turn.</p>
+    <div class="split" style="margin-top:14px">
+      <div class="card bad"><h3>❌ Paragraphs and a tour</h3><pre>Explain TemplateEngine.java.</pre></div>
+      <div class="card good"><h3>✅ Three lines</h3><pre>In three bullets: what does
+TemplateEngine.java do, and which
+method should new emails call?</pre></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3>Make it the default, in AGENTS.md</h3><pre>- Be concise. No preamble.
+- Return diffs, not full files.
+- Ask one targeted question instead of guessing.</pre></div>
+    <aside class="notes">Slides only (1.5 min). Agents already edit with diffs; the waste left is prose. Claude Code shows the turn's output growing live next to the spinner.</aside>
+  </section>`,
+
+  // 13 — Lever G
+  `<section class="slide" data-cue="25:30">
+    <div class="eyebrow">Lever G</div>
+    <h2>Make the repo cheap to read</h2>
+    <p class="lead">Claude Code greps; Copilot searches an index. Either way, dead code gets found.</p>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card bad">
+        <h3>This repo's trap</h3>
+        <p>An old JavaScript copy of the email code. Every search for "order confirmation" finds it, and the agent reads it.</p>
+      </div>
+      <div class="card good">
+        <h3>Fix it</h3>
+        <ul>
+          <li><b>Delete dead code.</b> Git keeps it.</li>
+          <li>Deny what you can't delete: <span class="kbd">Read(./target/**)</span></li>
+          <li>Three-line summary at the top of each class</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">Slides only (1.5 min). Callback to demo 01: that dead JS is what the vague prompt tripped over. .gitignore helps too: both tools respect it, but an already-tracked file also needs git rm --cached.</aside>
+  </section>`,
+
+  // 14 — Lever H
+  `<section class="slide" data-cue="27:30">
+    <div class="eyebrow">Lever H · demo 14</div>
+    <h2>Read the meter, set a budget</h2>
+    <pre class="meter">Sonnet 5.5 · medium  │  ctx 23%  │  cache 91%  │  $0.46  │  5h 12%</pre>
+    <div class="grid cols-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Look</h3>
+        <ul>
+          <li>Status line, always on</li>
+          <li><span class="kbd">/context</span>: what's in the window</li>
+          <li><span class="kbd">/usage</span>: cost, cache, what used it</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cap</h3>
+        <ul>
+          <li><span class="kbd">claude -p … --max-budget-usd 0.50</span></li>
+          <li>Team spend limits</li>
+          <li><span class="kbd">npm run lint:context</span> in CI</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">LIVE (1.5 min): point at the real status line, which has been on screen all talk. Run /usage; on a subscription, show the breakdown by skill/subagent/MCP and the f-to-fix recommendations. A year ago the advice was "time the replies"; now there's no excuse not to look.</aside>
+  </section>`,
+
+  // 15 — same levers in Copilot
+  `<section class="slide" data-cue="28:00">
+    <div class="eyebrow">For Copilot users</div>
+    <h2>Same levers, your tool</h2>
+    <table class="compact">
+      <thead><tr><th></th><th>Claude Code</th><th>Copilot</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td><span class="kbd">@path</span>, plan mode</td><td><span class="kbd">#file</span>, <span class="kbd">#selection</span></td></tr>
+        <tr><td>B</td><td>cache line in <span class="kbd">/usage</span></td><td>Auto switches only at session boundaries</td></tr>
+        <tr><td>C</td><td>hooks, subagents, <span class="kbd">/mcp</span></td><td>tool search; filter what commands print</td></tr>
+        <tr><td>D</td><td><span class="kbd">AGENTS.md</span>, <span class="kbd">.claude/rules/</span>, skills</td><td><span class="kbd">copilot-instructions.md</span>, <span class="kbd">applyTo</span>, prompt files</td></tr>
+        <tr><td>E</td><td><span class="kbd">/model</span>, <span class="kbd">/effort</span>, per-subagent model</td><td>model picker, reasoning level, Auto</td></tr>
+        <tr><td>G</td><td>deny rules, <span class="kbd">.gitignore</span></td><td>index follows <span class="kbd">.gitignore</span>, content exclusions</td></tr>
+        <tr><td>H</td><td>status line, <span class="kbd">/context</span>, <span class="kbd">/usage</span></td><td>context indicator, usage page, AI-credit budgets</td></tr>
+        <tr><td>1–3</td><td><span class="kbd">claude -p</span> loop, <span class="kbd">/clear</span>, subagents</td><td>cloud agent per issue, new chat, prompt files</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:10px">Copilot column from GitHub and VS Code docs. Check what your IDE's plugin supports.</p>
+    <aside class="notes">30 seconds. Don't read the table; say "photograph this one". Be upfront: you demo Claude Code and took the Copilot side from docs, so JetBrains users should check their plugin.</aside>
+  </section>`,
+
+  // 16 — Pattern 1
+  `<section class="slide" data-cue="32:00">
+    <div class="eyebrow">Pattern 1 · demo 08</div>
+    <h2>Loop with state on disk (Ralph)</h2>
+    <div class="loop">
+      <div class="node">📋<br/>First unchecked item</div><div class="arr">→</div>
+      <div class="node">🛠<br/>Do only that</div><div class="arr">→</div>
+      <div class="node">✅<br/>mvn test</div><div class="arr">→</div>
+      <div class="node">📝<br/>Tick + commit</div><div class="arr">→</div>
+      <div class="node">🚪<br/>Exit. New process.</div><div class="arr">↺</div>
+    </div>
+    <div class="grid cols-2">
+      <div class="card bad">
+        <h3>Not this</h3>
+        <p>"Repeat until TODO.md is done" <b>inside one chat</b>. Item five carries items one to four.</p>
+      </div>
+      <div class="card good">
+        <h3>This: <span class="kbd">tools/ralph.sh</span></h3>
+        <pre>while grep -q '^- \\[ \\]' TODO.md; do
+  claude -p "$(cat tools/ralph-prompt.md)" \\
+    --model sonnet --max-budget-usd 0.50
+done</pre>
+      </div>
+    </div>
+    <aside class="notes">LIVE: start MAX=1 tools/ralph.sh at the top of this slide and talk while it runs (1–3 min). Points: fresh context per item, so item ten costs what item one did; hard cap per iteration; restartable; one commit per item (show git log --oneline). Admit the first version of this demo looped inside one chat. /loop and scheduled tasks have the same problem. Fallback: recording.</aside>
+  </section>`,
+
+  // 17 — Pattern 2
+  `<section class="slide" data-cue="34:00">
+    <div class="eyebrow">Pattern 2</div>
+    <h2>Checkpoint &amp; reset</h2>
+    <p class="lead">Compaction is automatic. <b>When</b> you reset is your call, and the options cost very different amounts.</p>
+    <table style="margin-top:8px">
+      <thead><tr><th>Action</th><th>Cost</th><th>Use it when</th></tr></thead>
+      <tbody>
+        <tr><td><span class="kbd">/clear</span></td><td><b>Free</b></td><td>Switching to an unrelated task</td></tr>
+        <tr><td><span class="kbd">/rewind</span></td><td>Small: reuses the cache</td><td>The last turns went the wrong way</td></tr>
+        <tr><td><span class="kbd">/compact &lt;focus&gt;</span></td><td>Reads the whole conversation</td><td>Mid-task, continuing with less</td></tr>
+        <tr><td>Auto-compaction</td><td>Same, at a moment you didn't choose</td><td>You forgot the other three</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">Slides only (2 min). /compact is cheap while the cache is warm and expensive after a break. Project-root AGENTS.md/CLAUDE.md survive compaction; chat-only instructions don't, so put what matters in a file. /rename before /clear, /resume to come back. Rule: one task per session.</aside>
+  </section>`,
+
+  // 18 — Pattern 3
+  `<section class="slide" data-cue="38:00">
+    <div class="eyebrow">Pattern 3 · demo 10</div>
+    <h2>Plan → Build → Review</h2>
+    <div class="hand">
+      <div class="ag lead"><b>planner</b><br/><small>opus · high · writes plan.md</small></div>
+      <div class="ar">→</div>
+      <div class="ag"><b>implementer</b><br/><small>sonnet · medium · commit per task</small></div>
+      <div class="ar">→</div>
+      <div class="ag lead"><b>reviewer</b><br/><small>opus · high · verdict</small></div>
+    </div>
+    <div class="grid cols-2">
+      <div class="card good">
+        <h3>Why it's cheaper</h3>
+        <ul>
+          <li>Each subagent <b>starts fresh</b></li>
+          <li>Only summaries come back</li>
+          <li>Your session <b>keeps its model and cache</b></li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Fan-out isn't free</h3>
+        <ul>
+          <li>Each subagent pays for its own context</li>
+          <li>Agent teams: <b>~7× the tokens</b></li>
+          <li>Pass artifacts, never chat history</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">RECORDED time-lapse of demo 10 (3 min), narrated live. Show plan.md, the commits, the VERDICT line, then /context of the main session: three briefs and three summaries, not three transcripts. The 7× figure is Anthropic's, for agent teams in plan mode.</aside>
+  </section>`,
+
+  // 19 — Java token sinks
+  `<section class="slide" data-cue="39:30">
+    <div class="eyebrow">For a Java audience</div>
+    <h2>Java's token sinks</h2>
+    <p class="lead">Java's build tools are chatty, and every line they print becomes context.</p>
+    <table style="margin-top:8px">
+      <thead><tr><th>Sink</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Maven / Gradle output</td><td><span class="kbd">mvn -B -ntp -q</span> · <span class="kbd">gradle -q --console=plain</span> · or a hook</td></tr>
+        <tr><td>Spring Boot startup logs</td><td><span class="kbd">spring.main.banner-mode=off</span>, <span class="kbd">logging.level.root=warn</span> in a dev profile</td></tr>
+        <tr><td>Deep stack traces</td><td>Keep frames from your own packages; drop proxy and reflection frames</td></tr>
+        <tr><td>Generated sources</td><td>Deny <span class="kbd">target/generated-sources/**</span> (Lombok, MapStruct, OpenAPI)</td></tr>
+        <tr><td>Multi-module builds</td><td><span class="kbd">mvn -pl &lt;module&gt; -am test</span>, <span class="kbd">-Dtest=&lt;Class&gt;Test</span></td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">1.5 min. This is the slide a Java room photographs. Each row is one line in AGENTS.md or one hook. Example: put "Test: mvn -B -ntp -q test" in AGENTS.md and the agent never sees download progress again.</aside>
+  </section>`,
+
+  // 20 — payoff
+  `<section class="slide" data-cue="41:30">
+    <div class="eyebrow">Back to the feature</div>
+    <h2>Where the difference came from</h2>
+    <table>
+      <thead><tr><th></th><th>Default way</th><th>Disciplined way</th><th>Lever</th></tr></thead>
+      <tbody>
+        <tr><td>The ask</td><td>"Add a VIP line"</td><td>planner writes plan.md first</td><td>A · 3</td></tr>
+        <tr><td>Model</td><td>Opus · max, throughout</td><td>Sonnet session, Opus only to plan and review</td><td>E · B</td></tr>
+        <tr><td>Test output</td><td>full Maven log, every run</td><td>summary and failures</td><td>C</td></tr>
+        <tr><td>Context</td><td>one session, growing</td><td>fresh context per role</td><td>2 · 3</td></tr>
+        <tr class="total-row"><td>Cost</td><td><span class="measure">$?.??</span></td><td><span class="measure">$?.??</span></td><td>H</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">FILL IN the same two numbers as the hook slide. Close the loop: "Nothing here was clever. Each row is one lever." If you measured time too, add it: speed is the argument for people who don't pay.</aside>
+  </section>`,
+
+  // 21 — top three
+  `<section class="slide" data-cue="43:00">
+    <div class="eyebrow">Take-home</div>
+    <h2>If you only do three things</h2>
+    <div class="grid cols-3" style="margin-top:12px">
+      <div class="card"><div class="metric">1</div><h3><span class="kbd">/clear</span> between tasks, and name the file</h3><p>Free, and it works tomorrow morning.</p></div>
+      <div class="card"><div class="metric">2</div><h3>Trim what your build prints</h3><p>One flag or one hook pays off on every test run.</p></div>
+      <div class="card"><div class="metric">3</div><h3>Turn on the meter</h3><p>A status line with context %, cache % and cost.</p></div>
+    </div>
+    <p class="muted" style="margin-top:18px">Full Monday checklist in the repo and the appendix.</p>
+    <aside class="notes">Re-rank these three after the dry run if your measurements say otherwise. Then straight to the closing slide.</aside>
+  </section>`,
+
+  // 22 — closing
+  `<section class="slide title-slide" data-cue="44:00">
+    <div class="eyebrow">In one sentence</div>
+    <h1>The tool handles the mechanics.<br/>You own the decisions.</h1>
+    <div class="qr-big"><div class="qr">${QR_SVG}</div><p>${REPO_URL}<br/><span class="muted">slides · demos · blog · .claude config</span></p></div>
+    <p class="muted" style="margin-top:18px">Questions?</p>
+    <aside class="notes">Leave this slide up during Q&amp;A so people can scan the QR code. Appendix slides follow for questions: calculator, anti-patterns, scaling, checklist, references.</aside>
+  </section>`,
+
+  // 23 — appendix divider
+  `<section class="slide title-slide" data-cue="45:00">
+    <div class="eyebrow">Appendix</div>
+    <h1>For questions</h1>
+    <p class="lead">Calculator · anti-patterns · scaling up · Monday checklist · references</p>
+    <aside class="notes">Only if asked.</aside>
+  </section>`,
+
+  // 24 — calculator
   `<section class="slide">
-    <div class="eyebrow">Live calculator</div>
+    <div class="eyebrow">Appendix · calculator</div>
     <h2>What does this actually cost?</h2>
     <div class="calc">
       <div class="controls">
         <label>Model</label>
         <select id="cModel">
-          <option value="haiku">Claude Haiku 4.5  ($1 / $5 per Mtok)</option>
-          <option value="sonnet" selected>Claude Sonnet 4.5  ($3 / $15)</option>
-          <option value="opus">Claude Opus 4.5  ($5 / $25)</option>
-          <option value="gpt5">GPT-5 (est)  ($1.25 / $10)</option>
-          <option value="gpt5mini">GPT-5 mini (est)  ($0.25 / $2)</option>
-          <option value="gpt41">GPT-4.1  ($2 / $8)</option>
-          <option value="gemini25">Gemini 2.5 Pro  ($1.25 / $10)</option>
+          <option value="haiku">Claude Haiku 5.5  ($0.10 / $0.50 per MTok, ≤100K prompt)</option>
+          <option value="sonnet" selected>Claude Sonnet 5.5  ($2 / $10)</option>
+          <option value="opus">Claude Opus 5.5  ($4 / $20)</option>
+          <option value="fable">Claude Fable 5.1  ($10 / $50)</option>
         </select>
         <div class="row">
-          <div><label>Input tokens / request</label><input id="cIn" type="number" value="20000" min="0"/></div>
-          <div><label>Output tokens / request</label><input id="cOut" type="number" value="800" min="0"/></div>
+          <div><label>Input tokens / request</label><input id="cIn" type="number" value="60000" min="0"/></div>
+          <div><label>Output + thinking tokens / request</label><input id="cOut" type="number" value="1500" min="0"/></div>
         </div>
         <div class="row">
-          <div><label>Requests / day / dev</label><input id="cReq" type="number" value="120" min="0"/></div>
+          <div><label>Requests / day / dev</label><input id="cReq" type="number" value="200" min="0"/></div>
           <div><label>Developers</label><input id="cDev" type="number" value="50" min="1"/></div>
         </div>
         <label>Prompt cache hit rate</label>
         <div class="toggle-row">
           <button data-cache="0">0%</button>
           <button data-cache="0.5">50%</button>
-          <button data-cache="0.8" class="on">80%</button>
+          <button data-cache="0.9" class="on">90%</button>
           <button data-cache="0.95">95%</button>
         </div>
       </div>
@@ -255,565 +719,113 @@ const slides = [
         <div class="savings" id="rSav">Toggle the cache rate or change the model to see savings.</div>
       </div>
     </div>
-    <p class="muted" style="margin-top:14px">Pricing approximate (May 2026). Cache hits billed at 10% of base input. Adjust to your actual usage.</p>
+    <p class="muted" style="margin-top:14px">Claude API list prices (Oct 2026). Cache reads: 10% of input (Haiku, Sonnet), 5% (Opus 5.5), 2.5% (Fable 5.1); cache writes ignored. Copilot bills these same API rates since June 1.</p>
   </section>`,
 
-  // 5 — The 8 levers map
+  // 25 — anti-patterns
   `<section class="slide">
-    <div class="eyebrow">Roadmap</div>
-    <h2>Eight levers we'll cover</h2>
-    <div class="grid cols-4">
-      <div class="card"><span class="tag">A</span><h3>Context engineering</h3><p>JIT retrieval, ranged reads, summarization.</p></div>
-      <div class="card"><span class="tag">B</span><h3>Prompt caching</h3><p>Hits cost ~10% of base. Order matters.</p></div>
-      <div class="card"><span class="tag">C</span><h3>Tool / plugin design</h3><p>Fewer sharper tools, server-side filters.</p></div>
-      <div class="card"><span class="tag">D</span><h3>Skills & standards</h3><p>AGENTS.md, rules, lazy-loaded skills.</p></div>
-      <div class="card"><span class="tag">E</span><h3>Model routing</h3><p>Right-size per task; Batch API.</p></div>
-      <div class="card"><span class="tag">F</span><h3>Output discipline</h3><p>Diffs, structured output, "be concise".</p></div>
-      <div class="card"><span class="tag">G</span><h3>Repo hygiene</h3><p>.aiignore, smaller modules, indexes.</p></div>
-      <div class="card"><span class="tag">H</span><h3>Workflow patterns</h3><p>Ralph loop, auto-compact, agent handover.</p></div>
-    </div>
-  </section>`,
-
-  // 5 — Lever A
-  `<section class="slide">
-    <div class="eyebrow">Lever A · biggest single win</div>
-    <h2>Context engineering</h2>
-    <div class="grid cols-2">
-      <div class="card good">
-        <h3>✅ Do</h3>
-        <ul>
-          <li><b>Just-in-time retrieval.</b> Let the agent grep/glob/view only what it needs.</li>
-          <li><b>Ranged reads.</b> <span class="kbd">view_range</span> or AST slices over whole files.</li>
-          <li><b>Hierarchical summarization.</b> Roll old turns into a <span class="kbd">plan.md</span> scratchpad.</li>
-          <li><b>Sub-agents</b> with isolated context — only their summary returns to the parent.</li>
-          <li><b>Truncate tool output.</b> pipe to <span class="kbd">head</span>, suppress pagers.</li>
-          <li><b>Structured over prose</b> — JSON & tables compress more per token.</li>
-        </ul>
-      </div>
-      <div class="card bad">
-        <h3>❌ Don't</h3>
-        <ul>
-          <li>"Paste the whole repo into the prompt."</li>
-          <li>Read 2,000-line files when 40 lines answer the question.</li>
-          <li>Keep raw stack traces with 200 node_modules or stacktrace frames.</li>
-          <li>Let unused MCP servers ride along — every tool schema re-sends each turn.</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 6 — Lever B prompt caching
-  `<section class="slide">
-    <div class="eyebrow">Lever B</div>
-    <h2>Prompt caching — basically free wins</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>How it works</h3>
-        <ul>
-          <li>Anthropic, OpenAI, and Gemini all cache prefix tokens.</li>
-          <li>Cache <b>hits ≈ 10%</b> of base input cost.</li>
-          <li>Anthropic TTL: 5 min default, 1 hr paid. OpenAI: automatic.</li>
-          <li>GitHub Copilot pipes through these — stable instructions in <span class="kbd">copilot-instructions.md</span> get cached server-side.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>The order rule</h3>
-        <p>Static → semi-static → dynamic.</p>
-        <pre>[ tools ]            ← rarely changes
-[ system prompt ]    ← rarely changes
-[ skills / rules ]   ← stable per repo
-[ retrieved files ]  ← changes per task
-[ conversation ]     ← changes every turn</pre>
-        <p class="muted" style="margin-top:10px">⚠️ A timestamp at the top of your system prompt busts the cache on every call.</p>
-      </div>
-    </div>
-  </section>`,
-
-  // 7 — Lever C tools
-  `<section class="slide">
-    <div class="eyebrow">Lever C</div>
-    <h2>Tool & plugin design</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>Trim the toolbelt</h3>
-        <ul>
-          <li><b>Fewer, sharper tools.</b> Each schema is re-paid every turn.</li>
-          <li><b>Concise param descriptions</b> — minimum to prevent misuse.</li>
-          <li><b>Disable unused MCP servers</b> per session (works in Copilot, Claude Code, Cursor).</li>
-          <li>In Copilot: scope chat with <span class="kbd">#file</span>, <span class="kbd">#selection</span>, <span class="kbd">#codebase</span> instead of dumping context.</li>
-          <li>Consolidate overlapping tools / participants.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Make tool output cheap</h3>
-        <ul>
-          <li>Server-side <span class="kbd">select</span> / field filters — return only what's needed.</li>
-          <li>Default <span class="kbd">limit</span>, pagination on by default.</li>
-          <li>Strip ANSI, headers, metadata the model won't use.</li>
-          <li>Return IDs + summaries; let the agent fetch detail on demand.</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 8 — Lever D skills / standards
-  `<section class="slide">
-    <div class="eyebrow">Lever D</div>
-    <h2>Skills, rules & standards files</h2>
-    <p class="lead">Codify conventions <b>once</b>, in a file the agent loads on demand — not in every prompt.</p>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="card">
-        <h3>Where they live</h3>
-        <div class="pill-row">
-          <span class="pill">AGENTS.md</span><span class="pill">CLAUDE.md</span>
-          <span class="pill">.cursor/rules</span>
-          <span class="pill">.github/copilot-instructions.md</span>
-          <span class="pill">.github/instructions/*.instructions.md</span>
-          <span class="pill">.github/prompts/*.prompt.md</span>
-          <span class="pill">Anthropic Skills</span><span class="pill">Custom GPTs</span>
-        </div>
-        <p class="muted">Skills, prompt files, and scoped instructions are <b>lazy-loaded</b> — only triggered when relevant or when the agent reads them, so they don't tax every turn. Copilot's <span class="kbd">applyTo</span> frontmatter scopes instructions to file globs.</p>
-      </div>
-      <div class="card">
-        <h3>What to encode</h3>
-        <ul>
-          <li>Build / test / lint commands</li>
-          <li>File layout & naming conventions</li>
-          <li>"Don't read these dirs" (node_modules, target, generated)</li>
-          <li>Preferred libraries & patterns</li>
-          <li>Output style: concise, no apologies, no re-explaining</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 9 — Lever E model routing
-  `<section class="slide">
-    <div class="eyebrow">Lever E</div>
-    <h2>Right-size the model</h2>
-    <div class="grid cols-3">
-      <div class="card">
-        <h3>Haiku / Mini / Flash</h3>
-        <p>Boilerplate, classification, simple edits, formatting, doc lookups.</p>
-      </div>
-      <div class="card" style="border-color:var(--cp-accent)">
-        <h3>Sonnet / GPT-class</h3>
-        <p>Default coding work, refactors, debugging.</p>
-      </div>
-      <div class="card">
-        <h3>Opus / frontier</h3>
-        <p>Hard reasoning, architecture, gnarly debugging only.</p>
-      </div>
-    </div>
-    <div class="grid cols-2" style="margin-top:18px">
-      <div class="card"><h3>Batch API</h3><p><b>50% off</b> for non-interactive workloads — codemods, doc generation, bulk refactors, evals.</p></div>
-      <div class="card"><h3>Generation hygiene</h3><p>Lower <span class="kbd">max_tokens</span>, use stop sequences, stream with early stop. Most coding answers don't need 8k headroom.</p></div>
-      <div class="card" style="grid-column:1/-1"><h3>Copilot model picker = your routing knob</h3><p>Copilot bills <b>premium requests</b> with per-model multipliers (e.g. GPT-4.1 ≈ free, GPT-5 ≈ 1×, Claude Sonnet ≈ 1×, Claude Opus ≈ 10×). Pick the cheapest model that handles the task; reach for premium ones only when stuck.</p></div>
-    </div>
-  </section>`,
-
-  // 10 — Lever F output discipline
-  `<section class="slide">
-    <div class="eyebrow">Lever F</div>
-    <h2>Output discipline</h2>
-    <div class="split">
-      <div class="card">
-        <h3>System-prompt rules that pay</h3>
-        <ul>
-          <li>"Be concise. No preamble. No re-explaining the request."</li>
-          <li>"Return diffs, not whole files."</li>
-          <li>"Use structured output when the consumer is code."</li>
-          <li>"Stop as soon as the answer is complete."</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Mechanics</h3>
-        <ul>
-          <li><b>Diff-only edits</b> via <span class="kbd">apply_patch</span>/<span class="kbd">edit</span> — exchange tokens for line-anchored deltas.</li>
-          <li><b>JSON / tool-call mode</b> for machine consumers — no prose padding.</li>
-          <li><b>Hidden reasoning blocks</b> instead of leaking chain-of-thought into outputs.</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 11 — Lever G repo hygiene
-  `<section class="slide">
-    <div class="eyebrow">Lever G</div>
-    <h2>Repo & codebase hygiene</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>Make retrieval cheap</h3>
-        <ul>
-          <li><span class="kbd">.aiignore</span> / <span class="kbd">.cursorignore</span> — exclude lockfiles, fixtures, generated code, vendored deps.</li>
-          <li>Smaller, well-named modules — agents retrieve by symbol; god-files force whole-file reads.</li>
-          <li>Symbol indexes / repo-maps (LSP, ctags) so the agent jumps instead of scans.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Make context cheap</h3>
-        <ul>
-          <li>Up-to-date READMEs and module-level docstrings — a 200-token summary beats re-reading 5,000 tokens of source.</li>
-          <li>Delete dead code. It still gets retrieved.</li>
-          <li>Generated code in a clearly-marked folder, ignored by retrieval.</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 12 — Lever H — Workflow patterns intro
-  `<section class="slide">
-    <div class="eyebrow">Lever H · workflow patterns</div>
-    <h2>Three patterns for directed AI workloads</h2>
-    <p class="lead">When the work is non-trivial, structure beats raw model power. These three patterns are how teams actually ship with agents — and they each cut tokens dramatically.</p>
-    <div class="grid cols-3" style="margin-top:18px">
-      <div class="card"><span class="tag">1</span><h3>The Ralph Wiggum loop</h3><p>"Me fail English? That's unpossible." The dumb-but-relentless loop.</p></div>
-      <div class="card"><span class="tag">2</span><h3>Auto-compact</h3><p>Bound the conversation; never let a session fill the window.</p></div>
-      <div class="card"><span class="tag">3</span><h3>Agent handover</h3><p>Specialized agents passing baton via structured artifacts.</p></div>
-    </div>
-  </section>`,
-
-  // 13 — Ralph Wiggum loop
-  `<section class="slide">
-    <div class="eyebrow">Pattern 1</div>
-    <h2>The Ralph Wiggum loop</h2>
-    <p class="lead">Coined by Geoffrey Huntley. The idea: <b>one cheap, simple, looping prompt</b> beats one elaborate clever prompt. Trade brain for repetition.</p>
-    <div class="loop">
-      <div class="node">📋<br/>Read backlog</div><div class="arr">→</div>
-      <div class="node">🎯<br/>Pick one item</div><div class="arr">→</div>
-      <div class="node">🛠<br/>Do the work</div><div class="arr">→</div>
-      <div class="node">✅<br/>Verify (tests/lint)</div><div class="arr">→</div>
-      <div class="node">📝<br/>Update backlog</div><div class="arr">↺</div>
-    </div>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="card good">
-        <h3>Why it saves tokens</h3>
-        <ul>
-          <li>Each iteration is a <b>fresh, small context</b> — backlog + one task.</li>
-          <li>State lives <b>on disk</b> (markdown backlog, plan.md), not in conversation history.</li>
-          <li>Cheap model can drive it; you only escalate on failure.</li>
-          <li>Restartable, resumable, auditable.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>The loop prompt (essence)</h3>
-        <pre>1. Read TODO.md
-2. Pick the first unchecked item
-3. Implement it
-4. Run tests; if green, check the box
-5. If red, write down what failed and stop
-6. Commit
-GOTO 1</pre>
-      </div>
-    </div>
-  </section>`,
-
-  // 14 — Auto-compact
-  `<section class="slide">
-    <div class="eyebrow">Pattern 2</div>
-    <h2>Auto-compact</h2>
-    <p class="lead">Don't let a single conversation grow past ~50% of the context window. Compact <b>before</b> you hit the wall — quality is already degrading by then.</p>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="card">
-        <h3>How it works</h3>
-        <ul>
-          <li>At a threshold (e.g. 50–70% window full), the agent summarizes the conversation so far.</li>
-          <li>Summary preserves: goal, decisions, file paths touched, open questions, next step.</li>
-          <li>Raw history is dropped; the summary becomes turn 0 of a fresh session.</li>
-          <li>Claude Code <span class="kbd">/compact</span>, Cursor auto-summarize, Aider <span class="kbd">/clear</span>, Copilot Chat <span class="kbd">/clear</span> + new session all do this.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Token math</h3>
-        <p>A 150k-token chat compacted into a 4k-token summary keeps ~95% of the useful signal at <b>~3% of the cost</b> per subsequent turn.</p>
-        <p>Pair it with prompt caching: the compacted summary itself becomes a cacheable prefix.</p>
-        <p class="muted">Rule: <b>one task per session.</b> When the task changes, compact or restart.</p>
-      </div>
-    </div>
-  </section>`,
-
-  // 15 — Agent handover
-  `<section class="slide">
-    <div class="eyebrow">Pattern 3</div>
-    <h2>Agent handover — organizing specialized agents</h2>
-    <p class="lead">Instead of one mega-agent that knows everything, run a <b>relay</b> of specialists that hand off via structured artifacts.</p>
-    <div class="hand">
-      <div class="ag lead"><b>Planner</b><br/><small>Opus · reads goal, writes plan.md</small></div>
-      <div class="ar">→</div>
-      <div class="ag"><b>Implementer</b><br/><small>Sonnet · executes plan.md tasks</small></div>
-      <div class="ar">→</div>
-      <div class="ag"><b>Reviewer</b><br/><small>Haiku · checks diff vs plan</small></div>
-    </div>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="card">
-        <h3>Why it saves tokens</h3>
-        <ul>
-          <li>Each agent has <b>only the context it needs</b> — planner doesn't see code, implementer doesn't re-derive the plan.</li>
-          <li>Cheap models do cheap work; expensive models only see the hard parts.</li>
-          <li>The handoff <b>artifact</b> (plan.md, diff, review.md) is the only thing crossing the boundary.</li>
-          <li>Failures are localized — re-run one stage, not the whole conversation.</li>
-        </ul>
-      </div>
-      <div class="card warn">
-        <h3>Handover hygiene</h3>
-        <ul>
-          <li>Standardize the artifact format (sections, schema).</li>
-          <li>Each agent gets a <b>fresh context window</b> — no chat history bleed.</li>
-          <li>Include a "definition of done" the next agent can verify.</li>
-          <li>Log the artifact so a human can replay or audit.</li>
-        </ul>
-      </div>
-    </div>
-  </section>`,
-
-  // 16 — Patterns combined
-  `<section class="slide">
-    <div class="eyebrow">Putting it together</div>
-    <h2>Combining the three workflow patterns</h2>
-    <p class="lead">They compose — that's the point.</p>
-    <div class="flow">
-      <div class="step">Planner agent</div><div class="arrow">→</div>
-      <div class="step">writes TODO.md</div><div class="arrow">→</div>
-      <div class="step">Ralph loop on Implementer</div><div class="arrow">→</div>
-      <div class="step">auto-compact at 60%</div><div class="arrow">→</div>
-      <div class="step">handover to Reviewer</div><div class="arrow">→</div>
-      <div class="step">PR</div>
-    </div>
-    <div class="grid cols-3" style="margin-top:14px">
-      <div class="card"><h3>Planner</h3><p>Opus · 1 expensive call · produces TODO.md + acceptance criteria.</p></div>
-      <div class="card"><h3>Implementer (Ralph)</h3><p>Sonnet/Haiku · N cheap loops · each loop has small context.</p></div>
-      <div class="card"><h3>Reviewer</h3><p>Sonnet · sees diff + acceptance criteria only · returns pass/fail + notes.</p></div>
-    </div>
-    <p class="muted" style="margin-top:14px">Net effect: one frontier-model call instead of dozens; the rest is cheap, bounded, and auditable.</p>
-  </section>`,
-
-  // 17 — Anti-patterns
-  `<section class="slide">
-    <div class="eyebrow">Call these out in PR review</div>
+    <div class="eyebrow">Call these out in review</div>
     <h2>Anti-patterns to stamp out</h2>
     <div class="grid cols-2">
       <div class="card bad">
-        <h3>❌ Context anti-patterns</h3>
+        <h3>❌ What goes in</h3>
         <ul>
-          <li>"Paste the whole repo into the prompt."</li>
-          <li>One chat that's been running for days.</li>
-          <li>Pasting stack traces with 200 node_modules or stacktrace frames.</li>
-          <li>Adding every shiny MCP server "just in case."</li>
+          <li>One session for the whole day's unrelated tasks.</li>
+          <li>Vague asks in a repo full of dead code.</li>
+          <li>Raw <span class="kbd">mvn test</span> logs and full stack traces in context.</li>
+          <li>A new <span class="kbd">CLAUDE.md</span> that silently hides <span class="kbd">AGENTS.md</span>.</li>
+          <li><span class="kbd">**</span> globs on scoped rules.</li>
         </ul>
       </div>
       <div class="card bad">
-        <h3>❌ Prompt anti-patterns</h3>
+        <h3>❌ How it runs</h3>
         <ul>
-          <li>Timestamp at the top of the system prompt → cache miss every call.</li>
-          <li>"Explain everything you're doing as you go." → output-token tax.</li>
-          <li>One giant system prompt edited by everyone → constant cache invalidation.</li>
-          <li>Always-on Opus when Haiku would do.</li>
+          <li><span class="kbd">/model</span> mid-task "just to check".</li>
+          <li>Opus at max effort for a rename.</li>
+          <li>A "loop" that lives inside one chat; <span class="kbd">/loop</span> for batch work.</li>
+          <li>Five subagents where one would do.</li>
+          <li>Headless runs without <span class="kbd">--max-budget-usd</span>.</li>
         </ul>
       </div>
     </div>
   </section>`,
 
-  // 17b — Scaling overview: 7-layer system
+  // 26 — scaling up
   `<section class="slide">
-    <div class="eyebrow">Scaling — Case study</div>
-    <h2>When the levers aren't enough: a 7-layer context system</h2>
-    <p class="muted">Pulled from a real production repo (Azure landing-zone agents, ~40 skills). Each layer is independently portable.</p>
+    <div class="eyebrow">Appendix · scaling up (demos 11–13)</div>
+    <h2>From one repo to a fleet of agents</h2>
+    <p class="muted">Adapted from a production repo running ~40 specialised skills. Each layer is portable on its own.</p>
     <table>
-      <thead><tr><th>#</th><th>Layer</th><th>What it gives you</th></tr></thead>
+      <thead><tr><th>#</th><th>Layer</th><th>What it gives you</th><th>In Claude Code</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td><b>Context budget planning</b></td><td>Subtract fixed costs from model limit <i>before</i> writing the agent</td></tr>
-        <tr><td>2</td><td><b>Progressive disclosure</b></td><td>3-level hierarchy: <span class="kbd">AGENTS.md</span> → <span class="kbd">SKILL.md</span> → <span class="kbd">references/</span></td></tr>
-        <tr><td>3</td><td><b>Context shredding</b></td><td>Runtime tier selection: full / digest / minimal based on % used</td></tr>
-        <tr><td>4</td><td><b>Context-awareness tags</b></td><td><span class="kbd">&lt;context_awareness&gt;</span> in agent body + mid-workflow compaction phase</td></tr>
-        <tr><td>5</td><td><b>Subagent extraction</b></td><td>Heavy phases run in fresh context, return only structured result</td></tr>
-        <tr><td>6</td><td><b>Glob targeting</b></td><td>Narrow <span class="kbd">applyTo</span> globs — stop loading <span class="kbd">**</span> on every turn</td></tr>
-        <tr><td>7</td><td><b>Observability</b></td><td>Latency as a proxy for tokens; quarterly lint scripts catch bloat</td></tr>
+        <tr><td>1</td><td><b>Budget at design time</b></td><td>Know the fixed cost before writing the agent</td><td><span class="kbd">/context</span> in a fresh session</td></tr>
+        <tr><td>2</td><td><b>Progressive disclosure</b></td><td>AGENTS.md → rules → skills → references</td><td><span class="kbd">.claude/rules/</span>, skills</td></tr>
+        <tr><td>3</td><td><b>Context shredding</b></td><td>Full / digest / minimal variants of each skill</td><td>pick by <span class="kbd">ctx %</span></td></tr>
+        <tr><td>4</td><td><b>Compaction phases</b></td><td>Agents summarise at 60–80% instead of drowning</td><td><span class="kbd"># Compact instructions</span></td></tr>
+        <tr><td>5</td><td><b>Subagent extraction</b></td><td>Heavy phases run in a fresh context, return a result</td><td><span class="kbd">.claude/agents/</span></td></tr>
+        <tr><td>6</td><td><b>Glob targeting</b></td><td>No rule loads everywhere by accident</td><td><span class="kbd">paths:</span> + <span class="kbd">lint:glob-audit</span></td></tr>
+        <tr><td>7</td><td><b>Observability</b></td><td>Measure, then lint for regressions in CI</td><td><span class="kbd">/usage</span>, OpenTelemetry, <span class="kbd">lint:context</span></td></tr>
       </tbody>
     </table>
-    <p class="muted" style="margin-top:14px">The same techniques scale from one prompt file to a fleet of 40 specialized skills. Next two slides go deeper on the novel pieces.</p>
   </section>`,
 
-  // 17c — Budget + progressive disclosure + shredding
+  // 27 — checklist
   `<section class="slide">
-    <div class="eyebrow">Layers 1 – 3 — The context architecture</div>
-    <h2>Budget the agent, structure the knowledge, compress at runtime</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>1. Budget (design time)</h3>
-        <pre><code>Model limit:        200,000  (Opus)
-- System overhead:    -2,000
-- Tool schemas (25):  -1,875
-- Agent body (200ln): -1,500
-- Instructions (5):   -3,000
-- Skill (1 SKILL):    -2,000
-- Output headroom:   -20,000
-─────────────────────────────
-Available:          ~169,625
-Per turn (×20):       ~8,481</code></pre>
-        <p class="muted">Hard limits enforced at authoring time: agent body ≤ 350 ln, ≤ 30 tools, ≤ 8 handoffs, instructions ≤ 150 ln each.</p>
-      </div>
-      <div class="card">
-        <h3>2. Progressive disclosure (3 levels)</h3>
-        <pre><code>AGENTS.md           # always loaded, ~200 ln
-   ↓ points to
-SKILL.md            # on-demand, ≤ 500 ln
-   ↓ points to
-references/*.md     # only when needed</code></pre>
-        <p class="muted">No file tries to be comprehensive. <span class="kbd">AGENTS.md</span> is a TOC. Skills hold domain knowledge. References hold deep content.</p>
-      </div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <h3>3. Context shredding (runtime)</h3>
-      <p class="muted">Each skill ships in three sizes — agent picks the right one based on estimated context usage.</p>
-      <table>
-        <thead><tr><th>Tier</th><th>File</th><th>Typical size</th><th>When to load</th></tr></thead>
-        <tbody>
-          <tr><td>Full</td><td><span class="kbd">SKILL.md</span></td><td>400–800 tokens</td><td>&lt; 60% context used</td></tr>
-          <tr><td>Digest</td><td><span class="kbd">SKILL.digest.md</span></td><td>150–320 tokens</td><td>60–80%</td></tr>
-          <tr><td>Minimal</td><td><span class="kbd">SKILL.minimal.md</span></td><td>40–100 tokens</td><td>&gt; 80%</td></tr>
-        </tbody>
-      </table>
-      <p class="muted" style="margin-top:8px">Generated by a script (<span class="kbd">generate-skill-digests.mjs</span>) that extracts H2 sections and trims to a target. Run in CI to keep variants in sync.</p>
-    </div>
-  </section>`,
-
-  // 17d — Awareness tags, subagents, observability
-  `<section class="slide">
-    <div class="eyebrow">Layers 4 – 7 — Operating it</div>
-    <h2>Self-aware agents, isolated subagents, measurable bloat</h2>
-    <div class="grid cols-2">
-      <div class="card">
-        <h3>4. Context-awareness tag (in every agent)</h3>
-        <pre><code>&lt;context_awareness&gt;
-Large agent definition (~590 lines).
-At &gt;60% context, switch to SKILL.digest.md.
-At &gt;80% switch to SKILL.minimal.md and
-stop re-reading predecessor artifacts.
-&lt;/context_awareness&gt;
-&lt;subagent_budget&gt;
-Invoke ≤ 3 subagents sequentially before
-checkpointing with the user.
-&lt;/subagent_budget&gt;</code></pre>
-        <p class="muted">Long agents add an explicit <b>Phase 1.6: Context Compaction</b> — summarize, switch to minimal skills, stop re-reading.</p>
-      </div>
-      <div class="card">
-        <h3>5. Subagent extraction (concrete savings)</h3>
-        <pre><code>Before:
- architect plans (5K) + pricing API (40K)
- + reporting (10K)              = 55K
-After:
- architect plans (5K)
- → cost-estimate-subagent → 2K result
- + reporting (12K)              = 19K</code></pre>
-        <p class="muted">Trigger when: &gt; 5 sequential tools for one subtask, domain shift, or estimated context &gt; 60%. Send a focused brief — never raw conversation history.</p>
-      </div>
-      <div class="card">
-        <h3>6. Glob targeting (kill ambient cost)</h3>
-        <pre><code># BAD — loads on every turn (~600 tokens)
-applyTo: "**"
-
-# GOOD — scoped
-applyTo: "**/*.bicep"
-applyTo: "**/agent-output/**/*.md"</code></pre>
-        <p class="muted">10 broad files = 6,000 tokens of <b>fixed</b> overhead per turn.</p>
-      </div>
-      <div class="card">
-        <h3>7. Observability — latency as a proxy</h3>
-        <table>
-          <thead><tr><th>Latency</th><th>≈ Input tokens</th></tr></thead>
-          <tbody>
-            <tr><td>&lt; 5s</td><td>&lt; 20K</td></tr>
-            <tr><td>5–10s</td><td>20–60K</td></tr>
-            <tr><td>10–20s</td><td>60–120K</td></tr>
-            <tr><td>20–30s</td><td>120–160K</td></tr>
-            <tr><td>&gt; 30s</td><td>near limit — quality drops</td></tr>
-          </tbody>
-        </table>
-        <p class="muted">Quarterly: <span class="kbd">lint:skill-size</span>, <span class="kbd">lint:agent-body-size</span>, <span class="kbd">lint:glob-audit</span>.</p>
-      </div>
-    </div>
-  </section>`,
-
-  // 18 — Quick wins
-  `<section class="slide">
-    <div class="eyebrow">Take-home</div>
-    <h2>Quick-win checklist</h2>
+    <div class="eyebrow">Appendix · take-home</div>
+    <h2>The Monday checklist</h2>
     <div class="grid cols-2">
       <div class="card">
         <h3>This week</h3>
         <ul>
-          <li>☐ Add/update <span class="kbd">AGENTS.md</span> (build, test, lint, conventions).</li>
-          <li>☐ Add <span class="kbd">.aiignore</span> for generated/vendored content.</li>
-          <li>☐ Move static instructions to top of system prompt for cache hits.</li>
-          <li>☐ Disable unused MCP servers / tools.</li>
-          <li>☐ Add "be concise, no preamble" to system prompt.</li>
+          <li>☐ One always-on instructions file under 200 lines: commands, conventions, output style.</li>
+          <li>☐ Both <span class="kbd">AGENTS.md</span> and <span class="kbd">CLAUDE.md</span>? Import with <span class="kbd">@AGENTS.md</span>.</li>
+          <li>☐ A status line with context %, cache % and cost.</li>
+          <li>☐ A hook that trims test and build output.</li>
+          <li>☐ Delete dead code. Deny generated folders.</li>
+          <li>☐ Model at session start; <span class="kbd">/clear</span> between tasks.</li>
         </ul>
       </div>
       <div class="card">
         <h3>This month</h3>
         <ul>
-          <li>☐ Default to ranged file reads, not whole-file.</li>
-          <li>☐ Route trivial tasks to Haiku/Mini, not Opus.</li>
-          <li>☐ Use Batch API for offline jobs.</li>
-          <li>☐ Adopt one task per session + auto-compact.</li>
-          <li>☐ Pilot a planner→implementer→reviewer handover on one workstream.</li>
-          <li>☐ Track tokens per dev per week. Review monthly.</li>
+          <li>☐ Scoped rules with narrow globs; workflows into skills and subagents.</li>
+          <li>☐ Haiku subagents for search and summaries.</li>
+          <li>☐ A headless Ralph loop over a backlog of chores.</li>
+          <li>☐ Planner → implementer → reviewer on one real feature.</li>
+          <li>☐ <span class="kbd">--max-budget-usd</span> on every headless run; spend limits for the team.</li>
+          <li>☐ <span class="kbd">npm run lint:context</span> in CI.</li>
         </ul>
       </div>
     </div>
   </section>`,
 
-  // 19 — Session structure
+  // 28 — references
   `<section class="slide">
-    <div class="eyebrow">For the facilitator</div>
-    <h2>Suggested 60-minute session structure</h2>
-    <table>
-      <thead><tr><th>Min</th><th>Segment</th><th>Format</th></tr></thead>
-      <tbody>
-        <tr><td>0–5</td><td>Why tokens matter (cost, latency, context rot)</td><td>Talk + 1 chart</td></tr>
-        <tr><td>5–15</td><td>Anatomy of a request + live token-usage demo</td><td>Live demo</td></tr>
-        <tr><td>15–35</td><td>Eight levers (A–H) with one example each</td><td>Walkthrough</td></tr>
-        <tr><td>35–45</td><td>Workflow patterns: Ralph loop, auto-compact, handover</td><td>Diagrams + demo</td></tr>
-        <tr><td>45–55</td><td>Hands-on: audit a real prompt + repo, apply 3 wins, measure delta</td><td>Pair exercise</td></tr>
-        <tr><td>55–60</td><td>Q&A + standards we will adopt</td><td>Discussion</td></tr>
-      </tbody>
-    </table>
-  </section>`,
-
-  // 20 — references
-  `<section class="slide">
-    <div class="eyebrow">Further reading</div>
+    <div class="eyebrow">Appendix · further reading</div>
     <h2>References</h2>
     <div class="grid cols-2">
       <div class="card">
-        <h3>Foundational</h3>
+        <h3>Context and cost</h3>
         <ul>
-          <li>Anthropic — <i>Effective context engineering for AI agents</i></li>
-          <li>Chroma Research — <i>Context Rot</i> benchmark</li>
-          <li>Anthropic docs — <i>Prompt caching</i>, <i>Skills</i></li>
-          <li>OpenAI docs — <i>Prompt caching</i>, <i>Batch API</i>, <i>Structured outputs</i></li>
-          <li>Google — <i>Gemini context caching</i></li>
+          <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic — Effective context engineering for AI agents</a></li>
+          <li><a href="https://code.claude.com/docs/en/costs">Claude Code — Manage costs effectively</a></li>
+          <li><a href="https://code.claude.com/docs/en/prompt-caching">Claude Code — How Claude Code uses prompt caching</a></li>
+          <li><a href="https://research.trychroma.com/context-rot">Chroma — Context Rot</a></li>
+          <li><a href="https://platform.claude.com/docs/en/about-claude/pricing">Claude — Pricing</a></li>
+          <li><a href="https://code.visualstudio.com/blogs/2026/06/17/improving-token-efficiency-in-github-copilot">VS Code — Improving token efficiency in GitHub Copilot</a></li>
         </ul>
       </div>
       <div class="card">
-        <h3>Patterns & practice</h3>
+        <h3>Patterns and tools</h3>
         <ul>
-          <li>Geoffrey Huntley — <i>The Ralph Wiggum agentic coding pattern</i></li>
-          <li>Anthropic — <i>Claude Code best practices</i> (incl. <span class="kbd">/compact</span>)</li>
-          <li>Cognition — <i>Don't build multi-agents</i> (sub-agent context isolation)</li>
-          <li>Cursor docs — <i>Rules for AI</i>, <i>Codebase indexing</i></li>
-          <li>GitHub — <i>Copilot custom instructions</i>, <span class="kbd">AGENTS.md</span> convention</li>
+          <li><a href="https://ghuntley.com/ralph/">Geoffrey Huntley — Ralph Wiggum as a "software engineer"</a></li>
+          <li><a href="https://code.claude.com/docs/en/sub-agents">Claude Code — Subagents</a> · <a href="https://code.claude.com/docs/en/hooks">Hooks</a> · <a href="https://code.claude.com/docs/en/memory">Memory &amp; AGENTS.md</a></li>
+          <li><a href="https://cognition.ai/blog/dont-build-multi-agents">Cognition — Don't build multi-agents</a></li>
+          <li><a href="https://github.blog/news-insights/company-news/github-copilot-is-moving-to-usage-based-billing/">GitHub — Copilot is moving to usage-based billing</a></li>
+          <li><a href="https://github.blog/ai-and-ml/github-copilot/getting-more-from-each-token-how-copilot-improves-context-handling-and-model-routing/">GitHub — Getting more from each token</a></li>
         </ul>
       </div>
     </div>
-  </section>`,
-
-  // 21 — closing
-  `<section class="slide title-slide">
-    <div class="eyebrow">In one sentence</div>
-    <h1>Treat context as a budget,<br/>structure as the multiplier.</h1>
-    <p class="lead">Cheap loops, bounded sessions, specialized handovers — that's how directed AI workloads stay fast, cheap, and good.</p>
-    <p class="muted" style="margin-top:30px">Questions?</p>
   </section>`
 ];
 
@@ -834,16 +846,15 @@ slideEls.forEach((_,i) => {
 });
 
 // calculator constants/functions declared BEFORE go() runs
+// Claude API list prices per MTok (Oct 2026). cache = cache-read price.
+// Haiku 5.5 has a second rate card for prompts over 100K tokens.
 const PRICES = {
-  haiku:    { in: 1.0,  out: 5.0  },
-  sonnet:   { in: 3.0,  out: 15.0 },
-  opus:     { in: 5.0,  out: 25.0 },
-  gpt5:     { in: 1.25, out: 10.0 },
-  gpt5mini: { in: 0.25, out: 2.0  },
-  gpt41:    { in: 2.0,  out: 8.0  },
-  gemini25: { in: 1.25, out: 10.0 }
+  haiku:  { in: 0.10, out: 0.50, cache: 0.01, long: { above: 100000, in: 0.50, out: 2.50, cache: 0.05 } },
+  sonnet: { in: 2.0,  out: 10.0, cache: 0.20 },
+  opus:   { in: 4.0,  out: 20.0, cache: 0.20 },
+  fable:  { in: 10.0, out: 50.0, cache: 0.25 }
 };
-let cacheRate = 0.8;
+let cacheRate = 0.9;
 function fmt(n){
   if (n >= 1000) return '$' + n.toLocaleString(undefined,{maximumFractionDigits:0});
   if (n >= 10)   return '$' + n.toFixed(2);
@@ -853,15 +864,16 @@ function fmt(n){
 function recalc(){
   const sel = document.getElementById('cModel');
   if (!sel) return;
-  const m = PRICES[sel.value];
   const tIn  = +document.getElementById('cIn').value || 0;
+  const base = PRICES[sel.value];
+  const m = base.long && tIn > base.long.above ? base.long : base;
   const tOut = +document.getElementById('cOut').value || 0;
   const req  = +document.getElementById('cReq').value || 0;
   const dev  = +document.getElementById('cDev').value || 0;
 
   const cachedIn = tIn * cacheRate;
   const freshIn  = tIn - cachedIn;
-  const inCost   = (freshIn * m.in + cachedIn * m.in * 0.10) / 1e6;
+  const inCost   = (freshIn * m.in + cachedIn * m.cache) / 1e6;
   const outCost  = (tOut * m.out) / 1e6;
   const perReq   = inCost + outCost;
   const perDev   = perReq * req;
@@ -879,18 +891,70 @@ function recalc(){
   const pct = noCacheTeam ? Math.round((saved / noCacheTeam) * 100) : 0;
   document.getElementById('rSav').innerHTML =
     `At <b>${Math.round(cacheRate*100)}%</b> cache hit rate you save <b>${fmt(saved)}/mo</b> (<b>${pct}%</b>) vs no caching. ` +
-    `Switching to a smaller model is usually the next biggest lever.`;
+    `For scale: Anthropic reports ~$13 per developer per active day for Claude Code.`;
 }
 
+// presenter view + sync between the audience and presenter windows
+const isPresenter = new URLSearchParams(location.search).has('presenter');
+if (isPresenter) document.body.classList.add('presenter');
+const chan = 'BroadcastChannel' in window ? new BroadcastChannel('context-budget-deck') : null;
+function send(msg){
+  if (chan) chan.postMessage(msg);
+  try { localStorage.setItem('context-budget-deck', JSON.stringify({ ...msg, ts: Date.now() })); } catch (e) {}
+}
+function receive(msg){
+  if (!msg) return;
+  if (msg.hello && !isPresenter) send({ i: idx });
+  else if (typeof msg.i === 'number' && msg.i !== idx) go(msg.i, true);
+}
+if (chan) chan.onmessage = e => receive(e.data);
+window.addEventListener('storage', e => {
+  if (e.key !== 'context-budget-deck' || !e.newValue) return;
+  try { receive(JSON.parse(e.newValue)); } catch (err) {}
+});
+
+let t0 = null;
+const toSec = cue => { const [m, s] = cue.split(':').map(Number); return m * 60 + s; };
+const mmss = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+const titleOf = el => {
+  const h = el && el.querySelector('h2,h1');
+  if (!h) return '';
+  const c = h.cloneNode(true);
+  c.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+  return c.textContent.trim();
+};
+function renderPresenter(){
+  if (!isPresenter) return;
+  const el = slideEls[idx], next = slideEls[idx + 1];
+  document.getElementById('pTitle').textContent = (idx + 1) + '. ' + titleOf(el);
+  document.getElementById('pNext').textContent = next ? 'Next: ' + titleOf(next) : 'Last slide';
+  const notes = el.querySelector('.notes');
+  document.getElementById('pNotes').innerHTML = notes ? notes.innerHTML : '<i>No notes</i>';
+  tick();
+}
+function tick(){
+  if (!isPresenter) return;
+  const elapsed = t0 ? (Date.now() - t0) / 1000 : 0;
+  document.getElementById('pTimer').textContent = mmss(elapsed);
+  const cue = slideEls[idx].dataset.cue, c = document.getElementById('pCue');
+  c.textContent = cue ? 'leave this slide by ' + cue : '';
+  c.className = cue ? (elapsed > toSec(cue) ? 'late' : 'ok') : '';
+}
+setInterval(tick, 1000);
+
 let idx = 0;
-function go(i){
+function go(i, remote){
   idx = Math.max(0, Math.min(slideEls.length - 1, i));
   slideEls.forEach((el,j) => el.classList.toggle('active', j === idx));
   [...dots.children].forEach((d,j) => d.classList.toggle('active', j === idx));
   cur.textContent = idx + 1;
+  if (idx > 0 && t0 === null) t0 = Date.now();
   recalc();
+  renderPresenter();
+  if (!remote) send({ i: idx });
 }
-go(0);
+go(0, true);
+if (isPresenter) send({ hello: true });
 
 document.getElementById('prev').onclick = () => go(idx - 1);
 document.getElementById('next').onclick = () => go(idx + 1);
@@ -901,6 +965,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
   else if (e.key === 'Home') go(0);
   else if (e.key === 'End') go(slideEls.length - 1);
+  else if (e.key.toLowerCase() === 'p' && !isPresenter) window.open(location.pathname + '?presenter', 'deck-presenter', 'width=1100,height=760');
+  else if (e.key.toLowerCase() === 't' && isPresenter) { t0 = Date.now(); tick(); }
   else if (e.key.toLowerCase() === 'f') {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen();
     else document.exitFullscreen();

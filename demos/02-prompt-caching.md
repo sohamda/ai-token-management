@@ -1,64 +1,61 @@
-# Demo 02 — Prompt caching
+# Demo 02 — Don't break the cache
 
-**Slide reference:** Lever B
-**Time:** ~3 minutes
-**Punchline:** Cache hits cost ~10% of base. Order matters.
+**Lever:** B · **Time:** ~3 min
+**Punchline:** Caching is automatic now. Breaking it is still up to you.
 
-Prompt caching is hardest to demo live in Copilot itself (the wire is opaque).
-Show the **principle** with a small script, then map it back to Copilot.
+## Step 1 — a warm cache
 
-## Option A — Anthropic API (clearest)
+`/clear`, then ask three small questions in a row, for example:
 
-The repo ships a pre-staged `scratch/` folder with the SDK dependency.
-Before the session:
+> What does `FormatUtils.pluralize` return for 0?
 
-```powershell
-cd scratch
-npm install
-$env:ANTHROPIC_API_KEY = "sk-ant-..."   # or export on macOS/Linux
-```
+> Which class calls `renderLegacy`?
 
-Then run the script twice:
+> Where are the tests for `AddressParser`?
 
-```powershell
-node scratch/cache-demo.js
-# wait a few seconds
-node scratch/cache-demo.js
-```
-
-- **First run:** `cache_creation_input_tokens` is large, `cache_read_input_tokens` is 0.
-- **Second run within 5 min:** `cache_creation_input_tokens` is 0, `cache_read_input_tokens` is large. Same answer, ~90% cheaper input.
-
-## Option B — Copilot principle demo
-
-In VS Code, open Copilot Chat with this repo. Ask three small questions in a row
-*without* changing the open files. Then change `AGENTS.md` between two questions
-and watch (in the Output panel) that the request payload now changes shape.
-
-## The order rule
-
-Show this slide explicitly and walk through it:
+Watch the status line's `cache` figure climb. Then run `/usage` and read the line:
 
 ```
-[ tools ]            ← rarely changes      ┐
-[ system prompt ]    ← rarely changes      │ cache these
-[ skills / rules ]   ← stable per repo     ┘
-[ retrieved files ]  ← changes per task
-[ conversation ]     ← changes every turn
+Prompt cache (main):   4 requests · 9x% of input tokens from cache · 0 misses · warm (…)
 ```
 
-## Anti-demo
+Point out: every turn re-sends the whole conversation, but almost all of it is billed at the cached rate (10% of input on Sonnet 5.5, 5% on Opus 5.5).
 
-Add `Today is ${new Date().toISOString()}` at the top of a system prompt.
-Now every request busts the cache. **Don't do this.**
+## Step 2 — break it on purpose
+
+Run `/model opus`. Claude Code asks you to confirm, because the cache is warm. **Read the warning aloud**: that prompt exists because switching models throws away the cache.
+
+Confirm, ask one more question, and run `/usage` again. The miss count goes up, and when Claude Code can tell, the line names the likely cause.
+
+Switch back with `/model sonnet` (another miss) and make the point: **pick the model at the start of a session; if you need another one, `/clear` first.**
+
+## Step 3 — what *doesn't* break it
+
+Say it, don't demo it:
+- Editing files, invoking skills, plan mode, spawning subagents: all cache-safe.
+- `/effort` on the 5.5 models (API key or subscription): cache-safe. That's why lever E says "turn effort before you switch model".
+- Editing `AGENTS.md` mid-session: cache-safe, but it also doesn't apply until `/clear`, `/compact` or a restart.
+- Coming back after a break longer than the cache lifetime (one hour on a subscription's main conversation, five minutes on an API key): a full re-read.
+
+## Optional — under the hood, on the API
+
+```bash
+cd scratch && npm install
+export ANTHROPIC_API_KEY=…            # your own key, set before the talk
+node cache-demo.js && node cache-demo.js
+```
+
+First run: `cache_creation_input_tokens` is large. Second run within five minutes: `cache_read_input_tokens` is large instead. Same answer, a fraction of the input cost.
+
+Anti-pattern for your own agents: `"Today is " + Instant.now()` at the top of a system prompt busts the cache on every request.
 
 ## Reset
 
-Nothing to reset.
+`/model sonnet`, then `/clear`.
 
 ## References
 
-- [Anthropic — Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — cache_control, TTLs, 90% input cost reduction
-- [OpenAI — Prompt caching](https://platform.openai.com/docs/guides/prompt-caching) — automatic prefix caching, 50% discount on cached tokens
-- [Google — Gemini context caching](https://ai.google.dev/gemini-api/docs/caching) — explicit cache creation for Gemini models
-- [Anthropic — Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — prompt structure and caching strategy
+- [Claude Code — How Claude Code uses prompt caching](https://code.claude.com/docs/en/prompt-caching)
+- [Claude Code — Prompt cache statistics in /usage](https://code.claude.com/docs/en/costs#prompt-cache-statistics)
+- [Claude API — Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+- [GitHub blog — Getting more from each token: context handling and model routing](https://github.blog/ai-and-ml/github-copilot/getting-more-from-each-token-how-copilot-improves-context-handling-and-model-routing/)

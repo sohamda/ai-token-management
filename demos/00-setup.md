@@ -1,75 +1,69 @@
 # Demo 00 — Setup
 
-Do this **before** the session.
+Do this **the day before**, on the laptop you'll present from. All live demos use Claude Code.
 
 ## Prerequisites
 
-- Java 17+ (JDK)
-- Maven 3.9+ (or use the included `./mvnw` wrapper)
-- VS Code with the GitHub Copilot + Copilot Chat extensions
-- (Optional) Anthropic Claude Code CLI or Cursor for cross-tool comparisons
-- A second monitor or large window so the audience can see two panes at once
+| Tool | Why | Check |
+|---|---|---|
+| JDK 17+ | the demo app | `java -version` |
+| Maven 3.9+ | build and tests (the repo has no `./mvnw`) | `mvn -v` |
+| Claude Code v2.1.305+ | `/usage` cache line (2.1.251), native `AGENTS.md` (2.1.277), `f` to fix (2.1.305) | `claude --version` |
+| jq | the test-output hook and the status line | `jq --version` |
+| Node 20+ | only for `npm run lint:context` and the optional API cache script | `node -v` |
 
-## One-time setup
+On macOS: `brew install openjdk@17 maven jq` (or SDKMAN for the JDK and Maven).
 
-```powershell
-cd <repo-root>   # wherever you cloned ai-token-management
-./mvnw package   # build + run tests — should pass
-./mvnw spring-boot:run   # should print "Demo app starting…"
+## One-time checks
+
+```bash
+cd ai-token-management
+mvn -q test                # all tests green
+git tag -f demo-start      # every reset goes back here
+claude                     # start from the repo root
 ```
+
+In the first Claude Code session, accept the workspace trust prompt (the project hook and status line need it), then check:
+
+- The transcript shows `no CLAUDE.md found; AGENTS.md loaded: …/AGENTS.md`.
+- The status line shows `model · effort │ ctx % │ cache % │ $ cost`.
+- `/hooks` lists the `PreToolUse` hook for `Bash`.
+- `/agents` lists `planner`, `implementer` and `reviewer`.
+- `/mcp` — note which MCP servers you have, for demo 03.
+
+## Measuring each attempt
+
+Run `/clear` before every "before" and every "after". Since v2.1.211, `/clear` resets the `/usage` Session block and the status line cost, so each attempt's cost reads directly off the screen.
+
+On a subscription the dollar figure is an estimate at list price, not what you pay. It's still the right number for comparing two attempts.
+
+## What's in the repo for the demos
+
+| Path | Used in |
+|---|---|
+| `src/email/`, `src/api/`, `src/utils/`, `src/index.js`, `dist/` | **Intentional dead code**: an old JS version of the app. Demos 01 and 07. |
+| `AGENTS.md` | Demo 04: the always-loaded instructions |
+| `.claude/rules/tests.md` | Demo 04: path-scoped rule |
+| `.claude/hooks/filter-test-output.sh` | Demo 03: trims `mvn test` output |
+| `.claude/statusline.sh` | Demo 14 (and on screen throughout) |
+| `.claude/agents/` | Demo 10: planner, implementer, reviewer |
+| `tools/ralph.sh`, `TODO.md` | Demo 08: the headless loop |
+| `.github/` | The Copilot equivalents, for slides only |
+
+## Record the backups
+
+Live LLM demos are not deterministic, and conference wifi is not reliable. During the dry run, screen-record demos 01, 02, 03, 08 and 10 (on macOS: Cmd+Shift+5), and capture the numbers listed in [docs/run-sheet.md](../docs/run-sheet.md) for the dashed placeholders on the slides.
 
 ## Reset between demos
 
-After each demo, restore the repo to a clean state:
-
-```powershell
-git stash --include-untracked
-git checkout -- .
-git clean -fd
+```bash
+git reset --hard demo-start && git clean -fd
 ```
 
-Or, if you committed during a demo:
+Then `/clear` in Claude Code (or restart it after demo 04, which moves `AGENTS.md`).
 
-```powershell
-git reset --hard origin/main
-```
+## Screen layout
 
-## Useful panels to keep visible
-
-- **Copilot Chat** — the main demo surface
-- **VS Code Output panel → "GitHub Copilot Chat"** — shows `ccreq` lines with model, latency, and request type per turn
-- **Developer Tools → Network tab** (`Ctrl+Shift+I` → Network → filter `completions`) — shows request/response payload sizes
-- **Terminal** — for `./mvnw test`, `git status`, `git diff`
-- **The presentation** in fullscreen on the projector
-
-### How to show usage
-
-The personal URL `https://github.com/settings/copilot/usage` only works for
-**individual** Copilot subscribers. If your seat is org/enterprise-managed, use:
-
-- **Org-level:** `https://github.com/organizations/<YOUR-ORG>/settings/copilot/usage`
-- **Copilot Metrics API:** `GET /orgs/{org}/copilot/metrics` (requires admin token)
-
-**Live alternatives that always work:**
-
-1. **Output panel `ccreq` lines** — each line shows model, latency, request type.
-2. **DevTools Network tab** — filter `completions`, compare **Size** column before/after.
-3. **Latency as a proxy** — same question in a fresh chat vs. a bloated one; the time delta is the token delta.
-4. **Post-session log parsing:**
-   ```powershell
-   Get-ChildItem "$env:APPDATA\Code\logs" -Recurse -Filter "GitHub Copilot Chat.log" |
-     Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object {
-       Select-String "ccreq.*success" $_.FullName
-     }
-   ```
-
-## Demo order
-
-The demos are numbered to mirror the slide order. Run them in sequence, or
-cherry-pick. Each demo has a clear "before" and "after" you can re-stage.
-
-## References
-
-- [GitHub — Monitoring your Copilot usage](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/monitoring-your-copilot-usage-and-entitlements) — org and individual usage dashboards
-- [GitHub — Copilot Metrics API](https://docs.github.com/en/rest/copilot/copilot-metrics) — REST API for programmatic usage tracking
-- [VS Code — Developer Tools](https://code.visualstudio.com/docs/devadvanced/devtools) — `Ctrl+Shift+I` to open Network tab for request inspection
+- Terminal with Claude Code, font large enough for the back row.
+- A second terminal for `mvn`, `git log` and `wc -l`.
+- The deck (`presentations/token-presentation.html`) fullscreen on the projector; press `F`.

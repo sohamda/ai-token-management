@@ -1,32 +1,33 @@
 # Demos — index
 
-Each demo is small (2–6 minutes), has a clear "before / after," and ties to a slide.
+All live demos run in **Claude Code**. Each is small (2–6 minutes), has a clear before and after, and ties to a slide. Copilot equivalents are noted in each script for the slides, not demoed.
 
-| #  | Demo                                          | Slide / lever          | Time |
-|----|-----------------------------------------------|------------------------|------|
-| 00 | [Setup](./00-setup.md)                        | (prep)                 | —    |
-| 01 | [Broad retrieval vs `#file`](./01-context-engineering.md)     | A — Context engineering   | 3 min |
-| 02 | [Prompt caching](./02-prompt-caching.md)      | B — Prompt caching     | 3 min |
-| 03 | [Tool & MCP hygiene](./03-tool-and-mcp-hygiene.md)       | C — Tools              | 3 min |
-| 04 | [Instructions before/after](./04-instructions-and-skills.md) | D — Skills & standards | 4 min |
-| 05 | [Model routing & calculator](./05-model-routing.md) | E — Model routing      | 4 min |
-| 06 | [Whole file vs diff](./06-output-discipline.md) | F — Output discipline  | 2 min |
-| 07 | [.gitignore & summaries](./07-repo-hygiene.md) | G — Repo hygiene       | 3 min |
-| 08 | [Ralph Wiggum loop](./08-ralph-loop.md)       | H1 — Ralph loop        | 5 min |
-| 09 | [Auto-compact](./09-auto-compact.md)          | H2 — Auto-compact      | 3 min |
-| 10 | [Planner → Implementer → Reviewer](./10-agent-handover.md) | H3 — Agent handover    | 6 min |
-| 11 | [Context budget planning](./11-context-budget.md) | Scaling L1            | 4 min |
-| 12 | [Progressive disclosure](./12-progressive-disclosure.md) | Scaling L2     | 4 min |
-| 13 | [Context shredding](./13-context-shredding.md) | Scaling L3 + L4         | 5 min |
-| 14 | [Observability & lint](./14-observability.md) | Scaling L7              | 3 min |
+Listed in talk order (file numbers are historical).
 
-**Total demo time:** ~52 min if you run them all. For a 60-minute session,
-pick 5–6 highlights (suggested: 01, 04, 05, 08, 10, **13**).
+| File | Demo | Slide | Time |
+|---|---|---|---|
+| [00](./00-setup.md) | Setup and prerequisites | (prep) | — |
+| [01](./01-context-engineering.md) | Vague vs scoped ask | A — Scope the ask | 3 min |
+| [02](./02-prompt-caching.md) | Warm cache, then break it with `/model` | B — Don't break the cache | 3 min |
+| [03](./03-tool-and-mcp-hygiene.md) | `/context`, `/mcp`, the `mvn test` hook | C — Make tool output cheap | 4 min |
+| [04](./04-instructions-and-skills.md) | `AGENTS.md`, scoped rules, the `CLAUDE.md` gotcha | D — Codify once, load on demand | 4 min |
+| [05](./05-model-routing.md) | Haiku vs Sonnet vs Opus, effort, calculator | E — Right-size model and effort | 4 min |
+| [06](./06-output-discipline.md) | Open vs bounded question | F — Output discipline | 2 min |
+| [07](./07-repo-hygiene.md) | Dead code in search results | G — Make the repo cheap to read | 3 min |
+| [14](./14-observability.md) | Status line, `/context`, `/usage`, CI lint | H — Read the meter, set a budget | 4 min |
+| [08](./08-ralph-loop.md) | `tools/ralph.sh`: headless loop over `TODO.md` | Pattern 1 — Loop with state on disk | 5 min |
+| [09](./09-auto-compact.md) | `/clear`, `/rewind`, `/compact`, hand-off notes | Pattern 2 — Checkpoint & reset | 3 min |
+| [10](./10-agent-handover.md) | planner → implementer → reviewer subagents | Pattern 3 — Plan → Build → Review | 6 min |
+| [11](./11-context-budget.md) | Measure fixed cost with `/context` | Appendix — Scaling up | 3 min |
+| [12](./12-progressive-disclosure.md) | `AGENTS.md` → rules → skills → references | Appendix — Scaling up | 3 min |
+| [13](./13-context-shredding.md) | Skills in three sizes | Appendix — Scaling up | 5 min |
+
+**Total:** ~45 min for the full set, so pick a subset. The 45-minute talk ([docs/run-sheet.md](../docs/run-sheet.md)) runs **01, 02 (step 2), 03, 14 and 08 (`MAX=1`)** live and plays **10** as a recording. Record backups of all six before the talk.
 
 ## Reset between demos
 
-```powershell
-git stash --include-untracked
-git checkout -- .
-git clean -fd
+```bash
+git reset --hard demo-start && git clean -fd
 ```
+
+(Create the tag once with `git tag -f demo-start` — see [00-setup](./00-setup.md).)

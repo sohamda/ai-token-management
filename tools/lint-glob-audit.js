@@ -1,56 +1,54 @@
 #!/usr/bin/env node
 
 // lint-glob-audit.js
-// Warn/fail if any instructions file uses an overly broad applyTo glob.
+// Fail on scoped instructions whose glob matches everything, warn on broad ones.
+//   Copilot:     applyTo: "..."   in .github/instructions/*.md
+//   Claude Code: paths: [...]     in .claude/rules/**/*.md (no paths = loaded every session)
 //
-// Rules:
-//   applyTo: "**"        → FAIL  (matches everything, always loaded)
-//   applyTo: "**/ *.js"  → WARN  (broad, but at least type-scoped)
-//   applyTo: "src/**"    → ok    (directory-scoped)
+//   "**" or "**/*"       → FAIL  (always loaded)
+//   "**/*.java"          → WARN  (type-scoped but repo-wide)
+//   "src/test/java/**"   → ok    (directory-scoped)
 
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const DIR = ".github/instructions";
+const SOURCES = [
+  { dir: ".github/instructions", key: "applyTo" },
+  { dir: ".claude/rules", key: "paths" },
+];
 
-const files = (await readdir(DIR).catch(() => [])).filter((f) =>
-  f.endsWith(".md"),
-);
-
-let failed = false;
-
-for (const file of files) {
-  const text = await readFile(join(DIR, file), "utf8");
-  const match = text.match(/applyTo:\s*["']([^"']+)["']/);
-
-  if (!match) {
-    console.log(`⚠️  ${file}: no applyTo found (loaded globally)`);
-    continue;
-  }
-
-  const glob = match[1];
-
-  if (glob === "**" || glob === "**/*") {
-    console.log(
-      `❌  ${file}: applyTo: "${glob}" — matches everything, loaded every turn`,
-    );
-    failed = true;
-  } else if (glob.startsWith("**/*.") || glob.startsWith("**/{")) {
-    console.log(
-      `⚠️  ${file}: applyTo: "${glob}" — broad extension match, consider scoping to a directory`,
-    );
-  } else {
-    console.log(`✅  ${file}: applyTo: "${glob}"`);
-  }
+function globsFor(text, key) {
+  const front = text.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "";
+  const inline = front.match(new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?\\s*$`, "m"));
+  if (inline && inline[1].trim()) return inline[1].split(",").map((g) => g.trim());
+  const list = front.match(new RegExp(`^${key}:\\s*\\n((?:\\s+-.*\\n?)+)`, "m"));
+  if (!list) return [];
+  return [...list[1].matchAll(/-\s*["']?([^"'\n]+)["']?/g)].map((m) => m[1].trim());
 }
 
-if (files.length === 0) {
-  console.log("No instruction files found in", DIR);
+let failed = false;
+for (const { dir, key } of SOURCES) {
+  const entries = await readdir(dir, { recursive: true }).catch(() => []);
+  for (const file of entries.filter((f) => f.endsWith(".md")).map((f) => join(dir, f))) {
+    const globs = globsFor(await readFile(file, "utf8"), key);
+    if (globs.length === 0) {
+      console.log(`⚠️  ${file}: no ${key} (loaded every session)`);
+      continue;
+    }
+    for (const glob of globs) {
+      if (glob === "**" || glob === "**/*") {
+        console.log(`❌  ${file}: ${key} "${glob}" matches everything`);
+        failed = true;
+      } else if (glob.startsWith("**/")) {
+        console.log(`⚠️  ${file}: ${key} "${glob}" is repo-wide; consider scoping to a directory`);
+      } else {
+        console.log(`✅  ${file}: ${key} "${glob}"`);
+      }
+    }
+  }
 }
 
 if (failed) {
-  console.error(
-    '\nBroad applyTo globs cause instructions to load on every turn. Use "src/**/*.js" or narrower.',
-  );
+  console.error("\nGlobs that match everything load those instructions on every turn.");
   process.exit(1);
 }

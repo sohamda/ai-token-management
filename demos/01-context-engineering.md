@@ -1,54 +1,56 @@
-# Demo 01 — Context engineering: broad retrieval vs `#file`
+# Demo 01 — Scope the ask
 
-**Slide reference:** Lever A
-**Time:** ~3 minutes
-**Punchline:** Same task, ~10× cheaper, *better* answer.
+**Lever:** A · **Time:** ~3 min
+**Punchline:** Same task. The vague ask reads the wrong code too.
 
 ## The setup
 
-This repo has two email classes that are easy to confuse:
-`src/main/java/com/example/demo/email/OrderConfirmationService.java` (legacy) and `src/main/java/com/example/demo/email/TemplateEngine.java` (new).
+The repo has two implementations of the order-confirmation email:
 
-## Step 1 — the bad way
+- `src/main/java/com/example/demo/email/OrderConfirmationService.java`: the real one.
+- `src/email/orderConfirmation.js`: dead JavaScript from an older version (an intentional trap).
 
-Open Copilot Chat in **Agent mode** (which has full codebase access). Ask a vague question:
+## Step 1 — the vague ask
+
+`/clear`, then:
 
 > Refactor the order confirmation email to use the new template engine.
 
-Watch:
-- The agent reads multiple files, exploring the repo to figure out which ones matter.
-- Open **Output → GitHub Copilot Chat**. Note the `ccreq` lines — multiple retrieval and summarization calls.
-- The model often grabs `WelcomeEmailService.java` and unrelated files too.
-- The proposed diff sometimes wanders (renames functions, adds Jest, etc.).
+Narrate while it works:
+- It searches for "order confirmation" and finds **both** implementations.
+- It reads files it doesn't need: the JS version, often `WelcomeEmailService.java`.
+- It either asks which one you meant, or picks one.
 
-Show the audience the response time and the context breakdown.
+Then run `/usage` and read the Session block: cost, and input tokens by model. Leave the number on screen or write it down.
 
-## Step 2 — the good way
+## Step 2 — the scoped ask
 
-Open a **new chat** (Ask mode, not Agent mode). Ask with precise `#file` references:
+`/clear`, then (type `@` to pick the files):
 
-> Refactor `#file:src/main/java/com/example/demo/email/OrderConfirmationService.java` to use `render` from `#file:src/main/java/com/example/demo/email/TemplateEngine.java` instead of `renderLegacy`. Keep behaviour identical.
+> In @src/main/java/com/example/demo/email/OrderConfirmationService.java, call `render("order_confirmation_v2", …)` from @src/main/java/com/example/demo/email/TemplateEngine.java instead of `renderLegacy`. Keep behaviour identical.
 
-Watch:
-- Response is faster.
-- The request payload is a fraction of the size (you can compare in the Output panel).
-- The diff is tightly scoped — only the file that needed to change.
+Watch: two files, no search, one small diff. Run `/usage` again and compare.
+
+## Step 3 (optional) — plan mode
+
+For a bigger change, press **Shift+Tab** until the mode shows *plan*, ask the vague version again, and show that Claude proposes an approach for approval **before** editing. Wrong directions get caught at the cost of a plan, not of a diff.
 
 ## Talking points
 
-- Agent mode and broad questions trigger **expensive** retrieval — the model explores your whole codebase.
-- `#file`, `#selection`, `#problems`, `#changes` should be your defaults for scoped work.
-- Specificity is free. The more precise your prompt, the less the model has to retrieve.
+- The agent can't ask you what you meant until it has explored. Exploration is what you pay for.
+- `@path`, a method name, and "keep behaviour identical" cost you ten seconds.
+- For Java, a code intelligence plugin replaces grep-then-read with "go to definition".
+- Copilot: `#file`, `#selection` and `#problems` do the same.
 
 ## Reset
 
-```powershell
-git checkout -- src/
+```bash
+git reset --hard demo-start && git clean -fd
 ```
 
 ## References
 
-- [Copilot Chat cheat sheet — chat variables](https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=vscode) — `#file`, `#selection`, `#problems`, `#changes` and other context variables
-- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/claude-code-best-practices) — why just-in-time retrieval beats up-front dumping
-- [GitHub Blog — How to use GitHub Copilot in your IDE](https://github.blog/developer-skills/github/how-to-use-github-copilot-in-your-ide-tips-tricks-and-best-practices/) — tips on scoping context
-- [Simon Willison — Context engineering](https://simonwillison.net/2025/Jun/27/context-engineering/) — concept overview
+- [Claude Code — Write specific prompts](https://code.claude.com/docs/en/costs#write-specific-prompts)
+- [Claude Code — Plan mode](https://code.claude.com/docs/en/permission-modes)
+- [Claude Code — Code intelligence plugins](https://code.claude.com/docs/en/plugins/code-intelligence)
+- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)

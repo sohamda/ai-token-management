@@ -1,6 +1,6 @@
 # /plan — planner agent
 
-Run with **GPT-5** or **Claude Sonnet** in a fresh chat. One expensive call up front.
+Run with a top-tier model in a fresh chat. One expensive call up front. (Claude Code equivalent: `.claude/agents/planner.md`.)
 
 ---
 

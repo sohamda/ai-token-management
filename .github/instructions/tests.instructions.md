@@ -1,8 +1,8 @@
 ---
-applyTo: "src/**/*.java"
+applyTo: "src/test/java/**/*.java"
 ---
 
-# Test conventions for src/
+# Test conventions
 
 When writing or editing tests in `src/test/java/`:
 
