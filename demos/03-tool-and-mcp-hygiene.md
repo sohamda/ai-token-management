@@ -9,6 +9,12 @@
 
 ## Step 2 — tool output is the new tax
 
+If you ran demo 01 before this one, reset first: its scoped edit moves `OrderConfirmationService` to `render`, which breaks `OrderConfirmationServiceTest`.
+
+```bash
+git reset --hard demo-start && git clean -fd
+```
+
 In the second terminal:
 
 ```bash

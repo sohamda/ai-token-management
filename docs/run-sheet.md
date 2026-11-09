@@ -2,6 +2,8 @@
 
 Open `presentations/token-presentation.html`, press **F** on the projector screen, then **P** to open the presenter window on your laptop. The presenter window shows the notes, a timer (starts when you leave slide 1; **T** restarts it) and "leave this slide by mm:ss", green or red. Both windows follow either one's arrow keys.
 
+**Demo cues.** Every slide with a demo or a file to show has a one-line strip at the bottom: **▶ live**, **▶ recording** or **show**, with the commands and files. The presenter window shows the full steps, and you can click a highlighted prompt or command to copy it before pasting it into the terminal. Its "Next:" line also flags the upcoming demo. Press **D** in either window to hide or show the strips on the projector.
+
 If the browser blocks sync between the two windows from `file://`, serve the folder instead:
 
 ```bash
@@ -29,14 +31,14 @@ python3 -m http.server 8000 --directory presentations
 | 9:30 | 6 Roadmap | — | — |
 | 12:30 | 7 A · Scope the ask | **live** demo 01 (2 min) | recording |
 | 15:00 | 8 B · Don't break the cache | **live** demo 02 step 2: `/model` warning (1 min) | describe it |
-| 18:30 | 9 C · Tool output | **live** demo 03: `wc -l` vs hook (2.5 min) | recording |
+| 18:30 | 9 C · Tool output | **live** demo 03: reset first (demo 01's edit breaks `OrderConfirmationServiceTest`), then `wc -l` vs hook (2.5 min) | recording |
 | 20:30 | 10 D · Codify once | — | — |
 | 22:30 | 11 E · Model and effort | — | — |
 | 24:00 | 12 F · Output discipline | — | — |
 | 25:30 | 13 G · Repo cheap to read | — | — |
 | 27:30 | 14 H · Read the meter | **live** status line + `/usage` (1.5 min) | screenshot |
 | 28:00 | 15 Same levers, your tool | — | — |
-| 32:00 | 16 Pattern 1 · Ralph | **live** `MAX=1 tools/ralph.sh`, talk over it | recording |
+| 32:00 | 16 Pattern 1 · Ralph | **live** reset, then `MAX=1 tools/ralph.sh`, talk over it (its `git add -A` would commit leftover demo edits) | recording |
 | 34:00 | 17 Pattern 2 · Checkpoint | — | — |
 | 38:00 | 18 Pattern 3 · Plan → Build → Review | **recorded** demo 10 time-lapse (3 min) | — |
 | 39:30 | 19 Java's token sinks | — | — |

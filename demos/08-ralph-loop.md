@@ -15,7 +15,10 @@ Open `TODO.md`: five small, independent chores. Then open the two loop files:
 
 ## Step 2 — run it
 
+Reset first if earlier demos left edits behind: each iteration runs `git add -A`, so leftovers would end up in Ralph's commit.
+
 ```bash
+git reset --hard demo-start && git clean -fd
 MAX=3 tools/ralph.sh
 ```
 

@@ -159,6 +159,21 @@ tr.total-row td{font-weight:700;font-size:20px}
 .qr-big .qr{width:190px;height:190px}
 .qr-big p{font-size:22px;margin:0}
 
+/* demo cues: one line at the bottom of the slide (D toggles), full steps in the presenter view */
+.slide .demo{position:absolute;left:72px;right:72px;bottom:14px;display:flex;align-items:baseline;gap:10px;
+  font-size:15px;line-height:1.4;color:var(--cp-text-muted);background:var(--cp-surface);
+  border:1px dashed var(--cp-border-strong);border-radius:10px;padding:6px 12px}
+.slide .demo>:not(.cue){display:none}
+body.no-cues .slide .demo{display:none}
+.slide .demo code{white-space:nowrap}
+.demo::before{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 8px;border-radius:999px;background:var(--cp-accent);color:var(--cp-accent-fg)}
+.demo[data-kind="live"]::before{content:"▶ live"}
+.demo[data-kind="recorded"]::before{content:"▶ recording";background:var(--cp-warning);color:#1a1a1a}
+.demo[data-kind="show"]::before{content:"show";background:var(--cp-link);color:#fff}
+.demo code{font-size:.95em;color:var(--cp-text)}
+.demo b{color:var(--cp-text)}
+
 /* presenter view: open with P, or ?presenter */
 #presenter{display:none}
 body.presenter .stage,body.presenter .theme-toggle{display:none}
@@ -170,6 +185,16 @@ body.presenter #presenter{display:flex;flex-direction:column;gap:14px;flex:1;pad
 #pTitle{font-size:30px;font-weight:700}
 #pNext{font-size:18px;color:var(--cp-text-muted)}
 #pNotes{font-size:26px;line-height:1.5;max-width:1100px}
+#pDemo{display:none;max-width:1100px;border:2px dashed var(--cp-accent);border-radius:14px;padding:14px 20px}
+#pDemo.on{display:block}
+#pDemo::before{display:inline-block;margin-bottom:8px}
+#pDemo .cue{font-size:21px;line-height:1.45;margin-bottom:8px}
+#pDemo ol{margin:0 0 8px;padding-left:28px}
+#pDemo li{font-size:21px;line-height:1.45;margin:6px 0}
+#pDemo p{font-size:18px;margin:6px 0 0;color:var(--cp-text-muted)}
+#pDemo .say{display:inline;quotes:none;background:var(--cp-accent-soft);border-radius:6px;padding:1px 6px;cursor:copy}
+#pDemo .say:hover{outline:1px solid var(--cp-accent)}
+#pDemo .say.copied{background:var(--cp-success);color:#fff}
 #pHelp{font-size:13px;color:var(--cp-text-muted)}
 a{color:var(--cp-link)}
 
@@ -203,8 +228,9 @@ a{color:var(--cp-link)}
     <div class="p-top"><div id="pTimer">0:00</div><div id="pCue"></div></div>
     <div id="pTitle"></div>
     <div id="pNext"></div>
+    <div id="pDemo" class="demo"></div>
     <div id="pNotes"></div>
-    <div id="pHelp">← → navigate (both windows follow) · T restart timer · the audience window is the one you opened this from</div>
+    <div id="pHelp">← → navigate (both windows follow) · T restart timer · D demo cues on the slides: <b id="pCues">on</b> · click a highlighted prompt to copy it</div>
   </div>
   <div class="bar">
     <div class="dots" id="dots"></div>
@@ -230,7 +256,7 @@ const slides = [
     <h1>Context Is a Budget</h1>
     <p class="lead">Eight levers and three workflow patterns for spending tokens well with coding agents.</p>
     <div class="qr-corner"><div class="qr">${QR_SVG}</div><small>${REPO_URL}</small></div>
-    <div class="footer">← → or Space · <span class="kbd">F</span> fullscreen · <span class="kbd">P</span> presenter view</div>
+    <div class="footer">← → or Space · <span class="kbd">F</span> fullscreen · <span class="kbd">P</span> presenter view · <span class="kbd">D</span> demo cues</div>
     <aside class="notes">Name, one line about you. Poll the room: hands up for Copilot, Claude Code, JetBrains AI / Junie, Cursor. Say: "I demo Claude Code; every lever works in your tool too, and there's a Copilot slide." Slides and demos are behind the QR code.</aside>
   </section>`,
 
@@ -287,7 +313,16 @@ const slides = [
       </tbody>
     </table>
     <p class="lead" style="margin-top:18px">All of it is re-sent on <b>every turn</b>. Caching makes that cheap, not free.</p>
-    <aside class="notes">LIVE (1 min): switch to the terminal, fresh session, run /context. Point at each layer on the real screen. "Turn 30 pays to re-read turns 1–29." Fallback: screenshot of /context.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>1 min</b> · Claude Code, fresh session: <code>/context</code> · point at each layer of this table on the real screen</div>
+      <ol>
+        <li>Switch to the Claude Code terminal (fresh session, status line visible).</li>
+        <li>Run <q class="say">/context</q></li>
+        <li>Point at each row: system prompt + tools (MCP tools deferred), memory files (<code>AGENTS.md</code>), messages.</li>
+      </ol>
+      <p>If it fails: screenshot of <code>/context</code>.</p>
+    </aside>
+    <aside class="notes">"Turn 30 pays to re-read turns 1–29."</aside>
   </section>`,
 
   // 5 — what changed
@@ -350,7 +385,17 @@ Keep behaviour identical.</pre>
         <p style="margin-top:10px">Two files read. One small diff.</p>
       </div>
     </div>
-    <aside class="notes">LIVE demo 01 (2 min): /clear, vague prompt, /usage; /clear, scoped prompt with @-mentions, /usage. If the vague run behaves well, say so: "the model got lucky; on a real repo it won't" and show the recording. Mention plan mode (Shift+Tab) and the Java code intelligence plugin in one sentence.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 01</b> · 2 min · <code>/clear</code> → vague ask → <code>/usage</code> → <code>/clear</code> → scoped ask from this slide → <code>/usage</code> · show <code>src/email/orderConfirmation.js</code></div>
+      <ol>
+        <li><q class="say">/clear</q>, then: <q class="say">Refactor the order confirmation email to use the new template engine.</q></li>
+        <li>While it works: it finds the Java <b>and</b> <code>src/email/orderConfirmation.js</code>. Then <q class="say">/usage</q> and note the cost.</li>
+        <li><q class="say">/clear</q>, then: <q class="say">In @src/main/java/com/example/demo/email/OrderConfirmationService.java, call render("order_confirmation_v2", …) from @src/main/java/com/example/demo/email/TemplateEngine.java instead of renderLegacy. Keep behaviour identical.</q></li>
+        <li><q class="say">/usage</q> again and compare. Leave the session open: lever B reuses its warm cache.</li>
+      </ol>
+      <p>Show: <code>src/email/orderConfirmation.js</code>, the dead copy. If it fails: recording 01. Full script: <code>demos/01-context-engineering.md</code></p>
+    </aside>
+    <aside class="notes">If the vague run behaves well, say so: "the model got lucky; on a real repo it won't" and show the recording. Mention plan mode (Shift+Tab) and the Java code intelligence plugin in one sentence.</aside>
   </section>`,
 
   // 8 — Lever B
@@ -376,7 +421,16 @@ Keep behaviour identical.</pre>
         </ul>
       </div>
     </div>
-    <aside class="notes">LIVE demo 02, step 2 only (1 min): in the warm session from demo 01, run /model opus and read the confirmation warning aloud. Then /usage → Prompt cache (main) line. Copilot made the same call: Auto only switches model at session boundaries. Building your own agent: no timestamp at the top of the system prompt.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 02</b> · 1 min · same session as demo 01: <code>/usage</code> (Prompt cache line) → <code>/model opus</code> → read the warning aloud → decline</div>
+      <ol>
+        <li>Stay in demo 01's session (the cache is warm). Run <q class="say">/usage</q> and read the <code>Prompt cache (main)</code> line.</li>
+        <li>Run <q class="say">/model opus</q> and read the confirmation warning aloud.</li>
+        <li>Decline, so the session stays on Sonnet. (Confirmed by accident? <code>/model sonnet</code>, then <code>/clear</code>.)</li>
+      </ol>
+      <p>If it fails: describe the warning. Full script: <code>demos/02-prompt-caching.md</code></p>
+    </aside>
+    <aside class="notes">Copilot made the same call: Auto only switches model at session boundaries. Building your own agent: no timestamp at the top of the system prompt.</aside>
   </section>`,
 
   // 9 — Lever C
@@ -402,12 +456,22 @@ mvn test  →  mvn test > $log 2>&amp;1
         </ul>
       </div>
     </div>
-    <aside class="notes">LIVE demo 03 (2.5 min): second terminal, mvn test | wc -l. Then in Claude Code: "Run the tests" and show the trimmed output. Open the hook for 10 seconds. FILL IN the line counts from the dry run.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 03</b> · 2.5 min · 2nd terminal: reset, <code>mvn test | wc -l</code> → Claude: “Run the tests.” · show <code>.claude/hooks/filter-test-output.sh</code></div>
+      <ol>
+        <li>2nd terminal: <q class="say">git reset --hard demo-start && git clean -fd</q> (demo 01's edit breaks a test).</li>
+        <li>2nd terminal: <q class="say">mvn test | wc -l</q> and say the number.</li>
+        <li>Claude Code: <q class="say">Run the tests.</q> Show the few lines it got back and the <code>(full log: …)</code> line.</li>
+        <li>Open <code>.claude/hooks/filter-test-output.sh</code> for 10 seconds, then the <code>hooks</code> block in <code>.claude/settings.json</code>.</li>
+      </ol>
+      <p>If it fails: recording 03. Full script: <code>demos/03-tool-and-mcp-hygiene.md</code></p>
+    </aside>
+    <aside class="notes">FILL IN the line counts from the dry run. The exit code survives the rewrite, so red still reads as red.</aside>
   </section>`,
 
   // 10 — Lever D
   `<section class="slide" data-cue="20:30">
-    <div class="eyebrow">Lever D · demo 04</div>
+    <div class="eyebrow">Lever D</div>
     <h2>Codify once, load on demand</h2>
     <table style="margin-top:6px">
       <thead><tr><th>Loads</th><th>Claude Code</th><th>Copilot</th></tr></thead>
@@ -424,6 +488,14 @@ mvn test  →  mvn test > $log 2>&amp;1
         <li>A <span class="kbd">CLAUDE.md</span> hides <span class="kbd">AGENTS.md</span> unless it imports <span class="kbd">@AGENTS.md</span>.</li>
       </ul></div>
     </div>
+    <aside class="demo" data-kind="show">
+      <div class="cue">Optional, 20 s in the editor: <code>AGENTS.md</code> (30 lines) and the <code>paths:</code> frontmatter in <code>.claude/rules/tests.md</code></div>
+      <ol>
+        <li>Open <code>AGENTS.md</code>: build commands, conventions, don't-touch, output style. That's all that loads every session.</li>
+        <li>Open <code>.claude/rules/tests.md</code>: the <code>paths: ["src/test/java/**/*.java"]</code> frontmatter.</li>
+      </ol>
+      <p>Don't run demo 04 in the 45-minute slot. Full script: <code>demos/04-instructions-and-skills.md</code></p>
+    </aside>
     <aside class="notes">Slides only (2 min). The first gotcha was a real bug in this repo's first version. The second is the one people hit: someone adds a CLAUDE.md and the team's AGENTS.md silently stops loading.</aside>
   </section>`,
 
@@ -452,6 +524,14 @@ mvn test  →  mvn test > $log 2>&amp;1
         </ul>
       </div>
     </div>
+    <aside class="demo" data-kind="show">
+      <div class="cue">Optional, 15 s: <code>.claude/agents/planner.md</code> and <code>implementer.md</code>, each with its own <code>model:</code> and <code>effort:</code></div>
+      <ol>
+        <li>Open <code>.claude/agents/planner.md</code>: <code>model: opus</code>, <code>effort: high</code>.</li>
+        <li>Open <code>.claude/agents/implementer.md</code>: <code>model: sonnet</code>, <code>effort: medium</code>. Per-subagent model, no session switch.</li>
+      </ol>
+      <p>Calculator for questions: appendix slide "What does this actually cost?". Full script: <code>demos/05-model-routing.md</code></p>
+    </aside>
     <aside class="notes">Slides only (2 min). Haiku's price is for prompts up to 100K tokens; above that it's 5× more, one more reason to keep context small. Rule: go up in effort before you go up in model, and switch model only right after /clear. The calculator is in the appendix if someone asks.</aside>
   </section>`,
 
@@ -469,7 +549,7 @@ method should new emails call?</pre></div>
     <div class="card" style="margin-top:18px"><h3>Make it the default, in AGENTS.md</h3><pre>- Be concise. No preamble.
 - Return diffs, not full files.
 - Ask one targeted question instead of guessing.</pre></div>
-    <aside class="notes">Slides only (1.5 min). Agents already edit with diffs; the waste left is prose. Claude Code shows the turn's output growing live next to the spinner.</aside>
+    <aside class="notes">Slides only (1.5 min). First slide to cut if you're behind. Agents already edit with diffs; the waste left is prose. Claude Code shows the turn's output growing live next to the spinner.</aside>
   </section>`,
 
   // 13 — Lever G
@@ -491,7 +571,15 @@ method should new emails call?</pre></div>
         </ul>
       </div>
     </div>
-    <aside class="notes">Slides only (1.5 min). Callback to demo 01: that dead JS is what the vague prompt tripped over. .gitignore helps too: both tools respect it, but an already-tracked file also needs git rm --cached.</aside>
+    <aside class="demo" data-kind="show">
+      <div class="cue">Optional, 20 s: <code>src/email/orderConfirmation.js</code> (the dead copy from demo 01) and the <code>deny</code> rule in <code>.claude/settings.json</code></div>
+      <ol>
+        <li>Open <code>src/email/orderConfirmation.js</code>: the file the vague ask in demo 01 read for nothing.</li>
+        <li>Open <code>.claude/settings.json</code>: <code>"deny": ["Read(./target/**)"]</code>.</li>
+      </ol>
+      <p>Don't run demo 07 in the 45-minute slot. Full script: <code>demos/07-repo-hygiene.md</code></p>
+    </aside>
+    <aside class="notes">Slides only (1.5 min). Second slide to cut if you're behind. Callback to demo 01: that dead JS is what the vague prompt tripped over. .gitignore helps too: both tools respect it, but an already-tracked file also needs git rm --cached.</aside>
   </section>`,
 
   // 14 — Lever H
@@ -517,7 +605,16 @@ method should new emails call?</pre></div>
         </ul>
       </div>
     </div>
-    <aside class="notes">LIVE (1.5 min): point at the real status line, which has been on screen all talk. Run /usage; on a subscription, show the breakdown by skill/subagent/MCP and the f-to-fix recommendations. A year ago the advice was "time the replies"; now there's no excuse not to look.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 14</b> · 1.5 min · point at the real status line → <code>/usage</code> · show <code>.claude/statusline.sh</code></div>
+      <ol>
+        <li>Point at the status line, which has been on screen all talk: model · effort, ctx %, cache %, $, 5h %.</li>
+        <li>Optional: open <code>.claude/statusline.sh</code>. It's one <code>jq</code> expression.</li>
+        <li>Run <q class="say">/usage</q>: the Session block and the Prompt cache line. On a subscription, the breakdown by skill/subagent/MCP and <code>f</code> to fix.</li>
+      </ol>
+      <p>Behind? Just point at the status line. If it fails: screenshot of <code>/usage</code>. Full script: <code>demos/14-observability.md</code></p>
+    </aside>
+    <aside class="notes">A year ago the advice was "time the replies"; now there's no excuse not to look.</aside>
   </section>`,
 
   // 15 — same levers in Copilot
@@ -565,7 +662,17 @@ method should new emails call?</pre></div>
 done</pre>
       </div>
     </div>
-    <aside class="notes">LIVE: start MAX=1 tools/ralph.sh at the top of this slide and talk while it runs (1–3 min). Points: fresh context per item, so item ten costs what item one did; hard cap per iteration; restartable; one commit per item (show git log --oneline). Admit the first version of this demo looped inside one chat. /loop and scheduled tasks have the same problem. Fallback: recording.</aside>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 08</b> · start it first, talk over it · 2nd terminal: reset, <code>MAX=1 tools/ralph.sh</code> · show <code>TODO.md</code>, <code>tools/ralph-prompt.md</code> · end on <code>git log --oneline -3</code></div>
+      <ol>
+        <li>2nd terminal: <q class="say">git reset --hard demo-start && git clean -fd</q> so no earlier demo edit ends up in Ralph's commit.</li>
+        <li>2nd terminal: <q class="say">MAX=1 tools/ralph.sh</q> Start it now and talk while it runs (1–3 min).</li>
+        <li>While it runs: open <code>TODO.md</code>, then <code>tools/ralph-prompt.md</code>.</li>
+        <li>When it prints its cost line: <q class="say">git log --oneline -3</q></li>
+      </ol>
+      <p>If it fails or runs long: recording 08. Full script: <code>demos/08-ralph-loop.md</code></p>
+    </aside>
+    <aside class="notes">Points: fresh context per item, so item ten costs what item one did; hard cap per iteration; restartable; one commit per item. Admit the first version of this demo looped inside one chat. /loop and scheduled tasks have the same problem.</aside>
   </section>`,
 
   // 17 — Pattern 2
@@ -614,7 +721,16 @@ done</pre>
         </ul>
       </div>
     </div>
-    <aside class="notes">RECORDED time-lapse of demo 10 (3 min), narrated live. Show plan.md, the commits, the VERDICT line, then /context of the main session: three briefs and three summaries, not three transcripts. The 7× figure is Anthropic's, for agent teams in plan mode.</aside>
+    <aside class="demo" data-kind="recorded">
+      <div class="cue"><b>Demo 10</b> · 3 min time-lapse, narrate live: <code>plan.md</code> → one commit per task → <code>VERDICT</code> → main session's <code>/context</code> · show <code>.claude/agents/planner.md</code> first</div>
+      <ol>
+        <li>Optional, 15 s: open <code>.claude/agents/planner.md</code> and point at <code>model</code>, <code>effort</code>, <code>tools</code>.</li>
+        <li>Play the demo 10 recording.</li>
+        <li>Narrate: <code>plan.md</code> (no code) → implementer commits → reviewer's <code>VERDICT</code> line → main session <code>/context</code>: three briefs and three summaries, not three transcripts.</li>
+      </ol>
+      <p>Full script: <code>demos/10-agent-handover.md</code></p>
+    </aside>
+    <aside class="notes">The 7× figure is Anthropic's, for agent teams in plan mode.</aside>
   </section>`,
 
   // 19 — Java token sinks
@@ -904,9 +1020,43 @@ function send(msg){
 }
 function receive(msg){
   if (!msg) return;
-  if (msg.hello && !isPresenter) send({ i: idx });
-  else if (typeof msg.i === 'number' && msg.i !== idx) go(msg.i, true);
+  if (msg.hello) { if (!isPresenter) send({ i: idx, cues: cuesOn }); return; }
+  if (typeof msg.cues === 'boolean' && msg.cues !== cuesOn) setCues(msg.cues, true);
+  if (typeof msg.i === 'number' && msg.i !== idx) go(msg.i, true);
 }
+
+// demo cues on the slides: D toggles them in both windows; the presenter view always shows them
+let cuesOn = true;
+try { cuesOn = localStorage.getItem('context-budget-cues') !== 'off'; } catch (e) {}
+function setCues(on, remote){
+  cuesOn = on;
+  document.body.classList.toggle('no-cues', !on);
+  const s = document.getElementById('pCues');
+  if (s) s.textContent = on ? 'on' : 'off';
+  try { localStorage.setItem('context-budget-cues', on ? 'on' : 'off'); } catch (e) {}
+  if (!remote) send({ cues: on });
+}
+setCues(cuesOn, true);
+const KIND = { live: '▶ live', recorded: '▶ recording', show: 'show' };
+function copyText(text){
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  };
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).catch(fallback);
+  fallback(); return Promise.resolve();
+}
+document.addEventListener('click', e => {
+  const say = e.target.closest && e.target.closest('#pDemo .say');
+  if (!say) return;
+  copyText(say.textContent).then(() => {
+    say.classList.add('copied');
+    setTimeout(() => say.classList.remove('copied'), 900);
+  });
+});
 if (chan) chan.onmessage = e => receive(e.data);
 window.addEventListener('storage', e => {
   if (e.key !== 'context-budget-deck' || !e.newValue) return;
@@ -927,7 +1077,13 @@ function renderPresenter(){
   if (!isPresenter) return;
   const el = slideEls[idx], next = slideEls[idx + 1];
   document.getElementById('pTitle').textContent = (idx + 1) + '. ' + titleOf(el);
-  document.getElementById('pNext').textContent = next ? 'Next: ' + titleOf(next) : 'Last slide';
+  const nextDemo = next && next.querySelector('.demo');
+  const nextCue = nextDemo ? '  ·  ' + KIND[nextDemo.dataset.kind] + ' ' + ((nextDemo.querySelector('.cue b') || {}).textContent || '') : '';
+  document.getElementById('pNext').textContent = next ? 'Next: ' + titleOf(next) + nextCue : 'Last slide';
+  const demo = el.querySelector('.demo'), pDemo = document.getElementById('pDemo');
+  pDemo.innerHTML = demo ? demo.innerHTML : '';
+  if (demo) pDemo.dataset.kind = demo.dataset.kind; else delete pDemo.dataset.kind;
+  pDemo.classList.toggle('on', !!demo);
   const notes = el.querySelector('.notes');
   document.getElementById('pNotes').innerHTML = notes ? notes.innerHTML : '<i>No notes</i>';
   tick();
@@ -967,6 +1123,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'End') go(slideEls.length - 1);
   else if (e.key.toLowerCase() === 'p' && !isPresenter) window.open(location.pathname + '?presenter', 'deck-presenter', 'width=1100,height=760');
   else if (e.key.toLowerCase() === 't' && isPresenter) { t0 = Date.now(); tick(); }
+  else if (e.key.toLowerCase() === 'd') setCues(!cuesOn);
   else if (e.key.toLowerCase() === 'f') {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen();
     else document.exitFullscreen();
