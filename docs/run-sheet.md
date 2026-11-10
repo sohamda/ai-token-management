@@ -18,6 +18,9 @@ python3 -m http.server 8000 --directory presentations
 - [ ] Every dashed **$?.??** / **???** box on the slides replaced with a measured number (list below).
 - [ ] Repo public, so the QR code works (it points at `github.com/sohamda/ai-token-management`).
 - [ ] Laptop on power, notifications off, display mirroring off (extended desktop).
+- [ ] Open the deck once while online so the browser caches the fonts (Inter, JetBrains Mono from Google Fonts). Offline it falls back to system fonts and re-fits each slide, so nothing breaks; it just looks less on-brand.
+
+The slides scale to fill any screen size. The navigation bar only appears when you move the mouse; a thin progress line at the bottom shows how far through the main talk you are.
 
 ## The 45 minutes
 

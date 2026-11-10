@@ -4,226 +4,219 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Context Is a Budget</title>
-<script>
-  (() => {
-    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
-    const theme =
-      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    document.documentElement.setAttribute("data-theme", theme);
-  })();
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+/* LangChain brand tokens. Offline, the fonts fall back to system fonts and the auto-fit adjusts. */
 :root{
-  color-scheme:light;
-  --cp-bg:#f7f4ef; --cp-bg-elevated:#fcfbf8; --cp-surface:#ffffff; --cp-surface-soft:#f5f5f5;
-  --cp-border:#dedede; --cp-border-strong:#919191;
-  --cp-text:#242424; --cp-text-muted:#5c5c5c; --cp-text-soft:#6f6f6f;
-  --cp-accent:#b11f4b; --cp-accent-hover:#9a1a41; --cp-accent-soft:rgba(177,31,75,0.08);
-  --cp-accent-fg:#ffffff;
-  --cp-success:#16a34a; --cp-danger:#dc2626; --cp-warning:#f59e0b; --cp-link:#0078d4;
-  --cp-shadow:0 18px 48px rgba(0,0,0,0.12);
-  --cp-overlay:rgba(255,255,255,0.8); --cp-panel:rgba(255,255,255,0.86);
-  --cp-panel-strong:rgba(255,255,255,0.96); --cp-sheen:rgba(255,255,255,0.55);
-  --cp-highlight:rgba(177,31,75,0.12);
-}
-html[data-theme="dark"]{
+  --lc-dark:#030710; --lc-card:#0B1120; --lc-card-alt:#E5F4FF; --lc-surface:#F2FAFF;
+  --lc-border:#B8DFFF; --lc-border-dark:#1A2740; --lc-muted:#6B8299; --lc-body:#C8DDF0;
+  --lc-white:#FFFFFF; --lc-dark-text:#030710;
+  --lc-blue:#7FC8FF; --lc-blue-hover:#99D4FF; --lc-blue-bg:#E5F4FF; --lc-blue-bg-alt:#F2FAFF;
+  --lc-lime:#E3FF8F; --lc-rose:#B27D75; --lc-pink:#C78EAD; --lc-lavender:#D5C3F7;
+  /* tints of the brand colours on the dark background */
+  --lc-code:#060B17; --lc-kbd:#111A2E; --lc-blue-tint:rgba(127,200,255,.10); --lc-blue-line:rgba(127,200,255,.38);
+  --font:"Lausanne","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color-scheme:dark;
-  --cp-bg:#3d3b3a; --cp-bg-elevated:#343231; --cp-surface:#292929; --cp-surface-soft:#2e2e2e;
-  --cp-border:#474747; --cp-border-strong:#5f5f5f;
-  --cp-text:#dedede; --cp-text-muted:#919191; --cp-text-soft:#b0b0b0;
-  --cp-accent:#fd8ea1; --cp-accent-hover:#fb7b91; --cp-accent-soft:rgba(253,142,161,0.14);
-  --cp-accent-fg:#1a1a1a;
-  --cp-success:#4ade80; --cp-danger:#f87171; --cp-warning:#fbbf24; --cp-link:#4da6ff;
-  --cp-shadow:0 18px 48px rgba(0,0,0,0.32);
-  --cp-overlay:rgba(41,41,41,0.88); --cp-panel:rgba(41,41,41,0.72);
-  --cp-panel-strong:rgba(41,41,41,0.96); --cp-sheen:rgba(255,255,255,0.04);
-  --cp-highlight:rgba(253,142,161,0.12);
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;height:100%;background:var(--cp-bg);color:var(--cp-text);
-  font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif;}
-code,pre,kbd{font-family:Consolas,"Courier New",Courier,monospace}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--lc-dark);color:var(--lc-body);font-family:var(--font)}
+code,pre,.kbd{font-family:var(--mono)}
+a{color:var(--lc-blue)}
+b,strong{color:var(--lc-white);font-weight:600}
 
-.deck{height:100vh;display:flex;flex-direction:column}
-.stage{flex:1;overflow:hidden;position:relative}
-.slide{position:absolute;inset:0;padding:48px 72px 72px;overflow:auto;
-  display:none;flex-direction:column;animation:fade .25s ease}
-.slide.active{display:flex}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* A 1280×720 canvas, scaled to fill the screen (letterboxed in the background colour). */
+.stage{position:fixed;inset:0;overflow:hidden}
+body:not(.ui) .stage{cursor:none}
+.canvas{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0}
 
-.eyebrow{color:var(--cp-accent);text-transform:uppercase;letter-spacing:.12em;
-  font-size:12px;font-weight:700;margin-bottom:12px}
-h1{font-size:44px;margin:0 0 12px;line-height:1.1}
-h2{font-size:38px;margin:0 0 18px;line-height:1.15}
-h3{font-size:20px;margin:18px 0 8px}
-p{font-size:19px;line-height:1.5;color:var(--cp-text);margin:0 0 12px}
-.lead{font-size:22px;color:var(--cp-text-muted);max-width:1000px}
-ul{margin:0 0 12px 0;padding-left:22px}
-li{margin:6px 0;line-height:1.45;font-size:18px}
-small,.muted{color:var(--cp-text-muted)}
-
-.grid{display:grid;gap:18px}
-.cols-2{grid-template-columns:1fr 1fr}
-.cols-3{grid-template-columns:1fr 1fr 1fr}
-.cols-4{grid-template-columns:repeat(4,1fr)}
-
-.card{background:var(--cp-surface);border:1px solid var(--cp-border);
-  border-radius:16px;padding:20px;box-shadow:0 0 2px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14)}
-.card h3{margin-top:0;color:var(--cp-accent)}
-.tag{display:inline-block;padding:3px 10px;border-radius:999px;
-  background:var(--cp-accent-soft);color:var(--cp-accent);font-size:12px;font-weight:600;
-  margin-right:6px}
-
-.kbd{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
-  border-radius:6px;padding:1px 6px;font-size:.85em}
-
-pre{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
-  border-radius:10px;padding:14px 16px;overflow:auto;font-size:15px;line-height:1.5;margin:0}
-
-.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;
-  background:var(--cp-bg-elevated);border-top:1px solid var(--cp-border)}
-.bar .nav{display:flex;gap:8px}
-button{font-family:inherit;font-size:14px;background:var(--cp-surface);
-  color:var(--cp-text);border:1px solid var(--cp-border);border-radius:10px;
-  padding:8px 14px;cursor:pointer;transition:all .15s}
-button:hover{border-color:var(--cp-border-strong)}
-button.primary{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
-button.primary:hover{background:var(--cp-accent-hover);border-color:var(--cp-accent-hover)}
-.counter{font-variant-numeric:tabular-nums;color:var(--cp-text-muted);font-size:13px}
-
-.title-slide{align-items:center;justify-content:center;text-align:center}
-.title-slide h1{font-size:64px;line-height:1.05;margin-bottom:18px}
-.title-slide .lead{font-size:22px}
-
-.metric{font-size:42px;font-weight:700;color:var(--cp-accent);line-height:1}
-.metric small{display:block;font-size:13px;color:var(--cp-text-muted);
-  font-weight:500;margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
-
-table{width:100%;border-collapse:collapse;font-size:16.5px}
-th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--cp-border)}
-th{color:var(--cp-text-muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
-tr:hover td{background:var(--cp-surface-soft)}
-
-.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
-.flow .step{background:var(--cp-surface);border:1px solid var(--cp-border);
-  border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600}
-.flow .arrow{color:var(--cp-accent);font-weight:700}
-
-.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
-.pill{background:var(--cp-surface-soft);border:1px solid var(--cp-border);
-  border-radius:999px;padding:6px 12px;font-size:13px}
-
-.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.grid>*,.split>*{min-width:0}
-.good{border-left:4px solid var(--cp-success)}
-.bad{border-left:4px solid var(--cp-danger)}
-.warn{border-left:4px solid var(--cp-warning)}
-
-.footer{position:absolute;bottom:14px;right:24px;font-size:12px;color:var(--cp-text-muted)}
-
-/* progress dots */
-.dots{display:flex;gap:6px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--cp-border)}
-.dot.active{background:var(--cp-accent)}
-
-/* loop diagram */
-.loop{display:flex;align-items:center;justify-content:center;gap:14px;margin:18px 0;flex-wrap:wrap}
-.loop .node{background:var(--cp-surface);border:2px solid var(--cp-accent);
-  border-radius:14px;padding:14px 18px;font-weight:600;text-align:center;min-width:130px}
-.loop .arr{color:var(--cp-accent);font-size:24px;font-weight:700}
-
-.hand{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:8px;align-items:center;margin:14px 0}
-.hand .ag{background:var(--cp-surface);border:1px solid var(--cp-border);
-  border-radius:12px;padding:14px;text-align:center}
-.hand .ag.lead{border-color:var(--cp-accent)}
-.hand .ar{text-align:center;color:var(--cp-accent);font-size:22px;font-weight:700}
-
-.theme-toggle{position:absolute;top:14px;right:18px;z-index:10}
-
-/* new slide components */
+/* Slide = fixed header (eyebrow + h2) + .body. The body is scaled by --k so it fills the free space;
+   every body size below is "design px × --u". */
+.slide{position:absolute;inset:0;padding:64px 104px 56px;display:none;flex-direction:column;overflow:hidden;
+  --k:1;--u:calc(1px * var(--k));--uc:calc(1px * (.4 + .6 * var(--k)))}
+.slide.active{display:flex;animation:fade .25s ease}
+.slide.fitting{display:flex;visibility:hidden}
+.slide.has-demo{padding-bottom:96px}
+body.no-cues .slide.has-demo{padding-bottom:56px}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.slide>.body{flex:1 0 auto;display:flex;flex-direction:column;min-width:0}
+.body>*{flex-shrink:0}
+.body>:first-child{margin-top:auto!important}
+.body>:last-child{margin-bottom:auto!important}
 .slide .notes{display:none}
-.measure{display:inline-block;border:2px dashed var(--cp-warning);border-radius:8px;padding:0 8px;color:var(--cp-warning)}
-.feature{font-size:21px;padding:14px 18px;border-radius:12px;background:var(--cp-accent-soft);border-left:4px solid var(--cp-accent)}
-.card .metric{margin-top:14px}
-.card.pattern{border-style:dashed}
+
+.eyebrow{color:var(--lc-blue);text-transform:uppercase;letter-spacing:.1em;font-size:14px;font-weight:700;line-height:1.2;margin-bottom:12px}
+.slide>h2{font-size:44px;font-weight:700;line-height:1.2;letter-spacing:-.02em;color:var(--lc-white);margin:0 0 22px}
+.body h3{font-size:calc(21 * var(--u));font-weight:700;line-height:1.3;letter-spacing:-.01em;color:var(--lc-white);margin:calc(16 * var(--u)) 0 calc(8 * var(--u))}
+.body p{font-size:calc(19 * var(--u));line-height:1.55;margin:0 0 calc(12 * var(--u))}
+.body .lead{font-size:calc(23 * var(--u));line-height:1.45}
+.body ul{margin:0 0 calc(12 * var(--u));padding-left:calc(22 * var(--u))}
+.body li{font-size:calc(18 * var(--u));line-height:1.45;margin:calc(6 * var(--u)) 0}
+.body li::marker{color:var(--lc-blue)}
+.body small,.muted{color:var(--lc-muted)}
+.body p.muted{font-size:calc(16 * var(--u))}
+
+.grid{display:grid;gap:calc(18 * var(--u))}
+.cols-2,.split{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+.cols-2.code-left{grid-template-columns:1.4fr 1fr}
+.cols-2.code-right{grid-template-columns:1fr 1.4fr}
+.split{display:grid;gap:calc(18 * var(--u))}
+.grid>*,.split>*{min-width:0}
+
+.card{background:var(--lc-card);border:1px solid var(--lc-border-dark);border-radius:calc(16 * var(--u));padding:calc(22 * var(--u))}
+.card h3{margin-top:0}
+.card.good{border-left:3px solid var(--lc-lime)} .card.good h3{color:var(--lc-lime)}
+.card.bad{border-left:3px solid var(--lc-rose)}  .card.bad h3{color:var(--lc-rose)}
+.card.warn{border-left:3px solid var(--lc-lavender)} .card.warn h3{color:var(--lc-lavender)}
+.card.pattern{border:1px dashed var(--lc-blue-line)}
 .card h3:only-of-type:last-child{margin-bottom:0}
-pre.meter{font-size:20px;margin-top:6px}
-table.compact{font-size:15px}
-table.compact td,table.compact th{padding:7px 10px}
-tr.total-row td{font-weight:700;font-size:20px}
-.qr svg{display:block;width:100%;height:100%}
+.card>:last-child{margin-bottom:0}
+
+.tag{display:inline-block;font-size:calc(12 * var(--u));font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--lc-blue);background:var(--lc-blue-tint);padding:calc(4 * var(--u)) calc(12 * var(--u));border-radius:100px;margin-bottom:calc(10 * var(--u))}
+.kbd{background:var(--lc-kbd);border:1px solid var(--lc-border-dark);border-radius:6px;padding:.05em .4em;font-size:.84em;color:var(--lc-white);white-space:nowrap}
+pre{background:var(--lc-code);border:1px solid var(--lc-border-dark);border-radius:calc(10 * var(--u));
+  padding:calc(14 * var(--uc)) calc(16 * var(--uc));font-size:calc(15 * var(--uc));line-height:1.55;margin:0;color:var(--lc-body);overflow:hidden}
+pre.meter{font-size:calc(19 * var(--uc));color:var(--lc-white);border-color:var(--lc-blue-line)}
+
+table{width:100%;border-collapse:collapse;font-size:calc(17 * var(--u))}
+th,td{text-align:left;vertical-align:top;padding:calc(10 * var(--u)) calc(12 * var(--u));border-bottom:1px solid var(--lc-border-dark)}
+th{color:var(--lc-muted);font-weight:700;font-size:calc(12 * var(--u));text-transform:uppercase;letter-spacing:.1em}
+table.compact{font-size:calc(15.5 * var(--u))}
+table.compact td,table.compact th{padding:calc(7 * var(--u)) calc(10 * var(--u))}
+table.compact td:first-child{color:var(--lc-blue);font-weight:700}
+tr.total-row td{font-weight:700;font-size:calc(21 * var(--u));color:var(--lc-white);border-bottom:none}
+
+.metric{font-size:calc(44 * var(--u));font-weight:800;letter-spacing:-.03em;color:var(--lc-blue);line-height:1}
+.metric small{display:block;font-size:calc(12 * var(--u));font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lc-muted);margin-top:calc(8 * var(--u))}
+.card .metric{margin-top:calc(14 * var(--u))}
+.card>.metric:first-child{margin-top:0;margin-bottom:calc(12 * var(--u))}
+.measure{display:inline-block;border:2px dashed var(--lc-pink);border-radius:8px;padding:0 .3em;color:var(--lc-pink)}
+.feature{font-size:calc(22 * var(--u));line-height:1.45;color:var(--lc-white);padding:calc(16 * var(--u)) calc(20 * var(--u));
+  border-radius:calc(12 * var(--u));background:var(--lc-blue-tint);border-left:3px solid var(--lc-blue)}
+
+/* geometric line icons (stroke only) */
+.ico{display:block;width:calc(30 * var(--u));height:calc(30 * var(--u));color:var(--lc-blue);margin-bottom:calc(12 * var(--u))}
+.ico svg{display:block;width:100%;height:100%}
+ul.check{list-style:none;padding-left:0}
+ul.check li{position:relative;padding-left:1.6em}
+ul.check li::before{content:"";position:absolute;left:0;top:.28em;width:.8em;height:.8em;border:1.5px solid var(--lc-blue);border-radius:3px}
+
+/* Ralph loop + plan/build/review diagrams */
+.loop{display:flex;align-items:stretch;gap:calc(10 * var(--u));margin:0 0 calc(20 * var(--u))}
+.loop .node{flex:1;background:var(--lc-card);border:1px solid var(--lc-blue-line);border-radius:calc(14 * var(--u));
+  padding:calc(14 * var(--u)) calc(12 * var(--u));text-align:center;font-weight:600;font-size:calc(17 * var(--u));line-height:1.3;color:var(--lc-white)}
+.loop .node i{display:block;font-style:normal;font-size:calc(12 * var(--u));font-weight:700;letter-spacing:.1em;color:var(--lc-blue);margin-bottom:calc(6 * var(--u))}
+.loop .arr{align-self:center;color:var(--lc-blue);font-size:calc(22 * var(--u));font-weight:700}
+.hand{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:calc(12 * var(--u));margin:0 0 calc(18 * var(--u))}
+.hand .ag{background:var(--lc-card);border:1px solid var(--lc-border-dark);border-radius:calc(14 * var(--u));
+  padding:calc(16 * var(--u));text-align:center;font-size:calc(20 * var(--u));color:var(--lc-white)}
+.hand .ag small{font-size:calc(14 * var(--u))}
+.hand .ag.lead{border-color:var(--lc-blue)}
+.hand .ar{align-self:center;color:var(--lc-blue);font-size:calc(22 * var(--u));font-weight:700}
+
+/* title slides */
+.title-slide>.body{align-items:center;text-align:center}
+.slide>h2,.title-slide h1,.title-slide .lead,.body .lead{text-wrap:balance}
+.title-slide .eyebrow{font-size:calc(14 * var(--u));margin-bottom:calc(16 * var(--u))}
+.title-slide h1{font-size:calc(68 * var(--u));font-weight:800;line-height:1.08;letter-spacing:-.03em;color:var(--lc-white);margin:0 0 calc(20 * var(--u))}
+.title-slide .lead{font-size:calc(24 * var(--u));max-width:calc(900 * var(--u))}
+.decor{position:absolute;inset:0;overflow:hidden;color:var(--lc-blue);opacity:.28;pointer-events:none}
+.decor svg{position:absolute;top:-70px;right:-70px;width:420px;height:420px}
+.footer{position:absolute;left:104px;bottom:30px;font-size:12px;color:var(--lc-muted)}
 .qr{background:#fff;padding:8px;border-radius:10px}
-.qr-corner{position:absolute;right:28px;bottom:48px;width:130px;text-align:center}
-.qr-corner small{display:block;margin-top:6px;font-size:11px;color:var(--cp-text-muted)}
-.qr-big{display:flex;align-items:center;gap:24px;margin-top:22px;text-align:left}
-.qr-big .qr{width:190px;height:190px}
-.qr-big p{font-size:22px;margin:0}
+.qr svg{display:block;width:100%;height:100%}
+.qr-corner{position:absolute;right:72px;bottom:56px;width:128px;text-align:center}
+.qr-corner small{display:block;margin-top:6px;font-size:11px;color:var(--lc-muted)}
+.qr-big{display:flex;align-items:center;gap:calc(26 * var(--u));margin-top:calc(26 * var(--u));text-align:left}
+.qr-big .qr{width:calc(190 * var(--u));height:calc(190 * var(--u))}
+.qr-big p{font-size:calc(24 * var(--u));margin:0;color:var(--lc-white)}
 
 /* demo cues: one line at the bottom of the slide (D toggles), full steps in the presenter view */
-.slide .demo{position:absolute;left:72px;right:72px;bottom:14px;display:flex;align-items:baseline;gap:10px;
-  font-size:15px;line-height:1.4;color:var(--cp-text-muted);background:var(--cp-surface);
-  border:1px dashed var(--cp-border-strong);border-radius:10px;padding:6px 12px}
+.slide .demo{position:absolute;left:104px;right:104px;bottom:26px;display:flex;align-items:baseline;gap:10px;
+  font-size:15px;line-height:1.4;color:var(--lc-muted);background:var(--lc-card);
+  border:1px dashed #2A3A57;border-radius:10px;padding:7px 12px}
 .slide .demo>:not(.cue){display:none}
 body.no-cues .slide .demo{display:none}
 .slide .demo code{white-space:nowrap}
-.demo::before{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-  padding:2px 8px;border-radius:999px;background:var(--cp-accent);color:var(--cp-accent-fg)}
+.demo::before{flex:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 9px;border-radius:100px;color:var(--lc-dark-text);background:var(--lc-blue)}
 .demo[data-kind="live"]::before{content:"▶ live"}
-.demo[data-kind="recorded"]::before{content:"▶ recording";background:var(--cp-warning);color:#1a1a1a}
-.demo[data-kind="show"]::before{content:"show";background:var(--cp-link);color:#fff}
-.demo code{font-size:.95em;color:var(--cp-text)}
-.demo b{color:var(--cp-text)}
+.demo[data-kind="recorded"]::before{content:"▶ recording";background:var(--lc-lavender)}
+.demo[data-kind="show"]::before{content:"show";background:var(--lc-lime)}
+.demo code{font-size:.92em;color:var(--lc-white)}
+
+/* navigation: hidden until the mouse moves; a thin progress line is always there */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 24px;background:rgba(11,17,32,.94);border-top:1px solid var(--lc-border-dark);opacity:0;transition:opacity .2s}
+body.ui .bar,.bar:hover,body.presenter .bar{opacity:1}
+.bar .nav{display:flex;gap:8px}
+.progress{position:fixed;left:0;right:0;bottom:0;height:3px;z-index:4;background:rgba(127,200,255,.12)}
+.progress i{display:block;height:100%;width:0;background:var(--lc-blue);transition:width .3s}
+body.presenter .progress{display:none}
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--lc-border-dark);cursor:pointer}
+.dot.active{background:var(--lc-blue)}
+.counter{font-variant-numeric:tabular-nums;color:var(--lc-muted);font-size:13px}
+button{font-family:inherit;font-size:14px;font-weight:600;background:var(--lc-card);color:var(--lc-body);
+  border:1px solid var(--lc-border-dark);border-radius:8px;padding:8px 16px;cursor:pointer;transition:all .15s}
+button:hover{border-color:var(--lc-blue-line)}
+button.primary{background:var(--lc-blue);color:var(--lc-dark-text);border-color:var(--lc-blue)}
+button.primary:hover{background:var(--lc-blue-hover)}
 
 /* presenter view: open with P, or ?presenter */
 #presenter{display:none}
-body.presenter .stage,body.presenter .theme-toggle{display:none}
-body.presenter #presenter{display:flex;flex-direction:column;gap:14px;flex:1;padding:28px 40px;overflow:auto}
+body.presenter .stage{display:none}
+body.presenter #presenter{display:flex;flex-direction:column;gap:14px;position:fixed;inset:0 0 58px;padding:28px 40px;overflow:auto}
 #presenter .p-top{display:flex;justify-content:space-between;align-items:baseline;gap:24px}
-#pTimer{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums}
-#pCue{font-size:22px;font-variant-numeric:tabular-nums}
-#pCue.ok{color:var(--cp-success)} #pCue.late{color:var(--cp-danger)}
-#pTitle{font-size:30px;font-weight:700}
-#pNext{font-size:18px;color:var(--cp-text-muted)}
-#pNotes{font-size:26px;line-height:1.5;max-width:1100px}
-#pDemo{display:none;max-width:1100px;border:2px dashed var(--cp-accent);border-radius:14px;padding:14px 20px}
+#pTimer{font-size:56px;font-weight:800;letter-spacing:-.02em;color:var(--lc-white);font-variant-numeric:tabular-nums}
+#pCue{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+#pCue.ok{color:var(--lc-lime)} #pCue.late{color:var(--lc-pink)}
+#pTitle{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--lc-white)}
+#pNext{font-size:18px;color:var(--lc-muted)}
+#pNotes{font-size:24px;line-height:1.5;max-width:1100px}
+#pHelp{font-size:13px;color:var(--lc-muted)}
+#pDemo{display:none;max-width:1100px;border:1px dashed var(--lc-blue-line);background:var(--lc-card);border-radius:14px;padding:16px 20px}
 #pDemo.on{display:block}
-#pDemo::before{display:inline-block;margin-bottom:8px}
-#pDemo .cue{font-size:21px;line-height:1.45;margin-bottom:8px}
+#pDemo::before{display:inline-block;margin-bottom:10px}
+#pDemo .cue{font-size:20px;line-height:1.45;margin-bottom:8px}
 #pDemo ol{margin:0 0 8px;padding-left:28px}
 #pDemo li{font-size:21px;line-height:1.45;margin:6px 0}
-#pDemo p{font-size:18px;margin:6px 0 0;color:var(--cp-text-muted)}
-#pDemo .say{display:inline;quotes:none;background:var(--cp-accent-soft);border-radius:6px;padding:1px 6px;cursor:copy}
-#pDemo .say:hover{outline:1px solid var(--cp-accent)}
-#pDemo .say.copied{background:var(--cp-success);color:#fff}
-#pHelp{font-size:13px;color:var(--cp-text-muted)}
-a{color:var(--cp-link)}
+#pDemo li::marker{color:var(--lc-blue)}
+#pDemo p{font-size:17px;margin:6px 0 0;color:var(--lc-muted)}
+#pDemo .say{quotes:none;background:var(--lc-blue-tint);color:var(--lc-white);border-radius:6px;padding:1px 6px;cursor:copy}
+#pDemo .say:hover{outline:1px solid var(--lc-blue)}
+#pDemo .say.copied{background:var(--lc-lime);color:var(--lc-dark-text)}
 
-/* calculator */
-.calc{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:8px}
-.calc .controls label{display:block;font-size:13px;color:var(--cp-text-muted);margin:10px 0 4px;font-weight:600}
-.calc .controls input,.calc .controls select{width:100%;padding:9px 12px;border-radius:10px;
-  border:1px solid var(--cp-border);background:var(--cp-surface);color:var(--cp-text);font-family:inherit;font-size:14px}
-.calc .controls input:focus,.calc .controls select:focus{outline:none;border-color:var(--cp-accent)}
-.calc .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.calc .results{display:flex;flex-direction:column;gap:10px}
-.calc .res-row{display:flex;justify-content:space-between;align-items:baseline;
-  padding:10px 14px;background:var(--cp-surface-soft);border:1px solid var(--cp-border);border-radius:10px}
-.calc .res-row .lbl{font-size:13px;color:var(--cp-text-muted)}
-.calc .res-row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--cp-text)}
-.calc .res-row.total{background:var(--cp-accent-soft);border-color:var(--cp-accent)}
-.calc .res-row.total .val{color:var(--cp-accent);font-size:24px}
-.calc .savings{padding:12px 14px;background:var(--cp-surface);border:1px solid var(--cp-border);
-  border-left:4px solid var(--cp-success);border-radius:10px;font-size:14px;line-height:1.5}
-.calc .savings b{color:var(--cp-success)}
-.toggle-row{display:flex;gap:8px;margin-top:6px}
-.toggle-row button{flex:1;padding:8px}
-.toggle-row button.on{background:var(--cp-accent);color:var(--cp-accent-fg);border-color:var(--cp-accent)}
+/* calculator (appendix) */
+.calc{display:grid;grid-template-columns:1.1fr 1fr;gap:calc(20 * var(--u))}
+.calc label{display:block;font-size:calc(13 * var(--u));font-weight:600;color:var(--lc-muted);margin:calc(10 * var(--u)) 0 calc(4 * var(--u))}
+.calc input,.calc select{width:100%;padding:calc(9 * var(--u)) calc(12 * var(--u));border-radius:8px;border:1px solid var(--lc-border-dark);
+  background:var(--lc-code);color:var(--lc-white);font-family:inherit;font-size:calc(15 * var(--u))}
+.calc input:focus,.calc select:focus{outline:none;border-color:var(--lc-blue)}
+.calc .row{display:grid;grid-template-columns:1fr 1fr;gap:calc(10 * var(--u))}
+.calc .results{display:flex;flex-direction:column;gap:calc(10 * var(--u))}
+.calc .res-row{display:flex;justify-content:space-between;align-items:baseline;padding:calc(12 * var(--u)) calc(16 * var(--u));
+  background:var(--lc-card);border:1px solid var(--lc-border-dark);border-radius:calc(10 * var(--u))}
+.calc .lbl{font-size:calc(14 * var(--u));color:var(--lc-muted)}
+.calc .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:calc(19 * var(--u));color:var(--lc-white)}
+.calc .res-row.total{background:var(--lc-blue-tint);border-color:var(--lc-blue-line)}
+.calc .res-row.total .val{color:var(--lc-blue);font-size:calc(26 * var(--u))}
+.calc .savings{padding:calc(12 * var(--u)) calc(16 * var(--u));background:var(--lc-card);border:1px solid var(--lc-border-dark);
+  border-left:3px solid var(--lc-lime);border-radius:calc(10 * var(--u));font-size:calc(15 * var(--u));line-height:1.5}
+.calc .savings b{color:var(--lc-lime)}
+.toggle-row{display:flex;gap:8px}
+.toggle-row button{flex:1;font-size:calc(14 * var(--u))}
+.toggle-row button.on{background:var(--lc-blue);color:var(--lc-dark-text);border-color:var(--lc-blue)}
 </style>
 </head>
 <body>
 <div class="deck">
-  <button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
-  <div class="stage" id="stage"></div>
+  <div class="stage" id="stage"><div class="canvas" id="canvas"></div></div>
   <div id="presenter">
     <div class="p-top"><div id="pTimer">0:00</div><div id="pCue"></div></div>
     <div id="pTitle"></div>
@@ -232,6 +225,7 @@ a{color:var(--cp-link)}
     <div id="pNotes"></div>
     <div id="pHelp">← → navigate (both windows follow) · T restart timer · D demo cues on the slides: <b id="pCues">on</b> · click a highlighted prompt to copy it</div>
   </div>
+  <div class="progress"><i id="progress"></i></div>
   <div class="bar">
     <div class="dots" id="dots"></div>
     <div class="counter"><span id="cur">1</span> / <span id="total">1</span></div>
@@ -247,11 +241,26 @@ a{color:var(--cp-link)}
 const REPO_URL = 'github.com/sohamda/ai-token-management';
 const QR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><rect width="35" height="35" fill="#fff"/><path d="M1 1h1v1h-1zM2 1h1v1h-1zM3 1h1v1h-1zM4 1h1v1h-1zM5 1h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM19 1h1v1h-1zM20 1h1v1h-1zM21 1h1v1h-1zM24 1h1v1h-1zM27 1h1v1h-1zM28 1h1v1h-1zM29 1h1v1h-1zM30 1h1v1h-1zM31 1h1v1h-1zM32 1h1v1h-1zM33 1h1v1h-1zM1 2h1v1h-1zM7 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM17 2h1v1h-1zM19 2h1v1h-1zM22 2h1v1h-1zM23 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM27 2h1v1h-1zM33 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM7 3h1v1h-1zM12 3h1v1h-1zM17 3h1v1h-1zM18 3h1v1h-1zM21 3h1v1h-1zM23 3h1v1h-1zM25 3h1v1h-1zM27 3h1v1h-1zM29 3h1v1h-1zM30 3h1v1h-1zM31 3h1v1h-1zM33 3h1v1h-1zM1 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM11 4h1v1h-1zM15 4h1v1h-1zM17 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM23 4h1v1h-1zM25 4h1v1h-1zM27 4h1v1h-1zM29 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM33 4h1v1h-1zM1 5h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM7 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM21 5h1v1h-1zM23 5h1v1h-1zM25 5h1v1h-1zM27 5h1v1h-1zM29 5h1v1h-1zM30 5h1v1h-1zM31 5h1v1h-1zM33 5h1v1h-1zM1 6h1v1h-1zM7 6h1v1h-1zM11 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM25 6h1v1h-1zM27 6h1v1h-1zM33 6h1v1h-1zM1 7h1v1h-1zM2 7h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM9 7h1v1h-1zM11 7h1v1h-1zM13 7h1v1h-1zM15 7h1v1h-1zM17 7h1v1h-1zM19 7h1v1h-1zM21 7h1v1h-1zM23 7h1v1h-1zM25 7h1v1h-1zM27 7h1v1h-1zM28 7h1v1h-1zM29 7h1v1h-1zM30 7h1v1h-1zM31 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM1 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM27 9h1v1h-1zM30 9h1v1h-1zM32 9h1v1h-1zM33 9h1v1h-1zM1 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM12 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM27 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM33 10h1v1h-1zM2 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM15 11h1v1h-1zM17 11h1v1h-1zM18 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM28 11h1v1h-1zM29 11h1v1h-1zM30 11h1v1h-1zM32 11h1v1h-1zM33 11h1v1h-1zM1 12h1v1h-1zM3 12h1v1h-1zM6 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM23 12h1v1h-1zM26 12h1v1h-1zM27 12h1v1h-1zM28 12h1v1h-1zM30 12h1v1h-1zM33 12h1v1h-1zM1 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM22 13h1v1h-1zM24 13h1v1h-1zM25 13h1v1h-1zM26 13h1v1h-1zM28 13h1v1h-1zM29 13h1v1h-1zM30 13h1v1h-1zM33 13h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM22 14h1v1h-1zM25 14h1v1h-1zM28 14h1v1h-1zM32 14h1v1h-1zM1 15h1v1h-1zM2 15h1v1h-1zM3 15h1v1h-1zM4 15h1v1h-1zM7 15h1v1h-1zM10 15h1v1h-1zM11 15h1v1h-1zM12 15h1v1h-1zM13 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM22 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM28 15h1v1h-1zM29 15h1v1h-1zM30 15h1v1h-1zM2 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM17 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM22 16h1v1h-1zM26 16h1v1h-1zM27 16h1v1h-1zM28 16h1v1h-1zM30 16h1v1h-1zM31 16h1v1h-1zM4 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM19 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM26 17h1v1h-1zM27 17h1v1h-1zM29 17h1v1h-1zM30 17h1v1h-1zM31 17h1v1h-1zM1 18h1v1h-1zM3 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM25 18h1v1h-1zM26 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM30 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM1 19h1v1h-1zM3 19h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM10 19h1v1h-1zM12 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM25 19h1v1h-1zM28 19h1v1h-1zM29 19h1v1h-1zM31 19h1v1h-1zM32 19h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM27 20h1v1h-1zM29 20h1v1h-1zM32 20h1v1h-1zM5 21h1v1h-1zM7 21h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM30 21h1v1h-1zM31 21h1v1h-1zM33 21h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM30 22h1v1h-1zM33 22h1v1h-1zM3 23h1v1h-1zM4 23h1v1h-1zM5 23h1v1h-1zM7 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM22 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM26 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM31 23h1v1h-1zM32 23h1v1h-1zM33 23h1v1h-1zM2 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM25 24h1v1h-1zM27 24h1v1h-1zM28 24h1v1h-1zM32 24h1v1h-1zM33 24h1v1h-1zM1 25h1v1h-1zM3 25h1v1h-1zM5 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM9 25h1v1h-1zM13 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM23 25h1v1h-1zM25 25h1v1h-1zM26 25h1v1h-1zM27 25h1v1h-1zM28 25h1v1h-1zM29 25h1v1h-1zM32 25h1v1h-1zM33 25h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM11 26h1v1h-1zM14 26h1v1h-1zM16 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM25 26h1v1h-1zM29 26h1v1h-1zM30 26h1v1h-1zM1 27h1v1h-1zM2 27h1v1h-1zM3 27h1v1h-1zM4 27h1v1h-1zM5 27h1v1h-1zM6 27h1v1h-1zM7 27h1v1h-1zM9 27h1v1h-1zM10 27h1v1h-1zM13 27h1v1h-1zM14 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM23 27h1v1h-1zM24 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM29 27h1v1h-1zM1 28h1v1h-1zM7 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM13 28h1v1h-1zM14 28h1v1h-1zM16 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM1 29h1v1h-1zM3 29h1v1h-1zM4 29h1v1h-1zM5 29h1v1h-1zM7 29h1v1h-1zM11 29h1v1h-1zM12 29h1v1h-1zM18 29h1v1h-1zM20 29h1v1h-1zM21 29h1v1h-1zM24 29h1v1h-1zM25 29h1v1h-1zM26 29h1v1h-1zM27 29h1v1h-1zM28 29h1v1h-1zM29 29h1v1h-1zM31 29h1v1h-1zM32 29h1v1h-1zM33 29h1v1h-1zM1 30h1v1h-1zM3 30h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM7 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM11 30h1v1h-1zM15 30h1v1h-1zM19 30h1v1h-1zM20 30h1v1h-1zM21 30h1v1h-1zM22 30h1v1h-1zM24 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM31 30h1v1h-1zM32 30h1v1h-1zM33 30h1v1h-1zM1 31h1v1h-1zM3 31h1v1h-1zM4 31h1v1h-1zM5 31h1v1h-1zM7 31h1v1h-1zM9 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM13 31h1v1h-1zM14 31h1v1h-1zM20 31h1v1h-1zM23 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM30 31h1v1h-1zM31 31h1v1h-1zM1 32h1v1h-1zM7 32h1v1h-1zM10 32h1v1h-1zM13 32h1v1h-1zM14 32h1v1h-1zM16 32h1v1h-1zM17 32h1v1h-1zM18 32h1v1h-1zM20 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM25 32h1v1h-1zM26 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM33 32h1v1h-1zM1 33h1v1h-1zM2 33h1v1h-1zM3 33h1v1h-1zM4 33h1v1h-1zM5 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM9 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM14 33h1v1h-1zM16 33h1v1h-1zM17 33h1v1h-1zM18 33h1v1h-1zM19 33h1v1h-1zM22 33h1v1h-1zM24 33h1v1h-1zM27 33h1v1h-1zM29 33h1v1h-1zM31 33h1v1h-1z" fill="#000"/></svg>';
 
+// Geometric line icons in the LangChain style: stroke only, 1.5 weight, rounded caps.
+const svg = body => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+const ICON = {
+  cost:    svg('<circle cx="8" cy="12" r="5"/><circle cx="12" cy="12" r="5"/><circle cx="16" cy="12" r="5"/>'),
+  speed:   svg('<path d="M3 17l4-10h7l-4 10z"/><path d="M10 17l4-10h7l-4 10z"/>'),
+  quality: svg('<circle cx="12" cy="12" r="9"/><path d="M12 5l7 12H5z"/>')
+};
+const DECOR = `<svg viewBox="0 0 240 240" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="120" cy="120" r="78" vector-effect="non-scaling-stroke"/>
+  <circle cx="168" cy="96" r="50" vector-effect="non-scaling-stroke"/>
+  <path d="M120 40l70 120H50z" vector-effect="non-scaling-stroke"/>
+  <path d="M60 176h96l24-48H84z" vector-effect="non-scaling-stroke"/>
+</svg>`;
+
 // Each slide: data-cue = where you should be (mm:ss elapsed) when you leave it.
 // <aside class="notes"> is shown only in the presenter view (press P).
 const slides = [
   // 1 — title
   `<section class="slide title-slide" data-cue="0:30">
+    <div class="decor">${DECOR}</div>
     <div class="eyebrow">J-Fall 2026</div>
     <h1>Context Is a Budget</h1>
     <p class="lead">Eight levers and three workflow patterns for spending tokens well with coding agents.</p>
@@ -265,7 +274,7 @@ const slides = [
     <div class="eyebrow">One feature, two ways</div>
     <h2>Same feature. Same repo. Very different bill.</h2>
     <div class="feature">When an order total exceeds $100, the confirmation email adds "VIP customer — free shipping on your next order".</div>
-    <div class="grid cols-2" style="margin-top:18px">
+    <div class="grid cols-2" style="margin-top:calc(18 * var(--u))">
       <div class="card bad">
         <h3>The default way</h3>
         <ul><li>Opus at max effort, one long session</li><li>"Add a VIP line to the order emails"</li><li>Raw <span class="kbd">mvn test</span> output, every run</li></ul>
@@ -277,7 +286,7 @@ const slides = [
         <div class="metric"><span class="measure">$?.??</span><small>measured on this repo</small></div>
       </div>
     </div>
-    <p class="lead" style="margin-top:18px">Every step between those two numbers is one of eight levers or three patterns.</p>
+    <p class="lead" style="margin-top:calc(18 * var(--u))">Every step between those two numbers is one of eight levers or three patterns.</p>
     <aside class="notes">FILL IN both numbers from the dry run (demo 10 run twice: default vs disciplined, /usage after each). Don't explain how yet; promise the answer at the end (slide "Back to the feature"). If the dry run shows a small gap, say so honestly and lean on speed and quality instead.</aside>
   </section>`,
 
@@ -285,15 +294,15 @@ const slides = [
   `<section class="slide" data-cue="5:00">
     <div class="eyebrow">Set the stage</div>
     <h2>The budget is real now</h2>
-    <div class="grid cols-3" style="margin-top:6px">
+    <div class="grid cols-3" style="margin-top:calc(6 * var(--u))">
       <div class="card"><h3>Copilot · since June 1</h3><p><b>AI Credits</b> bill every input, output and cached token at the model's API rate. Premium requests are gone.</p></div>
       <div class="card"><h3>Claude Code</h3><p><b>Per token</b> on the API. On a subscription: an allowance that resets every <b>5 hours</b> and every <b>week</b>.</p></div>
-      <div class="card"><div class="metric">~$13<small>per developer per active day</small></div><p style="margin-top:12px">Anthropic's enterprise average; 90% of users stay under $30.</p></div>
+      <div class="card"><div class="metric">~$13<small>per developer per active day</small></div><p style="margin-top:calc(12 * var(--u))">Anthropic's enterprise average; 90% of users stay under $30.</p></div>
     </div>
-    <div class="grid cols-3" style="margin-top:18px">
-      <div class="card"><h3>💸 Cost</h3><p>An invoice, or the agent stopping for the afternoon.</p></div>
-      <div class="card"><h3>⏱ Speed</h3><p>Every token in the window is processed on every turn.</p></div>
-      <div class="card"><h3>📉 Quality</h3><p>Recall and reasoning <b>degrade</b> as the window fills.</p></div>
+    <div class="grid cols-3" style="margin-top:calc(18 * var(--u))">
+      <div class="card"><div class="ico">${ICON.cost}</div><h3>Cost</h3><p>An invoice, or the agent stopping for the afternoon.</p></div>
+      <div class="card"><div class="ico">${ICON.speed}</div><h3>Speed</h3><p>Every token in the window is processed on every turn.</p></div>
+      <div class="card"><div class="ico">${ICON.quality}</div><h3>Quality</h3><p>Recall and reasoning <b>degrade</b> as the window fills.</p></div>
     </div>
     <aside class="notes">Most of this room doesn't pay the bill, so lead with speed and quality: a bloated context is slower and dumber. Context rot: Chroma's research shows recall dropping well inside the advertised window. Cost is the proof, not the pitch.</aside>
   </section>`,
@@ -312,7 +321,7 @@ const slides = [
         <tr><td>Output and thinking</td><td>Narration, recaps, high effort on easy tasks: <b>5× the input price</b></td></tr>
       </tbody>
     </table>
-    <p class="lead" style="margin-top:18px">All of it is re-sent on <b>every turn</b>. Caching makes that cheap, not free.</p>
+    <p class="lead" style="margin-top:calc(18 * var(--u))">All of it is re-sent on <b>every turn</b>. Caching makes that cheap, not free.</p>
     <aside class="demo" data-kind="live">
       <div class="cue"><b>1 min</b> · Claude Code, fresh session: <code>/context</code> · point at each layer of this table on the real screen</div>
       <ol>
@@ -356,7 +365,7 @@ const slides = [
       <div class="card"><span class="tag">G</span><h3>Make the repo cheap to read</h3></div>
       <div class="card"><span class="tag">H</span><h3>Read the meter, set a budget</h3></div>
     </div>
-    <div class="grid cols-3" style="margin-top:16px">
+    <div class="grid cols-3" style="margin-top:calc(16 * var(--u))">
       <div class="card pattern"><span class="tag">1</span><h3>Loop with state on disk</h3><p class="muted">many small tasks</p></div>
       <div class="card pattern"><span class="tag">2</span><h3>Checkpoint &amp; reset</h3><p class="muted">one long task</p></div>
       <div class="card pattern"><span class="tag">3</span><h3>Plan → Build → Review</h3><p class="muted">one feature, several roles</p></div>
@@ -369,20 +378,20 @@ const slides = [
     <div class="eyebrow">Lever A · demo 01</div>
     <h2>Scope the ask</h2>
     <p class="lead">The agent can't ask what you meant until it has explored. Exploration is what you pay for.</p>
-    <div class="grid cols-2" style="margin-top:14px">
+    <div class="grid cols-2" style="margin-top:calc(14 * var(--u))">
       <div class="card bad">
-        <h3>❌ Vague</h3>
+        <h3>Vague</h3>
         <pre>Refactor the order confirmation email
 to use the new template engine.</pre>
-        <p style="margin-top:10px">Finds the Java <b>and</b> a dead JavaScript copy, reads both, then asks which one you meant.</p>
+        <p style="margin-top:calc(10 * var(--u))">Finds the Java <b>and</b> a dead JavaScript copy, reads both, then asks which one you meant.</p>
       </div>
       <div class="card good">
-        <h3>✅ Scoped</h3>
+        <h3>Scoped</h3>
         <pre>In @…/OrderConfirmationService.java,
 call render("order_confirmation_v2", …)
 instead of renderLegacy.
 Keep behaviour identical.</pre>
-        <p style="margin-top:10px">Two files read. One small diff.</p>
+        <p style="margin-top:calc(10 * var(--u))">Two files read. One small diff.</p>
       </div>
     </div>
     <aside class="demo" data-kind="live">
@@ -403,7 +412,7 @@ Keep behaviour identical.</pre>
     <div class="eyebrow">Lever B · demo 02</div>
     <h2>Don't break the cache</h2>
     <p class="lead">Every turn re-sends the whole conversation. Cached, it costs <b>10%</b> of input on Sonnet, <b>5%</b> on Opus.</p>
-    <div class="grid cols-2" style="margin-top:14px">
+    <div class="grid cols-2" style="margin-top:calc(14 * var(--u))">
       <div class="card bad">
         <h3>Breaks it</h3>
         <ul>
@@ -438,14 +447,14 @@ Keep behaviour identical.</pre>
     <div class="eyebrow">Lever C · demo 03</div>
     <h2>Make tool output cheap</h2>
     <p class="lead">Tool definitions load on demand now. The tax moved to what tools <b>return</b>.</p>
-    <div class="grid cols-2" style="margin-top:14px">
+    <div class="grid cols-2 code-left" style="margin-top:calc(14 * var(--u))">
       <div class="card">
         <h3>Filter before the model sees it</h3>
         <pre># .claude/hooks/filter-test-output.sh
 mvn test  →  mvn test > $log 2>&amp;1
              grep -E 'Tests run:|FAILURE|BUILD'
              exit $rc</pre>
-        <p class="muted" style="margin-top:8px"><span class="measure">???</span> lines → <span class="measure">??</span> lines. Red still reads as red.</p>
+        <p class="muted" style="margin-top:calc(8 * var(--u))"><span class="measure">???</span> lines → <span class="measure">??</span> lines. Red still reads as red.</p>
       </div>
       <div class="card">
         <h3>Other ways</h3>
@@ -473,7 +482,7 @@ mvn test  →  mvn test > $log 2>&amp;1
   `<section class="slide" data-cue="20:30">
     <div class="eyebrow">Lever D</div>
     <h2>Codify once, load on demand</h2>
-    <table style="margin-top:6px">
+    <table style="margin-top:calc(6 * var(--u))">
       <thead><tr><th>Loads</th><th>Claude Code</th><th>Copilot</th></tr></thead>
       <tbody>
         <tr><td>Every session</td><td><span class="kbd">CLAUDE.md</span> or <span class="kbd">AGENTS.md</span></td><td><span class="kbd">copilot-instructions.md</span></td></tr>
@@ -481,7 +490,7 @@ mvn test  →  mvn test > $log 2>&amp;1
         <tr><td>When invoked</td><td>Skills, subagents</td><td>Prompt files, skills</td></tr>
       </tbody>
     </table>
-    <div class="grid cols-2" style="margin-top:18px">
+    <div class="grid cols-2" style="margin-top:calc(18 * var(--u))">
       <div class="card"><h3>Keep the always-on layer short</h3><p>Under 200 lines. This repo's <span class="kbd">AGENTS.md</span> is 30.</p></div>
       <div class="card warn"><h3>Two gotchas</h3><ul>
         <li>Test rules scoped to <span class="kbd">src/**</span> load on every production edit.</li>
@@ -503,7 +512,7 @@ mvn test  →  mvn test > $log 2>&amp;1
   `<section class="slide" data-cue="22:30">
     <div class="eyebrow">Lever E</div>
     <h2>Right-size the model <i>and</i> the effort</h2>
-    <div class="grid cols-2" style="margin-top:10px">
+    <div class="grid cols-2" style="margin-top:calc(10 * var(--u))">
       <div class="card">
         <table>
           <thead><tr><th>Model</th><th>In / out per MTok</th></tr></thead>
@@ -513,7 +522,7 @@ mvn test  →  mvn test > $log 2>&amp;1
             <tr><td>Opus 5.5</td><td>$4 / $20</td></tr>
           </tbody>
         </table>
-        <p class="muted" style="margin-top:10px">Opus is 2× Sonnet now. Sonnet is 20× Haiku.</p>
+        <p class="muted" style="margin-top:calc(10 * var(--u))">Opus is 2× Sonnet now. Sonnet is 20× Haiku.</p>
       </div>
       <div class="card">
         <h3>Effort is the cheaper knob</h3>
@@ -540,13 +549,13 @@ mvn test  →  mvn test > $log 2>&amp;1
     <div class="eyebrow">Lever F</div>
     <h2>Output discipline</h2>
     <p class="lead">Output costs <b>5× input</b>, then gets re-read on every later turn.</p>
-    <div class="split" style="margin-top:14px">
-      <div class="card bad"><h3>❌ Paragraphs and a tour</h3><pre>Explain TemplateEngine.java.</pre></div>
-      <div class="card good"><h3>✅ Three lines</h3><pre>In three bullets: what does
+    <div class="split" style="margin-top:calc(14 * var(--u))">
+      <div class="card bad"><h3>Paragraphs and a tour</h3><pre>Explain TemplateEngine.java.</pre></div>
+      <div class="card good"><h3>Three lines</h3><pre>In three bullets: what does
 TemplateEngine.java do, and which
 method should new emails call?</pre></div>
     </div>
-    <div class="card" style="margin-top:18px"><h3>Make it the default, in AGENTS.md</h3><pre>- Be concise. No preamble.
+    <div class="card" style="margin-top:calc(18 * var(--u))"><h3>Make it the default, in AGENTS.md</h3><pre>- Be concise. No preamble.
 - Return diffs, not full files.
 - Ask one targeted question instead of guessing.</pre></div>
     <aside class="notes">Slides only (1.5 min). First slide to cut if you're behind. Agents already edit with diffs; the waste left is prose. Claude Code shows the turn's output growing live next to the spinner.</aside>
@@ -557,7 +566,7 @@ method should new emails call?</pre></div>
     <div class="eyebrow">Lever G</div>
     <h2>Make the repo cheap to read</h2>
     <p class="lead">Claude Code greps; Copilot searches an index. Either way, dead code gets found.</p>
-    <div class="grid cols-2" style="margin-top:14px">
+    <div class="grid cols-2" style="margin-top:calc(14 * var(--u))">
       <div class="card bad">
         <h3>This repo's trap</h3>
         <p>An old JavaScript copy of the email code. Every search for "order confirmation" finds it, and the agent reads it.</p>
@@ -587,7 +596,7 @@ method should new emails call?</pre></div>
     <div class="eyebrow">Lever H · demo 14</div>
     <h2>Read the meter, set a budget</h2>
     <pre class="meter">Sonnet 5.5 · medium  │  ctx 23%  │  cache 91%  │  $0.46  │  5h 12%</pre>
-    <div class="grid cols-2" style="margin-top:16px">
+    <div class="grid cols-2" style="margin-top:calc(16 * var(--u))">
       <div class="card">
         <h3>Look</h3>
         <ul>
@@ -599,7 +608,7 @@ method should new emails call?</pre></div>
       <div class="card">
         <h3>Cap</h3>
         <ul>
-          <li><span class="kbd">claude -p … --max-budget-usd 0.50</span></li>
+          <li><span class="kbd">--max-budget-usd</span> on every headless run</li>
           <li>Team spend limits</li>
           <li><span class="kbd">npm run lint:context</span> in CI</li>
         </ul>
@@ -634,7 +643,7 @@ method should new emails call?</pre></div>
         <tr><td>1–3</td><td><span class="kbd">claude -p</span> loop, <span class="kbd">/clear</span>, subagents</td><td>cloud agent per issue, new chat, prompt files</td></tr>
       </tbody>
     </table>
-    <p class="muted" style="margin-top:10px">Copilot column from GitHub and VS Code docs. Check what your IDE's plugin supports.</p>
+    <p class="muted" style="margin-top:calc(10 * var(--u))">Copilot column from GitHub and VS Code docs. Check what your IDE's plugin supports.</p>
     <aside class="notes">30 seconds. Don't read the table; say "photograph this one". Be upfront: you demo Claude Code and took the Copilot side from docs, so JetBrains users should check their plugin.</aside>
   </section>`,
 
@@ -643,13 +652,13 @@ method should new emails call?</pre></div>
     <div class="eyebrow">Pattern 1 · demo 08</div>
     <h2>Loop with state on disk (Ralph)</h2>
     <div class="loop">
-      <div class="node">📋<br/>First unchecked item</div><div class="arr">→</div>
-      <div class="node">🛠<br/>Do only that</div><div class="arr">→</div>
-      <div class="node">✅<br/>mvn test</div><div class="arr">→</div>
-      <div class="node">📝<br/>Tick + commit</div><div class="arr">→</div>
-      <div class="node">🚪<br/>Exit. New process.</div><div class="arr">↺</div>
+      <div class="node"><i>01</i>First unchecked item</div><div class="arr">→</div>
+      <div class="node"><i>02</i>Do only that</div><div class="arr">→</div>
+      <div class="node"><i>03</i>mvn test</div><div class="arr">→</div>
+      <div class="node"><i>04</i>Tick + commit</div><div class="arr">→</div>
+      <div class="node"><i>05</i>Exit. New process.</div><div class="arr">↺</div>
     </div>
-    <div class="grid cols-2">
+    <div class="grid cols-2 code-right">
       <div class="card bad">
         <h3>Not this</h3>
         <p>"Repeat until TODO.md is done" <b>inside one chat</b>. Item five carries items one to four.</p>
@@ -680,7 +689,7 @@ done</pre>
     <div class="eyebrow">Pattern 2</div>
     <h2>Checkpoint &amp; reset</h2>
     <p class="lead">Compaction is automatic. <b>When</b> you reset is your call, and the options cost very different amounts.</p>
-    <table style="margin-top:8px">
+    <table style="margin-top:calc(8 * var(--u))">
       <thead><tr><th>Action</th><th>Cost</th><th>Use it when</th></tr></thead>
       <tbody>
         <tr><td><span class="kbd">/clear</span></td><td><b>Free</b></td><td>Switching to an unrelated task</td></tr>
@@ -738,7 +747,7 @@ done</pre>
     <div class="eyebrow">For a Java audience</div>
     <h2>Java's token sinks</h2>
     <p class="lead">Java's build tools are chatty, and every line they print becomes context.</p>
-    <table style="margin-top:8px">
+    <table style="margin-top:calc(8 * var(--u))">
       <thead><tr><th>Sink</th><th>Fix</th></tr></thead>
       <tbody>
         <tr><td>Maven / Gradle output</td><td><span class="kbd">mvn -B -ntp -q</span> · <span class="kbd">gradle -q --console=plain</span> · or a hook</td></tr>
@@ -772,26 +781,28 @@ done</pre>
   `<section class="slide" data-cue="43:00">
     <div class="eyebrow">Take-home</div>
     <h2>If you only do three things</h2>
-    <div class="grid cols-3" style="margin-top:12px">
+    <div class="grid cols-3" style="margin-top:calc(12 * var(--u))">
       <div class="card"><div class="metric">1</div><h3><span class="kbd">/clear</span> between tasks, and name the file</h3><p>Free, and it works tomorrow morning.</p></div>
       <div class="card"><div class="metric">2</div><h3>Trim what your build prints</h3><p>One flag or one hook pays off on every test run.</p></div>
       <div class="card"><div class="metric">3</div><h3>Turn on the meter</h3><p>A status line with context %, cache % and cost.</p></div>
     </div>
-    <p class="muted" style="margin-top:18px">Full Monday checklist in the repo and the appendix.</p>
+    <p class="muted" style="margin-top:calc(18 * var(--u))">Full Monday checklist in the repo and the appendix.</p>
     <aside class="notes">Re-rank these three after the dry run if your measurements say otherwise. Then straight to the closing slide.</aside>
   </section>`,
 
   // 22 — closing
   `<section class="slide title-slide" data-cue="44:00">
+    <div class="decor">${DECOR}</div>
     <div class="eyebrow">In one sentence</div>
     <h1>The tool handles the mechanics.<br/>You own the decisions.</h1>
     <div class="qr-big"><div class="qr">${QR_SVG}</div><p>${REPO_URL}<br/><span class="muted">slides · demos · blog · .claude config</span></p></div>
-    <p class="muted" style="margin-top:18px">Questions?</p>
+    <p class="muted" style="margin-top:calc(18 * var(--u))">Questions?</p>
     <aside class="notes">Leave this slide up during Q&amp;A so people can scan the QR code. Appendix slides follow for questions: calculator, anti-patterns, scaling, checklist, references.</aside>
   </section>`,
 
   // 23 — appendix divider
   `<section class="slide title-slide" data-cue="45:00">
+    <div class="decor">${DECOR}</div>
     <div class="eyebrow">Appendix</div>
     <h1>For questions</h1>
     <p class="lead">Calculator · anti-patterns · scaling up · Monday checklist · references</p>
@@ -835,7 +846,7 @@ done</pre>
         <div class="savings" id="rSav">Toggle the cache rate or change the model to see savings.</div>
       </div>
     </div>
-    <p class="muted" style="margin-top:14px">Claude API list prices (Oct 2026). Cache reads: 10% of input (Haiku, Sonnet), 5% (Opus 5.5), 2.5% (Fable 5.1); cache writes ignored. Copilot bills these same API rates since June 1.</p>
+    <p class="muted" style="margin-top:calc(14 * var(--u))">Claude API list prices (Oct 2026). Cache reads: 10% of input (Haiku, Sonnet), 5% (Opus 5.5), 2.5% (Fable 5.1); cache writes ignored. Copilot bills these same API rates since June 1.</p>
   </section>`,
 
   // 25 — anti-patterns
@@ -844,7 +855,7 @@ done</pre>
     <h2>Anti-patterns to stamp out</h2>
     <div class="grid cols-2">
       <div class="card bad">
-        <h3>❌ What goes in</h3>
+        <h3>What goes in</h3>
         <ul>
           <li>One session for the whole day's unrelated tasks.</li>
           <li>Vague asks in a repo full of dead code.</li>
@@ -854,7 +865,7 @@ done</pre>
         </ul>
       </div>
       <div class="card bad">
-        <h3>❌ How it runs</h3>
+        <h3>How it runs</h3>
         <ul>
           <li><span class="kbd">/model</span> mid-task "just to check".</li>
           <li>Opus at max effort for a rename.</li>
@@ -892,24 +903,24 @@ done</pre>
     <div class="grid cols-2">
       <div class="card">
         <h3>This week</h3>
-        <ul>
-          <li>☐ One always-on instructions file under 200 lines: commands, conventions, output style.</li>
-          <li>☐ Both <span class="kbd">AGENTS.md</span> and <span class="kbd">CLAUDE.md</span>? Import with <span class="kbd">@AGENTS.md</span>.</li>
-          <li>☐ A status line with context %, cache % and cost.</li>
-          <li>☐ A hook that trims test and build output.</li>
-          <li>☐ Delete dead code. Deny generated folders.</li>
-          <li>☐ Model at session start; <span class="kbd">/clear</span> between tasks.</li>
+        <ul class="check">
+          <li>One always-on instructions file under 200 lines: commands, conventions, output style.</li>
+          <li>Both <span class="kbd">AGENTS.md</span> and <span class="kbd">CLAUDE.md</span>? Import with <span class="kbd">@AGENTS.md</span>.</li>
+          <li>A status line with context %, cache % and cost.</li>
+          <li>A hook that trims test and build output.</li>
+          <li>Delete dead code. Deny generated folders.</li>
+          <li>Model at session start; <span class="kbd">/clear</span> between tasks.</li>
         </ul>
       </div>
       <div class="card">
         <h3>This month</h3>
-        <ul>
-          <li>☐ Scoped rules with narrow globs; workflows into skills and subagents.</li>
-          <li>☐ Haiku subagents for search and summaries.</li>
-          <li>☐ A headless Ralph loop over a backlog of chores.</li>
-          <li>☐ Planner → implementer → reviewer on one real feature.</li>
-          <li>☐ <span class="kbd">--max-budget-usd</span> on every headless run; spend limits for the team.</li>
-          <li>☐ <span class="kbd">npm run lint:context</span> in CI.</li>
+        <ul class="check">
+          <li>Scoped rules with narrow globs; workflows into skills and subagents.</li>
+          <li>Haiku subagents for search and summaries.</li>
+          <li>A headless Ralph loop over a backlog of chores.</li>
+          <li>Planner → implementer → reviewer on one real feature.</li>
+          <li><span class="kbd">--max-budget-usd</span> on every headless run; spend limits for the team.</li>
+          <li><span class="kbd">npm run lint:context</span> in CI.</li>
         </ul>
       </div>
     </div>
@@ -945,14 +956,76 @@ done</pre>
   </section>`
 ];
 
-const stage = document.getElementById('stage');
+const canvas = document.getElementById('canvas');
 const dots  = document.getElementById('dots');
 const cur   = document.getElementById('cur');
 const tot   = document.getElementById('total');
 
-stage.innerHTML = slides.join('');
-const slideEls = [...stage.querySelectorAll('.slide')];
+canvas.innerHTML = slides.join('');
+const slideEls = [...canvas.querySelectorAll('.slide')];
 tot.textContent = slideEls.length;
+const isPresenter = new URLSearchParams(location.search).has('presenter');
+
+// Scale the 1280×720 canvas to fill the window, centred.
+function scaleCanvas(){
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  canvas.style.transform = `translate(${(innerWidth - 1280 * s) / 2}px, ${(innerHeight - 720 * s) / 2}px) scale(${s})`;
+}
+addEventListener('resize', scaleCanvas);
+scaleCanvas();
+
+// Everything after the header (eyebrow + h2) goes into .body; title slides are all body.
+slideEls.forEach(el => {
+  const body = document.createElement('div');
+  body.className = 'body';
+  let header = !el.classList.contains('title-slide');
+  [...el.children].forEach(c => {
+    if (header && c.matches('.eyebrow, h2')) return;
+    header = false;
+    if (!c.matches('aside, .qr-corner, .footer, .decor')) body.appendChild(c);
+  });
+  el.appendChild(body);
+  if (el.querySelector(':scope > .demo')) el.classList.add('has-demo');
+});
+
+// Auto-fit: the largest --k (body scale) at which the body still fits the free space.
+// The canvas is a fixed size, so the result doesn't depend on the screen.
+const FIT = { min: 0.7, max: 1.4, title: 1.15, fill: 0.92 };   // fill: share of the free height content may use
+function fitSlide(el){
+  const body = el.querySelector(':scope > .body');
+  el.classList.add('fitting');
+  const strip = el.querySelector(':scope > .demo');   // reserve the cue strip's real height (one or two lines)
+  el.style.paddingBottom = strip && strip.offsetHeight ? (strip.offsetHeight + 26 + 28) + 'px' : '';
+  const fits = k => {
+    el.style.setProperty('--k', k);
+    const avail = el.clientHeight - parseFloat(getComputedStyle(el).paddingBottom) - body.offsetTop;
+    const kids = body.children, last = kids[kids.length - 1];
+    if (last.offsetTop + last.offsetHeight - kids[0].offsetTop > avail * FIT.fill) return false;
+    if (el.scrollWidth > el.clientWidth + 1) return false;
+    // nothing may stick out of its box (code lines, unbreakable inline code); form controls excepted
+    return [...body.querySelectorAll('*')].every(n => !n.clientWidth || n.matches('select, input, button') || n.scrollWidth <= n.clientWidth + 1);
+  };
+  let lo = FIT.min, hi = el.classList.contains('title-slide') ? FIT.title : FIT.max;
+  if (fits(hi)) lo = hi;
+  else if (fits(lo)) for (let n = 0; n < 10; n++) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
+  el.style.setProperty('--k', lo);   // not rounded: rounding up can cross a line-wrap
+  el.classList.remove('fitting');
+}
+function fitAll(){ if (!isPresenter) slideEls.forEach(fitSlide); }
+if (document.fonts) {
+  document.fonts.ready.then(fitAll);
+  document.fonts.addEventListener('loadingdone', fitAll);   // a slide's mono font may load later
+}
+
+// Navigation bar shows while the mouse moves; the progress line covers the main talk, not the appendix.
+let uiTimer;
+addEventListener('mousemove', () => {
+  document.body.classList.add('ui');
+  clearTimeout(uiTimer);
+  uiTimer = setTimeout(() => document.body.classList.remove('ui'), 2000);
+});
+const appendixAt = slideEls.findIndex(s => (s.querySelector('.eyebrow') || {}).textContent === 'Appendix');
+const progress = document.getElementById('progress');
 
 slideEls.forEach((_,i) => {
   const d = document.createElement('div');
@@ -1011,7 +1084,6 @@ function recalc(){
 }
 
 // presenter view + sync between the audience and presenter windows
-const isPresenter = new URLSearchParams(location.search).has('presenter');
 if (isPresenter) document.body.classList.add('presenter');
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('context-budget-deck') : null;
 function send(msg){
@@ -1035,6 +1107,7 @@ function setCues(on, remote){
   if (s) s.textContent = on ? 'on' : 'off';
   try { localStorage.setItem('context-budget-cues', on ? 'on' : 'off'); } catch (e) {}
   if (!remote) send({ cues: on });
+  fitAll();
 }
 setCues(cuesOn, true);
 const KIND = { live: '▶ live', recorded: '▶ recording', show: 'show' };
@@ -1104,6 +1177,7 @@ function go(i, remote){
   slideEls.forEach((el,j) => el.classList.toggle('active', j === idx));
   [...dots.children].forEach((d,j) => d.classList.toggle('active', j === idx));
   cur.textContent = idx + 1;
+  progress.style.width = Math.min(100, idx / Math.max(1, appendixAt - 1) * 100) + '%';
   if (idx > 0 && t0 === null) t0 = Date.now();
   recalc();
   renderPresenter();
@@ -1129,11 +1203,6 @@ document.addEventListener('keydown', e => {
     else document.exitFullscreen();
   }
 });
-
-document.getElementById('themeToggle').onclick = () => {
-  const cur = document.documentElement.getAttribute('data-theme');
-  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
-};
 
 document.addEventListener('input',  e => { if (['cModel','cIn','cOut','cReq','cDev'].includes(e.target.id)) recalc(); });
 document.addEventListener('change', e => { if (['cModel','cIn','cOut','cReq','cDev'].includes(e.target.id)) recalc(); });
