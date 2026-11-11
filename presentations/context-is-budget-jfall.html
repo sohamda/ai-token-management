@@ -212,6 +212,17 @@ body.presenter #presenter{display:flex;flex-direction:column;gap:14px;position:f
 .toggle-row{display:flex;gap:8px}
 .toggle-row button{flex:1;font-size:calc(14 * var(--u))}
 .toggle-row button.on{background:var(--lc-blue);color:var(--lc-dark-text);border-color:var(--lc-blue)}
+
+/* PDF / print (?print=1 or Cmd+P): every slide on its own 16:9 page; no cues, notes or navigation */
+@page{size:1280px 720px;margin:0}
+@media print{
+  html,body{height:auto;overflow:visible;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stage,.canvas{position:static;transform:none!important;width:1280px;height:auto;overflow:visible}
+  .slide{position:relative;display:flex!important;visibility:visible!important;width:1280px;height:720px;
+    background:var(--lc-dark);break-after:page;animation:none}
+  .slide:last-child{break-after:auto}
+  .slide .demo,.footer,.bar,.progress,#presenter{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -1100,16 +1111,21 @@ function receive(msg){
 // demo cues on the slides: D toggles them in both windows; the presenter view always shows them
 let cuesOn = true;
 try { cuesOn = localStorage.getItem('context-budget-cues') !== 'off'; } catch (e) {}
+const isPrint = new URLSearchParams(location.search).has('print');   // tools/scripts/export-pdf.*
+if (isPrint) cuesOn = false;
 function setCues(on, remote){
   cuesOn = on;
   document.body.classList.toggle('no-cues', !on);
   const s = document.getElementById('pCues');
   if (s) s.textContent = on ? 'on' : 'off';
-  try { localStorage.setItem('context-budget-cues', on ? 'on' : 'off'); } catch (e) {}
+  if (!isPrint) try { localStorage.setItem('context-budget-cues', on ? 'on' : 'off'); } catch (e) {}
   if (!remote) send({ cues: on });
   fitAll();
 }
 setCues(cuesOn, true);
+// Cmd+P from the browser: drop the cue strips and re-fit for the PDF, then restore
+addEventListener('beforeprint', () => { document.body.classList.add('no-cues'); fitAll(); });
+addEventListener('afterprint', () => { document.body.classList.toggle('no-cues', !cuesOn); fitAll(); });
 const KIND = { live: '▶ live', recorded: '▶ recording', show: 'show' };
 function copyText(text){
   const fallback = () => {

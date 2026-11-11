@@ -4,11 +4,11 @@
 
 .DESCRIPTION
   Uses Microsoft Edge in headless mode to print the HTML deck (with ?print=1)
-  to a PDF. Each slide becomes one A4 landscape page.
+  to a PDF. Each slide becomes one page (16:9 for the J-Fall deck, A4 landscape for the archived ones).
   Re-run any time the HTML changes to refresh the PDF.
 
 .PARAMETER Html
-  Path to the source HTML deck. Defaults to the enterprise deck.
+  Path to the source HTML deck. Defaults to the J-Fall deck.
 
 .PARAMETER Output
   Path to write the PDF to. Defaults to <Html base name>.pdf next to the source.
@@ -19,11 +19,11 @@
 .EXAMPLE
   .\export-pdf.ps1
   .\export-pdf.ps1 -Open
-  .\export-pdf.ps1 -Html ..\presentations\token-presentation.html -Output .\deck.pdf
+  .\export-pdf.ps1 -Html ..\presentations\archive\token-presentation-enterprise.html -Output .\deck.pdf
 #>
 [CmdletBinding()]
 param(
-  [string]$Html = (Join-Path $PSScriptRoot '..\..\presentations\token-presentation-enterprise.html'),
+  [string]$Html = (Join-Path $PSScriptRoot '..\..\presentations\context-is-budget-jfall.html'),
   [string]$Output,
   [switch]$Open
 )

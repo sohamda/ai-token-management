@@ -1,6 +1,6 @@
 # Run sheet — 45 minutes (Q&A excluded)
 
-Open `presentations/token-presentation.html`, press **F** on the projector screen, then **P** to open the presenter window on your laptop. The presenter window shows the notes, a timer (starts when you leave slide 1; **T** restarts it) and "leave this slide by mm:ss", green or red. Both windows follow either one's arrow keys.
+Open `presentations/context-is-budget-jfall.html`, press **F** on the projector screen, then **P** to open the presenter window on your laptop. The presenter window shows the notes, a timer (starts when you leave slide 1; **T** restarts it) and "leave this slide by mm:ss", green or red. Both windows follow either one's arrow keys.
 
 **Demo cues.** Every slide with a demo or a file to show has a one-line strip at the bottom: **▶ live**, **▶ recording** or **show**, with the commands and files. The presenter window shows the full steps, and you can click a highlighted prompt or command to copy it before pasting it into the terminal. Its "Next:" line also flags the upcoming demo. Press **D** in either window to hide or show the strips on the projector.
 
@@ -15,7 +15,7 @@ python3 -m http.server 8000 --directory presentations
 - [ ] `git reset --hard demo-start && git clean -fd`, then `claude` from the repo root. Status line visible.
 - [ ] Second terminal open in the repo, font large.
 - [ ] Backup recordings of demos 01, 02, 03, 08 and 10 ready to play, one keystroke away.
-- [ ] Every dashed **$?.??** / **???** box on the slides replaced with a measured number (list below).
+- [ ] Every dashed **$?.??** / **???** box on the slides replaced with a measured number (list below), then `tools/scripts/export-pdf.sh` to refresh `presentations/context-is-budget-jfall.pdf`.
 - [ ] Repo public, so the QR code works (it points at `github.com/sohamda/ai-token-management`).
 - [ ] Laptop on power, notifications off, display mirroring off (extended desktop).
 - [ ] Open the deck once while online so the browser caches the fonts (Inter, JetBrains Mono from Google Fonts). Offline it falls back to system fonts and re-fits each slide, so nothing breaks; it just looks less on-brand.

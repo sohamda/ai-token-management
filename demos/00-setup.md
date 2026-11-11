@@ -66,4 +66,4 @@ Then `/clear` in Claude Code (or restart it after demo 04, which moves `AGENTS.m
 
 - Terminal with Claude Code, font large enough for the back row.
 - A second terminal for `mvn`, `git log` and `wc -l`.
-- The deck (`presentations/token-presentation.html`) fullscreen on the projector; press `F`.
+- The deck (`presentations/context-is-budget-jfall.html`) fullscreen on the projector; press `F`.

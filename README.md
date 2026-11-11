@@ -7,10 +7,9 @@ Materials for the talk *Context Is a Budget*: eight levers and three workflow pa
 ```
 .
 ├── presentations/
-│   ├── token-presentation.html             ← the talk (J-Fall 2026): levers A–H, patterns 1–3
-│   ├── token-presentation-copilot.html     ← older Copilot-only deck (premium requests era)
-│   ├── token-presentation-enterprise.html  ← older 15-minute exec briefing
-│   └── session-copilot-end-to-end.html     ← older Copilot end-to-end session
+│   ├── context-is-budget-jfall.html        ← the talk (J-Fall 2026): levers A–H, patterns 1–3
+│   ├── context-is-budget-jfall.pdf         ← PDF copy for sharing (tools/scripts/export-pdf.sh)
+│   └── archive/                            ← older Copilot-era decks and their PDFs
 ├── blog/                                    ← the companion post (chapters + merged draft)
 ├── demos/                                   ← one script per demo, Claude Code (see demos/README.md)
 ├── docs/                                    ← abstract, long-form outline, scaling case study
@@ -45,7 +44,7 @@ Patterns: **1** Loop with state on disk (Ralph) · **2** Checkpoint & reset · *
 ## How to use
 
 1. Follow [demos/00-setup.md](demos/00-setup.md) the day before: JDK 17, Maven, jq, Claude Code v2.1.305+, then `git tag -f demo-start`.
-2. Open `presentations/token-presentation.html` in a browser, press `F` for fullscreen and `P` for the presenter view (notes, timer, time cues). The 45-minute plan is in [docs/run-sheet.md](docs/run-sheet.md).
+2. Open `presentations/context-is-budget-jfall.html` in a browser, press `F` for fullscreen and `P` for the presenter view (notes, timer, time cues). The 45-minute plan is in [docs/run-sheet.md](docs/run-sheet.md).
 3. Run the demos from `demos/` when a slide's cue strip says so (bottom of the slide; **D** toggles it, the presenter view shows the full steps). Reset with `git reset --hard demo-start && git clean -fd`.
 
 ## Credits
