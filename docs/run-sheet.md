@@ -12,7 +12,8 @@ python3 -m http.server 8000 --directory presentations
 
 ## Before you go on stage
 
-- [ ] `git reset --hard demo-start && git clean -fd`, then `claude` from the repo root. Status line visible.
+- [ ] Everything of yours pushed (`git status -sb` shows nothing ahead of `origin/main`): every reset goes back to `origin/main`.
+- [ ] `git reset --hard origin/main && git clean -fd`, then `claude` from the repo root. Status line visible.
 - [ ] Second terminal open in the repo, font large.
 - [ ] Backup recordings of demos 01, 02, 03, 08 and 10 ready to play, one keystroke away.
 - [ ] Every dashed **$?.??** / **???** box on the slides replaced with a measured number (list below), then `tools/scripts/export-pdf.sh` to refresh `presentations/context-is-budget-jfall.pdf`.
@@ -34,7 +35,7 @@ The slides scale to fill any screen size. The navigation bar only appears when y
 | 9:30 | 6 Roadmap | — | — |
 | 12:30 | 7 A · Scope the ask | **live** demo 01 (2 min) | recording |
 | 15:00 | 8 B · Don't break the cache | **live** demo 02 step 2: `/model` warning (1 min) | describe it |
-| 18:30 | 9 C · Tool output | **live** demo 03: reset first (demo 01's edit breaks `OrderConfirmationServiceTest`), then `wc -l` vs hook (2.5 min) | recording |
+| 18:30 | 9 C · Tool output | **live** demo 03: reset first (demo 01 leaves its edits behind), then `wc -l` vs hook (2.5 min) | recording |
 | 20:30 | 10 D · Codify once | — | — |
 | 22:30 | 11 E · Model and effort | — | — |
 | 24:00 | 12 F · Output discipline | — | — |
@@ -59,6 +60,6 @@ The slides scale to fill any screen size. The navigation bar only appears when y
 | Disciplined cost | 2 and 20 | `/clear`, `/model sonnet`, `/effort medium`, run demo 10 (planner → implementer → reviewer), `/usage`. Include the subagents (on a subscription the attribution shows them). |
 | Raw vs trimmed test lines | 9 | Done: 53–54 raw, 3 trimmed on a green run (Nov 2026, warm Maven cache). Re-check with `mvn test \| wc -l` only if the build changes. |
 
-Reset between the two feature runs (`git reset --hard demo-start && git clean -fd`). Check that both end with green tests; if they don't, say so on stage. Note wall-clock time for both runs too: speed is the better argument for people who don't pay the bill.
+Reset between the two feature runs (`git reset --hard origin/main && git clean -fd`). Check that both end with green tests; if they don't, say so on stage. Note wall-clock time for both runs too: speed is the better argument for people who don't pay the bill.
 
 On a subscription, `/usage` shows an estimate at list price. That's fine for comparing the two runs; say "estimated" on stage.

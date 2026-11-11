@@ -512,7 +512,7 @@ mvn test  →  mvn test > $log 2>&amp;1
     <aside class="demo" data-kind="live">
       <div class="cue"><b>Demo 03</b> · 2.5 min · 2nd terminal: reset, <code>mvn test | wc -l</code> → Claude: “Run the tests.” · show <code>.claude/hooks/filter-test-output.sh</code></div>
       <ol>
-        <li>2nd terminal: <q class="say">git reset --hard demo-start && git clean -fd</q> (demo 01's edit breaks a test).</li>
+        <li>2nd terminal: <q class="say">git reset --hard origin/main && git clean -fd</q> (demo 01 leaves its edits behind).</li>
         <li>2nd terminal: <q class="say">mvn test | wc -l</q> and say the number.</li>
         <li>Claude Code: <q class="say">Run the tests.</q> Show the few lines it got back and the <code>(full log: …)</code> line.</li>
         <li>Open <code>.claude/hooks/filter-test-output.sh</code> for 10 seconds, then the <code>hooks</code> block in <code>.claude/settings.json</code>.</li>
@@ -718,7 +718,7 @@ done</pre>
     <aside class="demo" data-kind="live">
       <div class="cue"><b>Demo 08</b> · start it first, talk over it · 2nd terminal: reset, <code>MAX=1 tools/ralph.sh</code> · show <code>TODO.md</code>, <code>tools/ralph-prompt.md</code> · end on <code>git log --oneline -3</code></div>
       <ol>
-        <li>2nd terminal: <q class="say">git reset --hard demo-start && git clean -fd</q> so no earlier demo edit ends up in Ralph's commit.</li>
+        <li>2nd terminal: <q class="say">git reset --hard origin/main && git clean -fd</q> so no earlier demo edit ends up in Ralph's commit.</li>
         <li>2nd terminal: <q class="say">MAX=1 tools/ralph.sh</q> Start it now and talk while it runs (1–3 min).</li>
         <li>While it runs: open <code>TODO.md</code>, then <code>tools/ralph-prompt.md</code>.</li>
         <li>When it prints its cost line: <q class="say">git log --oneline -3</q></li>

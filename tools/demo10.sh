@@ -31,10 +31,10 @@ for t in claude mvn jq git; do command -v "$t" >/dev/null || fail "$t not found 
 for a in planner implementer reviewer; do [ -f ".claude/agents/$a.md" ] || fail ".claude/agents/$a.md is missing"; done
 
 # 2. Repo state: clean tree, and plan.md is the checked-in example (or already moved aside)
-[ -z "$(git status --porcelain)" ] || fail "working tree not clean. Reset first: git reset --hard demo-start && git clean -fd"
+[ -z "$(git status --porcelain)" ] || fail "working tree not clean. Reset first: git reset --hard origin/main && git clean -fd"
 STASH=0
 if [ -f plan.md ]; then
-  head -1 plan.md | grep -q '^# plan.md (example)' || fail "plan.md is from an earlier run. Reset first: git reset --hard demo-start && git clean -fd"
+  head -1 plan.md | grep -q '^# plan.md (example)' || fail "plan.md is from an earlier run. Reset first: git reset --hard origin/main && git clean -fd"
   STASH=1
 fi
 

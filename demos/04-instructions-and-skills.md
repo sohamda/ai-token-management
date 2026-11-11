@@ -55,7 +55,7 @@ Restart again: `AGENTS.md` is back, imported. Bonus: that `# Compact instruction
 ## Reset
 
 ```bash
-rm -f CLAUDE.md && git reset --hard demo-start && git clean -fd
+rm -f CLAUDE.md && git reset --hard origin/main && git clean -fd
 ```
 
 Restart `claude` so it reloads `AGENTS.md`.

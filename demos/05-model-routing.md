@@ -10,8 +10,8 @@ A routine task, each run starting from `/clear` **and** a fresh `/model` (so no 
 > Rename `parseAddress` to `parseAddressLine` in @src/main/java/com/example/demo/utils/AddressParser.java and update all usages. Run the tests.
 
 1. `/clear`, `/model haiku`, run it, `/usage` → note the cost.
-2. `git reset --hard demo-start`, `/clear`, `/model sonnet`, run it, `/usage`.
-3. `git reset --hard demo-start`, `/clear`, `/model opus`, run it, `/usage`.
+2. `git reset --hard origin/main`, `/clear`, `/model sonnet`, run it, `/usage`.
+3. `git reset --hard origin/main`, `/clear`, `/model opus`, run it, `/usage`.
 
 Compare the diffs (`git diff` after each run, before resetting). For a mechanical rename they're the same.
 
@@ -44,7 +44,7 @@ In the deck, the **"What does this actually cost?"** slide. Take numbers from th
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 Then `/model sonnet`, `/effort medium`, `/clear`.

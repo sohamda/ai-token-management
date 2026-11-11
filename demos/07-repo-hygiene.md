@@ -54,7 +54,7 @@ Three lines answer "what does this do, and what should I call?" without reading 
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References

@@ -101,11 +101,11 @@ String system = "Today is " + Instant.now() + "\n\n" + SYSTEM_PROMPT;
 
 The old version of this lever was "every MCP schema is a tax on every turn". The harnesses fixed most of that: Claude Code defers MCP tool definitions by default, so only tool names enter context until a tool is used, and VS Code measured an 18% drop in total tokens per user (median) after it turned on Anthropic's server-side tool search.
 
-The tax moved. Today it's in what tools *return*. One `mvn test` run prints hundreds of lines of plugin banners, download progress and stack frames, and every one of them lands in context and gets re-read, from cache, on every turn after.
+The tax moved. Today it's in what tools *return*. A `mvn test` run prints plugin banners, per-class results and stack frames: 50-odd lines on this repo's small suite, hundreds on a real project or a first build that downloads dependencies. Every one of them lands in context and gets re-read, from cache, on every turn after.
 
 Three ways to shrink it:
 
-- **Filter before the model sees it.** This repo ships a Claude Code `PreToolUse` hook (`.claude/hooks/filter-test-output.sh`) that rewrites `mvn test` so the full log goes to a file and Claude sees only the `Tests run:` lines, the failures and `BUILD SUCCESS` or `BUILD FAILURE`. The exit code survives, so Claude still knows when tests fail.
+- **Filter before the model sees it.** This repo ships a Claude Code `PreToolUse` hook (`.claude/hooks/filter-test-output.sh`) that rewrites `mvn test` so the full log goes to a file and Claude sees only the test totals, each failing test with its expected and actual values, and `BUILD SUCCESS` or `BUILD FAILURE`. On this repo a green run goes from 50-odd lines to 3. The exit code survives, so Claude still knows when tests fail.
 - **Delegate verbose work to a subagent.** "Use a subagent to run the tests and report only the failures": the log stays in the subagent's context, and only its summary comes back.
 - **Prefer CLIs to MCP servers.** `gh pr view 42` returns what you asked for. A GitHub MCP server adds a tool listing and returns full JSON objects.
 

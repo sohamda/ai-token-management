@@ -27,7 +27,7 @@ Listed in talk order (file numbers are historical).
 ## Reset between demos
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
-(Create the tag once with `git tag -f demo-start` — see [00-setup](./00-setup.md).)
+This puts the repo back to what's on GitHub, so push your own changes before you present (see [00-setup](./00-setup.md)).

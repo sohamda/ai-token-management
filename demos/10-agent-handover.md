@@ -70,7 +70,7 @@ It marks each criterion PASS or FAIL and ends with `VERDICT: APPROVE` or `VERDIC
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References

@@ -45,7 +45,7 @@ For a bigger change, press **Shift+Tab** until the mode shows *plan*, ask the va
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References

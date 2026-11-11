@@ -9,10 +9,10 @@
 
 ## Step 2 — tool output is the new tax
 
-If you ran demo 01 before this one, reset first: its scoped edit moves `OrderConfirmationService` to `render`, which breaks `OrderConfirmationServiceTest`.
+If you ran demo 01 before this one, reset first: demo 01 leaves its edits in the working tree, and this demo should run the tests on the committed code.
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 In the second terminal:
@@ -52,7 +52,7 @@ The verbose output stays in the subagent's context; only its summary lands in yo
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References

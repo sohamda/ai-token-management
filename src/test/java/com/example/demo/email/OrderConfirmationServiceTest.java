@@ -45,10 +45,10 @@ class OrderConfirmationServiceTest {
     }
 
     /**
-     * Asserts the current (legacy) body shape. When Ralph migrates to
-     * render("order_confirmation_v2"), this test must be updated too —
-     * the v2 body says "is on the way" instead of "confirmed".
-     * That's intentional: Ralph is only as smart as your tests.
+     * Asserts the legacy body shape. It calls renderLegacy directly, so
+     * migrating OrderConfirmationService to render("order_confirmation_v2")
+     * (the v2 body says "is on the way" instead of "confirmed") does not
+     * fail it. Demo 08 uses that gap: Ralph is only as good as your tests.
      */
     @Test
     void sendOrderConfirmation_bodyContainsLegacyShape() {

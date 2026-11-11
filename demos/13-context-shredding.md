@@ -84,7 +84,7 @@ node tools/scripts/generate-skill-digests.mjs
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References

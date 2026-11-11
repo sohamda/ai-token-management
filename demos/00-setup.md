@@ -19,7 +19,7 @@ On macOS: `brew install maven jq`. Homebrew's Maven brings its own current JDK (
 ```bash
 cd ai-token-management
 mvn -q test                # all tests green
-git tag -f demo-start      # every reset goes back here
+git status -sb             # "## main...origin/main", nothing ahead: every reset goes back to origin/main
 claude                     # start from the repo root
 ```
 
@@ -57,10 +57,10 @@ Live LLM demos are not deterministic, and conference wifi is not reliable. Durin
 ## Reset between demos
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
-Then `/clear` in Claude Code (or restart it after demo 04, which moves `AGENTS.md`).
+Then `/clear` in Claude Code (or restart it after demo 04, whose `CLAUDE.md` hides `AGENTS.md` until the reset removes it).
 
 ## Screen layout
 

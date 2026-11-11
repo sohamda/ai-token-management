@@ -18,7 +18,7 @@ Open `TODO.md`: five small, independent chores. Then open the two loop files:
 Reset first if earlier demos left edits behind: each iteration runs `git add -A`, so leftovers would end up in Ralph's commit.
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 MAX=3 tools/ralph.sh
 ```
 
@@ -31,14 +31,14 @@ Each iteration prints its result line and its own cost and turn count. Narrate:
 
 ```bash
 git log --oneline -5
-git diff demo-start -- TODO.md
+git diff origin/main -- TODO.md
 ```
 
 One commit per item. Any one of them is easy to revert.
 
-## Step 4 — the item designed to fail
+## Step 4 — the item the tests don't cover
 
-The last item (migrate `OrderConfirmationService` to `render`) breaks a test that pins the legacy email text. Depending on the run, the iteration updates the test or gives up and marks the item `- [!]` with a reason. Either way, the next iteration isn't polluted by it. Point: **Ralph is only as good as your tests.**
+The last item migrates `OrderConfirmationService` to `render("order_confirmation_v2")`. The email now says "is on the way" instead of "confirmed", yet the suite stays green: the legacy-shape test in `OrderConfirmationServiceTest` calls `renderLegacy` directly and never goes through the service. Ralph ticks the box, commits and moves on. Point: **Ralph is only as good as your tests.** (Only a full run reaches item 5; the talk runs `MAX=1`.)
 
 ## Talking points
 
@@ -49,7 +49,7 @@ The last item (migrate `OrderConfirmationService` to `render`) breaks a test tha
 ## Reset
 
 ```bash
-git reset --hard demo-start && git clean -fd
+git reset --hard origin/main && git clean -fd
 ```
 
 ## References
