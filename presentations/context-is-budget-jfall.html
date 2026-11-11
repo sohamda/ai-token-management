@@ -496,9 +496,9 @@ Keep behaviour identical.</pre>
         <h3>Filter before the model sees it</h3>
         <pre># .claude/hooks/filter-test-output.sh
 mvn test  →  mvn test > $log 2>&amp;1
-             grep -E 'Tests run:|FAILURE|BUILD'
+             awk …  # totals, BUILD, failures
              exit $rc</pre>
-        <p class="muted" style="margin-top:calc(8 * var(--u))"><span class="measure">???</span> lines → <span class="measure">??</span> lines. Red still reads as red.</p>
+        <p class="muted" style="margin-top:calc(8 * var(--u))"><b>50+</b> lines → <b>3</b> lines. Red still reads as red.</p>
       </div>
       <div class="card">
         <h3>Other ways</h3>
@@ -519,7 +519,7 @@ mvn test  →  mvn test > $log 2>&amp;1
       </ol>
       <p>If it fails: recording 03. Full script: <code>demos/03-tool-and-mcp-hygiene.md</code></p>
     </aside>
-    <aside class="notes">FILL IN the line counts from the dry run. The exit code survives the rewrite, so red still reads as red.</aside>
+    <aside class="notes">Measured on this repo: a green mvn test prints 53–54 lines; Claude gets 3 (the totals, BUILD SUCCESS, the log path). A failing test comes back as Class.method:line plus expected/actual. The exit code survives the rewrite, so red still reads as red.</aside>
   </section>`,
 
   // 10 — Lever D

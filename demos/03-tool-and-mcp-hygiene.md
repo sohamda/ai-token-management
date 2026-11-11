@@ -18,7 +18,7 @@ git reset --hard demo-start && git clean -fd
 In the second terminal:
 
 ```bash
-mvn test | wc -l          # a hundred-plus lines of banners, progress and results
+mvn test | wc -l          # 50-odd lines of banners, plugin output and per-class results (more on a cold cache)
 ```
 
 Every one of those lines would land in Claude's context and be re-read on every later turn.
@@ -27,7 +27,7 @@ In Claude Code:
 
 > Run the tests.
 
-Show what Claude actually received: a few `Tests run:` lines, `BUILD SUCCESS`, and `(full log: …/claude-mvn-test.log)`. Then open `.claude/hooks/filter-test-output.sh` and `.claude/settings.json`: a `PreToolUse` hook rewrites `mvn test` so the full log goes to a file and only summary and failures come back. The exit code survives, so Claude still sees red as red.
+Show what Claude actually received: three lines, the `Tests run:` total, `BUILD SUCCESS` and `(full log: …/claude-mvn-test.log)`. Then open `.claude/hooks/filter-test-output.sh` and `.claude/settings.json`: a `PreToolUse` hook rewrites `mvn test` so the full log goes to a file and only summary and failures come back. The exit code survives, so Claude still sees red as red.
 
 ## Step 3 — make it fail
 
@@ -35,7 +35,7 @@ Break a test on purpose, for example change an expected value in `FormatUtilsTes
 
 > Run the tests and fix what fails.
 
-The hook passes through the `<<< FAILURE!` block with the expected/actual lines, which is all Claude needs.
+The hook passes through Surefire's failure list, for example `FormatUtilsTest.formatMoney_defaultUSD:13` with the expected and actual values, and drops the stack traces. That's all Claude needs; the full log is on disk if it wants more.
 
 ## Step 4 — delegate the noisy part
 

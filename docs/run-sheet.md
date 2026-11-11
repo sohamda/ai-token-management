@@ -57,7 +57,7 @@ The slides scale to fill any screen size. The navigation bar only appears when y
 |---|---|---|
 | Default-way cost | 2 and 20 | `/clear`, `/model opus`, `/effort max`, prompt: *"Add a VIP line to the order emails when the total is over $100"*, let it finish, `/usage`. |
 | Disciplined cost | 2 and 20 | `/clear`, `/model sonnet`, `/effort medium`, run demo 10 (planner → implementer → reviewer), `/usage`. Include the subagents (on a subscription the attribution shows them). |
-| Raw vs trimmed test lines | 9 | `mvn test \| wc -l`, then count the lines Claude received after "Run the tests". |
+| Raw vs trimmed test lines | 9 | Done: 53–54 raw, 3 trimmed on a green run (Nov 2026, warm Maven cache). Re-check with `mvn test \| wc -l` only if the build changes. |
 
 Reset between the two feature runs (`git reset --hard demo-start && git clean -fd`). Check that both end with green tests; if they don't, say so on stage. Note wall-clock time for both runs too: speed is the better argument for people who don't pay the bill.
 

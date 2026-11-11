@@ -8,8 +8,16 @@ cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
 pattern='^(\./mvnw|mvn)( +-[^ ;&|<>`$]+)* +(test|verify)( +[^;&|<>`$]*)?$'
 if [[ "$cmd" =~ $pattern ]]; then
   tmp="${TMPDIR:-/tmp}"; log="${tmp%/}/claude-mvn-test.log"
-  keep='<<< (FAILURE|ERROR)!|Tests run:|BUILD (SUCCESS|FAILURE)|ERROR\].*\.java'
-  filtered="$cmd > '$log' 2>&1; rc=\$?; grep -E -A3 '$keep' '$log' | head -60; echo \"(full log: $log)\"; exit \$rc"
+  # Keep: Surefire's "Results" list of failing tests (Class.method:line + expected/actual), the
+  # test totals (not the per-class lines), the BUILD line, and compile errors (once each).
+  # A green run comes back as 2 lines; stack traces stay in the log.
+  keep='/^\[ERROR\] (Failures|Errors): *$/{res=1;print;next}
+        res&&(/^ *$/||/^\[(INFO|ERROR|WARNING)\] *$/||/Tests run:/){res=0}
+        res{print;next}
+        /Tests run:/&&!/ in /{print;next}
+        /BUILD (SUCCESS|FAILURE)/{print;next}
+        /\.java:\[[0-9]+,[0-9]+\]/||/^\[ERROR\] +(symbol|location):/{if(!seen[$0]++)print;next}'
+  filtered="$cmd > '$log' 2>&1; rc=\$?; awk '$keep' '$log' | head -60; echo \"(full log: $log)\"; exit \$rc"
   jq --arg c "$filtered" \
     '{hookSpecificOutput: {hookEventName: "PreToolUse", updatedInput: (.tool_input + {command: $c})}}' <<<"$input"
 else

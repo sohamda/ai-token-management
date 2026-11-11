@@ -6,13 +6,13 @@ Do this **the day before**, on the laptop you'll present from. All live demos us
 
 | Tool | Why | Check |
 |---|---|---|
-| JDK 17+ | the demo app | `java -version` |
+| JDK 17+ | the demo app (compiled for Java 17) | `mvn -v` shows the JDK Maven uses |
 | Maven 3.9+ | build and tests (the repo has no `./mvnw`) | `mvn -v` |
 | Claude Code v2.1.305+ | `/usage` cache line (2.1.251), native `AGENTS.md` (2.1.277), `f` to fix (2.1.305) | `claude --version` |
 | jq | the test-output hook and the status line | `jq --version` |
 | Node 20+ | only for `npm run lint:context` and the optional API cache script | `node -v` |
 
-On macOS: `brew install openjdk@17 maven jq` (or SDKMAN for the JDK and Maven).
+On macOS: `brew install maven jq`. Homebrew's Maven brings its own current JDK (27 in November 2026), and the build passes on it. Skip `openjdk@17`: its Homebrew build (17.0.21) is killed at startup on macOS 26.7. SDKMAN works too.
 
 ## One-time checks
 
