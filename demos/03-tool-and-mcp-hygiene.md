@@ -27,7 +27,7 @@ In Claude Code:
 
 > Run the tests.
 
-Show what Claude actually received: three lines, the `Tests run:` total, `BUILD SUCCESS` and `(full log: …/claude-mvn-test.log)`. Then open `.claude/hooks/filter-test-output.sh` and `.claude/settings.json`: a `PreToolUse` hook rewrites `mvn test` so the full log goes to a file and only summary and failures come back. The exit code survives, so Claude still sees red as red.
+Show what Claude actually received: three lines, the `Tests run:` total, `BUILD SUCCESS` and `(full log: …/claude-mvn-test.log)`. Claude usually runs `mvn test 2>&1 | tail -40` rather than plain `mvn test`; the hook strips that wrapper and filters anyway. Other pipelines (`| wc -l`, `| grep`) pass through untouched. Then open `.claude/hooks/filter-test-output.sh` and `.claude/settings.json`: a `PreToolUse` hook rewrites `mvn test` so the full log goes to a file and only summary and failures come back. The exit code survives, so Claude still sees red as red.
 
 ## Step 3 — make it fail
 

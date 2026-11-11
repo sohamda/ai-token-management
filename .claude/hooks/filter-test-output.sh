@@ -5,6 +5,12 @@
 input=$(cat)
 cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
 
+# Claude often wraps a test run as `mvn test 2>&1 | tail -40`. Strip exactly that wrapper
+# (2>&1 and/or | tail|head -N); the filter below replaces it. Other pipes (| wc -l, | grep) pass through.
+wrap='^(.*[^ ]) +2>&1( *\| *(tail|head)( +-n)? +-?[0-9]+)? *$'
+pipe='^(.*[^ ]) *\| *(tail|head)( +-n)? +-?[0-9]+ *$'
+if [[ "$cmd" =~ $wrap ]]; then cmd="${BASH_REMATCH[1]}"; elif [[ "$cmd" =~ $pipe ]]; then cmd="${BASH_REMATCH[1]}"; fi
+
 pattern='^(\./mvnw|mvn)( +-[^ ;&|<>`$]+)* +(test|verify)( +[^;&|<>`$]*)?$'
 if [[ "$cmd" =~ $pattern ]]; then
   tmp="${TMPDIR:-/tmp}"; log="${tmp%/}/claude-mvn-test.log"
