@@ -803,7 +803,11 @@ done</pre>
         <tr><td>Multi-module builds</td><td><span class="kbd">mvn -pl &lt;module&gt; -am test</span>, <span class="kbd">-Dtest=&lt;Class&gt;Test</span></td></tr>
       </tbody>
     </table>
-    <aside class="notes">1.5 min. This is the slide a Java room photographs. Each row is one line in AGENTS.md or one hook. Example: put "Test: mvn -B -ntp -q test" in AGENTS.md and the agent never sees download progress again.</aside>
+    <aside class="notes">1.5 min. This is the slide a Java room photographs. Each row is one line in AGENTS.md or one hook. Example: put "Test: mvn -B -ntp -q test" in AGENTS.md and the agent never sees download progress again.<br/><br/>
+    <b>If asked how to trim stack traces:</b><br/>
+    1. Tests: <code>mvn test -DtrimStackTrace=true</code> (off by default; keeps only the test-class frames, 4 frames → 1 on this repo). Or <code>&lt;trimStackTrace&gt;true&lt;/trimStackTrace&gt;</code> in the Surefire config. This repo's hook already drops frames entirely.<br/>
+    2. App logs: <code>logging.exception-conversion-word=%rEx{10}</code> in a dev profile: root cause first, 10 lines. Spring Boot's default <code>%wEx</code> prints everything. Logback can't skip frames by package; newer Spring Boot has <code>logging.structured.json.stacktrace.*</code> for JSON logs (not in 3.4).<br/>
+    3. Read through a filter, in AGENTS.md: <code>grep -E 'ERROR|Exception|Caused by|at com\\.example\\.' &lt;log&gt; | head -40</code>. Keeps the message, the causes and your own frames; drops cglib, reflection and Tomcat frames.</aside>
   </section>`,
 
   // 20 — payoff
