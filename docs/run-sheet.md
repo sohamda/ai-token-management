@@ -43,13 +43,13 @@ The slides scale to fill any screen size. The navigation bar only appears when y
 | 28:00 | 15 Same levers, your tool | — | — |
 | 32:00 | 16 Pattern 1 · Ralph | **live** reset, then `MAX=1 tools/ralph.sh`, talk over it (its `git add -A` would commit leftover demo edits) | recording |
 | 34:00 | 17 Pattern 2 · Checkpoint | — | — |
-| 38:00 | 18 Pattern 3 · Plan → Build → Review | **recorded** demo 10 time-lapse (3 min) | — |
+| 38:00 | 18 Pattern 3 · Plan → Build → Review | **live** demo 10: `/exit`, then `tools/demo10.sh`; acts 2–3 are one @-mention each (time it in the dry run) | recording |
 | 39:30 | 19 Java's token sinks | — | — |
 | 41:30 | 20 Back to the feature | numbers from dry run | — |
 | 43:00 | 21 Three things | — | — |
 | 44:00 | 22 Closing + QR | leave up for Q&A | — |
 
-**Behind schedule?** Cut in this order: slide 12 (F), slide 13 (G), the live part of slide 14 (just point at the status line), then switch slide 16 to the recording.
+**Behind schedule?** Cut in this order: slide 12 (F), slide 13 (G), the live part of slide 14 (just point at the status line), then switch slides 16 and 18 to their recordings.
 
 ## Numbers to measure in the dry run
 

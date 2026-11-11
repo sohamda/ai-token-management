@@ -22,7 +22,7 @@ Listed in talk order (file numbers are historical).
 | [12](./12-progressive-disclosure.md) | `AGENTS.md` → rules → skills → references | Appendix — Scaling up | 3 min |
 | [13](./13-context-shredding.md) | Skills in three sizes | Appendix — Scaling up | 5 min |
 
-**Total:** ~45 min for the full set, so pick a subset. The 45-minute talk ([docs/run-sheet.md](../docs/run-sheet.md)) runs **01, 02 (step 2), 03, 14 and 08 (`MAX=1`)** live and plays **10** as a recording. Record backups of all six before the talk.
+**Total:** ~45 min for the full set, so pick a subset. The 45-minute talk ([docs/run-sheet.md](../docs/run-sheet.md)) runs **01, 02 (step 2), 03, 14, 08 (`MAX=1`) and 10 (`tools/demo10.sh`)** live. Record backups of all six before the talk.
 
 ## Reset between demos
 

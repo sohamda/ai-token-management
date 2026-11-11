@@ -25,6 +25,7 @@ Materials for the talk *Context Is a Budget*: eight levers and three workflow pa
 ├── .github/                                 ← the Copilot equivalents (instructions, prompts, skills)
 ├── tools/
 │   ├── ralph.sh, ralph-prompt.md            ← headless Ralph loop (`claude -p` per TODO item)
+│   ├── demo10.sh                            ← runs demo 10 live (planner → implementer → reviewer)
 │   └── lint-*.js                            ← `npm run lint:context`: instruction size and glob checks
 ├── TODO.md                                  ← backlog for the Ralph loop
 └── plan.md                                  ← example output of the planner subagent

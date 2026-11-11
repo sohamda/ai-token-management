@@ -5,6 +5,19 @@
 
 This is the showpiece. It uses patterns 1 and 2 inside pattern 3.
 
+## Run it live with the script
+
+From a shell in the repo root (quit any running Claude Code session first):
+
+```bash
+tools/demo10.sh --check   # optional: prerequisites, clean tree, the command it will run
+tools/demo10.sh
+```
+
+It moves the example `plan.md` aside, then opens Claude Code on Sonnet with the planner prompt (act 1) already submitted. Edits are auto-accepted, and `mvn`, `git add`, `git commit`, `git log`, `git diff`, `git show` and `git status` are pre-approved for that session only; nothing is written to your settings. Type acts 2 and 3 yourself: `@agent-implementer execute plan.md`, then `@agent-reviewer review the build commits against plan.md`. Check in the dry run whether the hooked `mvn test` still asks for approval once.
+
+The steps below are what the script automates, for running it by hand.
+
 ## Setup
 
 Three subagents in `.claude/agents/`:

@@ -774,16 +774,18 @@ done</pre>
         </ul>
       </div>
     </div>
-    <aside class="demo" data-kind="recorded">
-      <div class="cue"><b>Demo 10</b> · 3 min time-lapse, narrate live: <code>plan.md</code> → one commit per task → <code>VERDICT</code> → main session's <code>/context</code> · show <code>.claude/agents/planner.md</code> first</div>
+    <aside class="demo" data-kind="live">
+      <div class="cue"><b>Demo 10</b> · start it first, talk over it · <code>tools/demo10.sh</code> → <code>@agent-implementer</code> → <code>@agent-reviewer</code> → <code>/context</code> · show <code>plan.md</code></div>
       <ol>
-        <li>Optional, 15 s: open <code>.claude/agents/planner.md</code> and point at <code>model</code>, <code>effort</code>, <code>tools</code>.</li>
-        <li>Play the demo 10 recording.</li>
-        <li>Narrate: <code>plan.md</code> (no code) → implementer commits → reviewer's <code>VERDICT</code> line → main session <code>/context</code>: three briefs and three summaries, not three transcripts.</li>
+        <li>Claude Code terminal: quit the running session (<code>/exit</code>), then <q class="say">tools/demo10.sh</q> It moves the example plan aside and submits the planner prompt for you.</li>
+        <li>While the planner runs: open <code>.claude/agents/planner.md</code> (model, effort, tools). When it replies, open <code>plan.md</code> in the 2nd terminal: goal, criteria, tasks, no code.</li>
+        <li><q class="say">@agent-implementer execute plan.md</q> One <code>mvn test</code> and one commit per task. Then in the 2nd terminal: <q class="say">git log --oneline -5</q></li>
+        <li><q class="say">@agent-reviewer review the build commits against plan.md</q> Point at the <code>VERDICT</code> line.</li>
+        <li><q class="say">/context</q> then <q class="say">/usage</q>: three briefs and three summaries, not three transcripts, and the session never changed model.</li>
       </ol>
-      <p>Full script: <code>demos/10-agent-handover.md</code></p>
+      <p>Needs a clean working tree (<code>tools/demo10.sh --check</code>). If it fails or runs long: recording 10. Full script: <code>demos/10-agent-handover.md</code></p>
     </aside>
-    <aside class="notes">The 7× figure is Anthropic's, for agent teams in plan mode.</aside>
+    <aside class="notes">The 7× figure is Anthropic's, for agent teams in plan mode. If the planner asks a question instead of writing plan.md, answer it in one line.</aside>
   </section>`,
 
   // 19 — Java token sinks
