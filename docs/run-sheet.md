@@ -1,5 +1,7 @@
 # Run sheet — 45 minutes (Q&A excluded)
 
+Every command and prompt you type, in talk order and ready to copy: [stage-commands.md](stage-commands.md).
+
 Open `presentations/context-is-budget-jfall.html`, press **F** on the projector screen, then **P** to open the presenter window on your laptop. The presenter window shows the notes, a timer (starts when you leave slide 1; **T** restarts it) and "leave this slide by mm:ss", green or red. Both windows follow either one's arrow keys.
 
 **Demo cues.** Every slide with a demo or a file to show has a one-line strip at the bottom: **▶ live**, **▶ recording** or **show**, with the commands and files. The presenter window shows the full steps, and you can click a highlighted prompt or command to copy it before pasting it into the terminal. Its "Next:" line also flags the upcoming demo. Press **D** in either window to hide or show the strips on the projector.

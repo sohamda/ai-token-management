@@ -12,7 +12,7 @@ Materials for the talk *Context Is a Budget*: eight levers and three workflow pa
 │   └── archive/                            ← older Copilot-era decks and their PDFs
 ├── blog/                                    ← the companion post (chapters + merged draft)
 ├── demos/                                   ← one script per demo, Claude Code (see demos/README.md)
-├── docs/                                    ← abstract, long-form outline, scaling case study
+├── docs/                                    ← run sheet, stage commands, abstract, outline, scaling case study
 ├── src/main/java/…                          ← the demo app (Java 17, Spring Boot 3.4)
 ├── src/email/, src/api/, src/utils/, dist/  ← intentional dead JS, used by demos 01 and 07
 ├── AGENTS.md                                ← always-loaded instructions (Claude Code reads it natively)
@@ -45,7 +45,7 @@ Patterns: **1** Loop with state on disk (Ralph) · **2** Checkpoint & reset · *
 ## How to use
 
 1. Follow [demos/00-setup.md](demos/00-setup.md) the day before: JDK 17, Maven, jq, Claude Code v2.1.305+, then push any changes of your own: every demo reset goes back to `origin/main`.
-2. Open `presentations/context-is-budget-jfall.html` in a browser, press `F` for fullscreen and `P` for the presenter view (notes, timer, time cues). The 45-minute plan is in [docs/run-sheet.md](docs/run-sheet.md).
+2. Open `presentations/context-is-budget-jfall.html` in a browser, press `F` for fullscreen and `P` for the presenter view (notes, timer, time cues). The 45-minute plan is in [docs/run-sheet.md](docs/run-sheet.md); everything you type on stage, in order, is in [docs/stage-commands.md](docs/stage-commands.md).
 3. Run the demos from `demos/` when a slide's cue strip says so (bottom of the slide; **D** toggles it, the presenter view shows the full steps). Reset with `git reset --hard origin/main && git clean -fd`.
 
 ## Credits
